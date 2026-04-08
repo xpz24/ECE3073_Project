@@ -1,0 +1,48 @@
+// libraries
+# include <stdio.h>
+# include "../project_M1_bsp/system.h"
+# include "../project_M1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+
+// base addresses
+#define PIXEL_ADDR_BASE 0x04009060
+#define PIXEL_DATA_BASE 0x04009050
+#define PIXEL_WREN_BASE 0x04009040
+
+// write pixel function
+void write_pixel(unsigned int addr, unsigned char color) {
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xF);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
+}
+
+// draw horizontal color stripes function
+void draw_color_stripes() {
+	for (int y = 0; y < 240; y++) {
+		for (int x = 0; x < 320; x++) {
+			unsigned int addr = y * 320 + x;
+			unsigned char color = x / 20;
+			write_pixel(addr, color);
+		}
+	}
+}
+
+// draw vertical color stripes function
+void draw_vertical_stripes() {
+	for (int y = 0; y < 240; y++) {
+		unsigned char color = y / 15;
+		for (int x = 0; x < 320; x++) {
+			unsigned int addr = y * 320 + x;
+			write_pixel(addr, color);
+		}
+	}
+}
+
+// vga_main function to constantly draw horizontal and vertical color stripes
+int VGATask(void) {
+	while (1) {
+		draw_color_stripes();
+		draw_vertical_stripes();
+	}
+	return 0;
+}
