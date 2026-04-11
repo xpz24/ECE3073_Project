@@ -13,9 +13,6 @@
 #define LEDR_BASE 0x04009090
 #define KEY_BASE 0x040090b0
 
-// GLOBAL INTERRUPT FLAG
-volatile int scroll_enable = 0;
-
 // 7-SEGMENT DICTIONARY
 #define SEG_0     0x40
 #define SEG_1     0x79
@@ -51,6 +48,7 @@ volatile int scroll_enable = 0;
 #define SEG_EQUAL 0x37
 #define SEG_DOT   0xBF
 
+// DEFINITIONS
 #define DISPLAY_WIDTH 6
 
 // CHARACTER LOOKUP TABLE
@@ -145,71 +143,69 @@ void process_string(const char *text) {
     }
 }
 
+// SCROLLING STATE
+int scroll_pos = 0;
+int scroll_counter = 0;
+
 // SCROLL STRING FUNCTION
-// Returns 0 if SW[0] turned off mid-scroll, 1 if completed
-int scroll_string(int scroll_speed) {
+void scroll_step(int pos) {
     int len = processed_len;
-    // Total scroll positions = message length + 6 blank lead-in
-    int total = len + DISPLAY_WIDTH;
-    int pos, j;
+	unsigned char display[6];
+	// Fill 6 display slots
+	for (int j = 0; j < DISPLAY_WIDTH; j++) {
+		int char_idx = pos + j - DISPLAY_WIDTH;
 
-    for (pos = 0; pos < total; pos++) {
-        unsigned char display[6];
-        // Fill 6 display slots
-        for (j = 0; j < DISPLAY_WIDTH; j++) {
-            int char_idx = pos + j - DISPLAY_WIDTH;
-
-            if (char_idx >= 0 && char_idx < len) {
-                display[j] = seg_char(processed[char_idx].c, processed[char_idx].dp);
-            }
-            else {
-                display[j] = seg_char(' ', 0);
-            }
-        }
-        // Write to displays (HEX5 is leftmost = display[5])
-        write_hex(display[0], display[1], display[2], display[3], display[4], display[5]);
-        // Check if SW[0] turned off — abort scroll
-        if (!(IORD_ALTERA_AVALON_PIO_DATA(SW_BASE) & 0x1)) {
-            clear_hex();
-            return 0;
-        }
-        // Scroll speed delay
-        volatile int d;
-        for (d = 0; d < scroll_speed; d++);
-    }
-    return 1;
+		if (char_idx >= 0 && char_idx < len) {
+			display[j] = seg_char(processed[char_idx].c, processed[char_idx].dp);
+		}
+		else {
+			display[j] = seg_char(' ', 0);
+		}
+	}
+	// Write to displays (HEX5 is leftmost = display[5])
+	write_hex(display[0], display[1], display[2], display[3], display[4], display[5]);
 }
 
 // MAIN
 int led_hex_main(char *text) {
 	// adjust to change scroll speed
-    int scroll_speed = 100000;
+    int scroll_speed = 100;
     process_string(text);
     clear_hex();
+    int total = processed_len + DISPLAY_WIDTH; // Total scroll positions
     printf("System ready. Flip switches to display messages.\n");
 
     while (1) {
         int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
         // Mirror switches to LEDs to see what's active
 		IOWR_ALTERA_AVALON_PIO_DATA(LEDR_BASE, sw);
-        // SW[0] OFF — everything off
+        // SW0 off — everything off
         if (!(sw & 0x1)) {
             clear_hex();
+            scroll_pos = 0;
+            scroll_counter = 0;
         }
-        // SW[0] ON — check SW[1]
+        // SW0 on - scroll/pause message
         else {
-            // SW[0]+SW[1]
-            if (sw & 0x2) {
-                printf("Scrolling: %s\n", text);
-                scroll_string(scroll_speed);
-            }
-            // SW[0] only — default: all dash
-            else {
-                show_all_dash();
-            }
+        	// always display current position
+        	scroll_step(scroll_pos);
+        	// SW0 + SW1 - scroll message
+        	if (sw & 0x2) {
+        		scroll_counter++;
+        		if (scroll_counter >= scroll_speed) {
+        			scroll_counter = 0;
+        			scroll_pos++;
+        			// wrap around
+					if (scroll_pos >= total) {
+						scroll_pos = 0;
+					}
+        		}
+        	}
+        	// SW0 + !SW1 - pause display
         }
+        // small delay to prevent cpu hogging
         volatile int delay;
-        for (delay = 0; delay < 10000; delay++);
+        for (delay = 0; delay < 1000; delay++);
     }
     return 0;
 }
