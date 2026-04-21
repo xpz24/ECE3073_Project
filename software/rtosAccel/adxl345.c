@@ -2,7 +2,7 @@
 #include "system.h"
 #include "altera_avalon_spi.h"
 
-#define ADXL345_SPI_BASE   SPI_0_BASE
+#define ADXL345_SPI_BASE   ACCELEROMETER_BASE
 #define ADXL345_SPI_SLAVE  0
 
 /* Internal helper: write one ADXL345 register */

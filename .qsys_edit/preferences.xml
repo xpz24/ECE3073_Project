@@ -10,7 +10,7 @@
   </columns>
  </systemtable>
  <library
-   expandedCategories="Library/University Program/Audio &amp; Video/Video,Project,Library/University Program/Audio &amp; Video,Library/University Program,Library" />
+   expandedCategories="Library/Processors and Peripherals,Project,Library/Processors and Peripherals/Peripherals,Library/Interface Protocols/PCI Express/QSYS Example Designs,Library/Interface Protocols/PCI Express,Library,Library/Interface Protocols" />
  <window width="1707" height="960" x="0" y="0" />
  <hdlexample language="VERILOG" />
 </preferences>

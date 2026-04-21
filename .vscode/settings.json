@@ -3,6 +3,8 @@
         "endmodule",
         "gpio",
         "GSENSOR",
+        "hexhi",
+        "hexlo",
         "inclk",
         "inout",
         "LDQM",

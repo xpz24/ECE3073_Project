@@ -1,6 +1,8 @@
 `default_nettype none
 module project_top (
     input MAX10_CLK1_50,
+    input [3:0] SW,
+    input [1:0] KEY,
     inout GSENSOR_SDI,
     inout GSENSOR_SDO,
     inout [15:0] DRAM_DQ,
@@ -15,23 +17,37 @@ module project_top (
     output GSENSOR_SCLK,
     output GSENSOR_CS_N,
     output [12:0] DRAM_ADDR,
-    output [1:0] DRAM_BA
+    output [1:0] DRAM_BA,
+    output [2:0] LEDR,
+    output [0:0] GPIO,
+    output [7:0] HEX0,
+    HEX1,
+    HEX2,
+    HEX3,
+    HEX4,
+    HEX5
 );
   Project nios_inst (
-      .clk_clk   (MAX10_CLK1_50),           //  clk.clk
-      .dram_addr (DRAM_ADDR),               // dram.addr
-      .dram_ba   (DRAM_BA),                 //     .ba
-      .dram_cas_n(DRAM_CAS_N),              //     .cas_n
-      .dram_cke  (DRAM_CKE),                //     .cke
-      .dram_cs_n (DRAM_CS_N),               //     .cs_n
-      .dram_dq   (DRAM_DQ),                 //     .dq
-      .dram_dqm  ({DRAM_UDQM, DRAM_LDQM}),  //     .dqm
-      .dram_ras_n(DRAM_RAS_N),              //     .ras_n
-      .dram_we_n (DRAM_WE_N),               //     .we_n
-      .accel_MISO(GSENSOR_SDO),             // accel.MISO
-      .accel_MOSI(GSENSOR_SDI),             //      .MOSI
-      .accel_SCLK(GSENSOR_SCLK),            //      .SCLK
-      .accel_SS_n(GSENSOR_CS_N)             //      .SS_n
+      .clk_clk       (MAX10_CLK1_50),           //  clk.clk
+      .dram_addr     (DRAM_ADDR),               // dram.addr
+      .dram_ba       (DRAM_BA),                 //     .ba
+      .dram_cas_n    (DRAM_CAS_N),              //     .cas_n
+      .dram_cke      (DRAM_CKE),                //     .cke
+      .dram_cs_n     (DRAM_CS_N),               //     .cs_n
+      .dram_dq       (DRAM_DQ),                 //     .dq
+      .dram_dqm      ({DRAM_UDQM, DRAM_LDQM}),  //     .dqm
+      .dram_ras_n    (DRAM_RAS_N),              //     .ras_n
+      .dram_we_n     (DRAM_WE_N),               //     .we_n
+      .accel_MISO    (GSENSOR_SDO),             // accel.MISO
+      .accel_MOSI    (GSENSOR_SDI),             //      .MOSI
+      .accel_SCLK    (GSENSOR_SCLK),            //      .SCLK
+      .accel_SS_n    (GSENSOR_CS_N),            //      .SS_n
+      .button_export (KEY),                     // button.export
+      .switch_export (SW),                      // switch.export
+      .hexlo_export  ({HEX2, HEX1, HEX0}),      //   hexlo.export
+      .hexhi_export  ({HEX5, HEX4, HEX3}),      //   hexhi.export
+      .led_export    (LEDR),                    //     led.export
+      .speaker_export(GPIO)                     // speaker.export
   );
 
   PLL_DRAM pll_inst (

@@ -87,11 +87,12 @@ ACDS_VERSION := 23.1
 # Define path to the application ELF. 
 # It may be used by the makefile fragments so is defined before including them. 
 # 
-ELF := accel.elf
+ELF := rtosAccel.elf
 
 # Paths to C, C++, and assembly source files.
-C_SRCS += hello_world.c
+C_SRCS += hello_ucosii.c
 C_SRCS += adxl345.c
+C_SRCS += hex.c
 CXX_SRCS :=
 ASM_SRCS :=
 
@@ -126,7 +127,7 @@ CRT0 :=
 SYS_LIB :=
 
 # Define path to the root of the BSP.
-BSP_ROOT_DIR := ../accel_bsp/
+BSP_ROOT_DIR := ../rtosAccel_bsp/
 
 # List of application specific include directories, library directories and library names
 APP_INCLUDE_DIRS :=
