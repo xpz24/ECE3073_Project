@@ -4,6 +4,8 @@
 #include "hex.h"
 #include "altera_avalon_pio_regs.h"
 #include "system.h"
+#include "esp32SPI.h"
+#include <string.h>
 
 //#define IRQ_CONTROLLER_ID 0
 
@@ -17,18 +19,21 @@ typedef struct {
 void task1(void *pdata); // basic uart
 void task2(void *pdata); // SPI accelerometer
 void task3(void *pdata); // Display HEX
+void task4(void *pdata); // SPI ESP32 communication
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
 OS_STK task1_stk[TASK_STACKSIZE];
 OS_STK task2_stk[TASK_STACKSIZE];
 OS_STK task3_stk[TASK_STACKSIZE];
+OS_STK task4_stk[TASK_STACKSIZE];
 
 /* Definition of Task Priorities */
 
 #define TASK1_PRIORITY      1
 #define TASK2_PRIORITY      2
 #define TASK3_PRIORITY		3
+#define TASK4_PRIORITY 		4
 
 /* The main function creates two task and starts multi-tasking */
 int main(void) {
@@ -79,6 +84,16 @@ int main(void) {
 	TASK3_PRIORITY, task3_stk,
 	TASK_STACKSIZE,
 	NULL, 0);
+
+	OSTaskCreateExt(task4,
+	NULL,
+	(void *)&task4_stk[TASK_STACKSIZE - 1],
+	TASK4_PRIORITY,
+	TASK4_PRIORITY,
+	task4_stk,
+	TASK_STACKSIZE,
+	NULL,
+	0);
 
 
 	OSStart();
@@ -201,6 +216,65 @@ void task3(void *pdata) {
 		OSTimeDlyHMSM(0, 0, 0, 1);
 	}
 }
+
+void task4(void *pdata) {
+
+    alt_u8 tx_buf[ESP32_MSG_SIZE];
+    alt_u8 rx_buf[ESP32_MSG_SIZE];
+    alt_u8 saved_msg[ESP32_MSG_SIZE];
+
+    int count = 0;
+
+    int prev_btn1 = 0;
+    int prev_btn2 = 0;
+
+    memset(saved_msg, 0, ESP32_MSG_SIZE);
+
+    printf("[ESP32 SPI] Task started\n");
+
+    while (1) {
+
+        int buttons = IORD_ALTERA_AVALON_PIO_DATA(PIO_BUTTON_BASE);
+
+        int btn1 = buttons & 0x1;  // Button 1
+        int btn2 = buttons & 0x2;  // Button 2
+
+        /* -------- BUTTON 1: SEND + RECEIVE -------- */
+        if (btn1 && !prev_btn1) {
+
+            snprintf((char*)tx_buf, ESP32_MSG_SIZE,
+                     "Hello I am NIOSII count: %d", count);
+
+            memset(rx_buf, 0, ESP32_MSG_SIZE);
+
+            printf("[ESP32 SPI] Sending: %s\n", tx_buf);
+
+            if (esp32_spi_exchange(tx_buf, ESP32_MSG_SIZE,
+                                   rx_buf, ESP32_MSG_SIZE) == 0) {
+
+                memcpy(saved_msg, rx_buf, ESP32_MSG_SIZE);
+
+                printf("[ESP32 SPI] Received: %s\n", saved_msg);
+
+                count++;
+            } else {
+                printf("[ESP32 SPI] Exchange FAILED\n");
+            }
+        }
+
+        /* -------- BUTTON 2: PRINT STORED MESSAGE -------- */
+        if (btn2 && !prev_btn2) {
+            printf("[ESP32 SPI] Stored message:\n");
+            printf("%s\n", saved_msg);
+        }
+
+        prev_btn1 = btn1;
+        prev_btn2 = btn2;
+
+        OSTimeDlyHMSM(0, 0, 0, 50); // debounce + CPU relief
+    }
+}
+
 //void accelerometer_isr(void *context, alt_u32 id) {
 //	accl_context_t *ctx = (accl_context_t *) context;
 //	printf("ACCL Readings from IRQ\n");

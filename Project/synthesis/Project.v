@@ -19,6 +19,10 @@ module Project (
 		output wire [1:0]  dram_dqm,       //        .dqm
 		output wire        dram_ras_n,     //        .ras_n
 		output wire        dram_we_n,      //        .we_n
+		input  wire        esp32_MISO,     //   esp32.MISO
+		output wire        esp32_MOSI,     //        .MOSI
+		output wire        esp32_SCLK,     //        .SCLK
+		output wire        esp32_SS_n,     //        .SS_n
 		output wire [23:0] hexhi_export,   //   hexhi.export
 		output wire [23:0] hexlo_export,   //   hexlo.export
 		output wire [2:0]  led_export,     //     led.export
@@ -65,11 +69,8 @@ module Project (
 	wire         mm_interconnect_0_onchip_s1_clken;                           // mm_interconnect_0:ONCHIP_s1_clken -> ONCHIP:clken
 	wire  [31:0] mm_interconnect_0_pio_switch_s1_readdata;                    // PIO_SWITCH:readdata -> mm_interconnect_0:PIO_SWITCH_s1_readdata
 	wire   [1:0] mm_interconnect_0_pio_switch_s1_address;                     // mm_interconnect_0:PIO_SWITCH_s1_address -> PIO_SWITCH:address
-	wire         mm_interconnect_0_pio_button_s1_chipselect;                  // mm_interconnect_0:PIO_BUTTON_s1_chipselect -> PIO_BUTTON:chipselect
 	wire  [31:0] mm_interconnect_0_pio_button_s1_readdata;                    // PIO_BUTTON:readdata -> mm_interconnect_0:PIO_BUTTON_s1_readdata
 	wire   [1:0] mm_interconnect_0_pio_button_s1_address;                     // mm_interconnect_0:PIO_BUTTON_s1_address -> PIO_BUTTON:address
-	wire         mm_interconnect_0_pio_button_s1_write;                       // mm_interconnect_0:PIO_BUTTON_s1_write -> PIO_BUTTON:write_n
-	wire  [31:0] mm_interconnect_0_pio_button_s1_writedata;                   // mm_interconnect_0:PIO_BUTTON_s1_writedata -> PIO_BUTTON:writedata
 	wire         mm_interconnect_0_sys_timer_s1_chipselect;                   // mm_interconnect_0:SYS_TIMER_s1_chipselect -> SYS_TIMER:chipselect
 	wire  [15:0] mm_interconnect_0_sys_timer_s1_readdata;                     // SYS_TIMER:readdata -> mm_interconnect_0:SYS_TIMER_s1_readdata
 	wire   [2:0] mm_interconnect_0_sys_timer_s1_address;                      // mm_interconnect_0:SYS_TIMER_s1_address -> SYS_TIMER:address
@@ -110,11 +111,18 @@ module Project (
 	wire         mm_interconnect_0_accelerometer_spi_control_port_read;       // mm_interconnect_0:ACCELEROMETER_spi_control_port_read -> ACCELEROMETER:read_n
 	wire         mm_interconnect_0_accelerometer_spi_control_port_write;      // mm_interconnect_0:ACCELEROMETER_spi_control_port_write -> ACCELEROMETER:write_n
 	wire  [15:0] mm_interconnect_0_accelerometer_spi_control_port_writedata;  // mm_interconnect_0:ACCELEROMETER_spi_control_port_writedata -> ACCELEROMETER:data_from_cpu
+	wire         mm_interconnect_0_esp32_spi_control_port_chipselect;         // mm_interconnect_0:ESP32_spi_control_port_chipselect -> ESP32:spi_select
+	wire  [15:0] mm_interconnect_0_esp32_spi_control_port_readdata;           // ESP32:data_to_cpu -> mm_interconnect_0:ESP32_spi_control_port_readdata
+	wire   [2:0] mm_interconnect_0_esp32_spi_control_port_address;            // mm_interconnect_0:ESP32_spi_control_port_address -> ESP32:mem_addr
+	wire         mm_interconnect_0_esp32_spi_control_port_read;               // mm_interconnect_0:ESP32_spi_control_port_read -> ESP32:read_n
+	wire         mm_interconnect_0_esp32_spi_control_port_write;              // mm_interconnect_0:ESP32_spi_control_port_write -> ESP32:write_n
+	wire  [15:0] mm_interconnect_0_esp32_spi_control_port_writedata;          // mm_interconnect_0:ESP32_spi_control_port_writedata -> ESP32:data_from_cpu
 	wire         irq_mapper_receiver0_irq;                                    // UART:av_irq -> irq_mapper:receiver0_irq
 	wire         irq_mapper_receiver1_irq;                                    // ACCELEROMETER:irq -> irq_mapper:receiver1_irq
 	wire         irq_mapper_receiver2_irq;                                    // SYS_TIMER:irq -> irq_mapper:receiver2_irq
+	wire         irq_mapper_receiver3_irq;                                    // ESP32:irq -> irq_mapper:receiver3_irq
 	wire  [31:0] niosii_irq_irq;                                              // irq_mapper:sender_irq -> NIOSII:irq
-	wire         rst_controller_reset_out_reset;                              // rst_controller:reset_out -> [ACCELEROMETER:reset_n, NIOSII:reset_n, ONCHIP:reset, PIO_BUTTON:reset_n, PIO_HEX_HI:reset_n, PIO_HEX_LO:reset_n, PIO_LED:reset_n, PIO_SPEAKER:reset_n, PIO_SWITCH:reset_n, SDRAM:reset_n, SYS_TIMER:reset_n, UART:rst_n, irq_mapper:reset, mm_interconnect_0:NIOSII_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
+	wire         rst_controller_reset_out_reset;                              // rst_controller:reset_out -> [ACCELEROMETER:reset_n, ESP32:reset_n, NIOSII:reset_n, ONCHIP:reset, PIO_BUTTON:reset_n, PIO_HEX_HI:reset_n, PIO_HEX_LO:reset_n, PIO_LED:reset_n, PIO_SPEAKER:reset_n, PIO_SWITCH:reset_n, SDRAM:reset_n, SYS_TIMER:reset_n, UART:rst_n, irq_mapper:reset, mm_interconnect_0:NIOSII_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
 	wire         rst_controller_reset_out_reset_req;                          // rst_controller:reset_req -> [NIOSII:reset_req, ONCHIP:reset_req, rst_translator:reset_req_in]
 
 	Project_ACCELEROMETER accelerometer (
@@ -131,6 +139,22 @@ module Project (
 		.MOSI          (accel_MOSI),                                                  //                 .export
 		.SCLK          (accel_SCLK),                                                  //                 .export
 		.SS_n          (accel_SS_n)                                                   //                 .export
+	);
+
+	Project_ESP32 esp32 (
+		.clk           (clk_clk),                                             //              clk.clk
+		.reset_n       (~rst_controller_reset_out_reset),                     //            reset.reset_n
+		.data_from_cpu (mm_interconnect_0_esp32_spi_control_port_writedata),  // spi_control_port.writedata
+		.data_to_cpu   (mm_interconnect_0_esp32_spi_control_port_readdata),   //                 .readdata
+		.mem_addr      (mm_interconnect_0_esp32_spi_control_port_address),    //                 .address
+		.read_n        (~mm_interconnect_0_esp32_spi_control_port_read),      //                 .read_n
+		.spi_select    (mm_interconnect_0_esp32_spi_control_port_chipselect), //                 .chipselect
+		.write_n       (~mm_interconnect_0_esp32_spi_control_port_write),     //                 .write_n
+		.irq           (irq_mapper_receiver3_irq),                            //              irq.irq
+		.MISO          (esp32_MISO),                                          //         external.export
+		.MOSI          (esp32_MOSI),                                          //                 .export
+		.SCLK          (esp32_SCLK),                                          //                 .export
+		.SS_n          (esp32_SS_n)                                           //                 .export
 	);
 
 	Project_NIOSII niosii (
@@ -179,14 +203,11 @@ module Project (
 	);
 
 	Project_PIO_BUTTON pio_button (
-		.clk        (clk_clk),                                    //                 clk.clk
-		.reset_n    (~rst_controller_reset_out_reset),            //               reset.reset_n
-		.address    (mm_interconnect_0_pio_button_s1_address),    //                  s1.address
-		.write_n    (~mm_interconnect_0_pio_button_s1_write),     //                    .write_n
-		.writedata  (mm_interconnect_0_pio_button_s1_writedata),  //                    .writedata
-		.chipselect (mm_interconnect_0_pio_button_s1_chipselect), //                    .chipselect
-		.readdata   (mm_interconnect_0_pio_button_s1_readdata),   //                    .readdata
-		.in_port    (button_export)                               // external_connection.export
+		.clk      (clk_clk),                                  //                 clk.clk
+		.reset_n  (~rst_controller_reset_out_reset),          //               reset.reset_n
+		.address  (mm_interconnect_0_pio_button_s1_address),  //                  s1.address
+		.readdata (mm_interconnect_0_pio_button_s1_readdata), //                    .readdata
+		.in_port  (button_export)                             // external_connection.export
 	);
 
 	Project_PIO_HEX_HI pio_hex_hi (
@@ -311,6 +332,12 @@ module Project (
 		.ACCELEROMETER_spi_control_port_readdata   (mm_interconnect_0_accelerometer_spi_control_port_readdata),   //                                   .readdata
 		.ACCELEROMETER_spi_control_port_writedata  (mm_interconnect_0_accelerometer_spi_control_port_writedata),  //                                   .writedata
 		.ACCELEROMETER_spi_control_port_chipselect (mm_interconnect_0_accelerometer_spi_control_port_chipselect), //                                   .chipselect
+		.ESP32_spi_control_port_address            (mm_interconnect_0_esp32_spi_control_port_address),            //             ESP32_spi_control_port.address
+		.ESP32_spi_control_port_write              (mm_interconnect_0_esp32_spi_control_port_write),              //                                   .write
+		.ESP32_spi_control_port_read               (mm_interconnect_0_esp32_spi_control_port_read),               //                                   .read
+		.ESP32_spi_control_port_readdata           (mm_interconnect_0_esp32_spi_control_port_readdata),           //                                   .readdata
+		.ESP32_spi_control_port_writedata          (mm_interconnect_0_esp32_spi_control_port_writedata),          //                                   .writedata
+		.ESP32_spi_control_port_chipselect         (mm_interconnect_0_esp32_spi_control_port_chipselect),         //                                   .chipselect
 		.NIOSII_debug_mem_slave_address            (mm_interconnect_0_niosii_debug_mem_slave_address),            //             NIOSII_debug_mem_slave.address
 		.NIOSII_debug_mem_slave_write              (mm_interconnect_0_niosii_debug_mem_slave_write),              //                                   .write
 		.NIOSII_debug_mem_slave_read               (mm_interconnect_0_niosii_debug_mem_slave_read),               //                                   .read
@@ -327,10 +354,7 @@ module Project (
 		.ONCHIP_s1_chipselect                      (mm_interconnect_0_onchip_s1_chipselect),                      //                                   .chipselect
 		.ONCHIP_s1_clken                           (mm_interconnect_0_onchip_s1_clken),                           //                                   .clken
 		.PIO_BUTTON_s1_address                     (mm_interconnect_0_pio_button_s1_address),                     //                      PIO_BUTTON_s1.address
-		.PIO_BUTTON_s1_write                       (mm_interconnect_0_pio_button_s1_write),                       //                                   .write
 		.PIO_BUTTON_s1_readdata                    (mm_interconnect_0_pio_button_s1_readdata),                    //                                   .readdata
-		.PIO_BUTTON_s1_writedata                   (mm_interconnect_0_pio_button_s1_writedata),                   //                                   .writedata
-		.PIO_BUTTON_s1_chipselect                  (mm_interconnect_0_pio_button_s1_chipselect),                  //                                   .chipselect
 		.PIO_HEX_HI_s1_address                     (mm_interconnect_0_pio_hex_hi_s1_address),                     //                      PIO_HEX_HI_s1.address
 		.PIO_HEX_HI_s1_write                       (mm_interconnect_0_pio_hex_hi_s1_write),                       //                                   .write
 		.PIO_HEX_HI_s1_readdata                    (mm_interconnect_0_pio_hex_hi_s1_readdata),                    //                                   .readdata
@@ -382,6 +406,7 @@ module Project (
 		.receiver0_irq (irq_mapper_receiver0_irq),       // receiver0.irq
 		.receiver1_irq (irq_mapper_receiver1_irq),       // receiver1.irq
 		.receiver2_irq (irq_mapper_receiver2_irq),       // receiver2.irq
+		.receiver3_irq (irq_mapper_receiver3_irq),       // receiver3.irq
 		.sender_irq    (niosii_irq_irq)                  //    sender.irq
 	);
 

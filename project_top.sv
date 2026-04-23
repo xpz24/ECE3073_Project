@@ -1,11 +1,11 @@
 `default_nettype none
 module project_top (
     input MAX10_CLK1_50,
-    input [3:0] SW,
     input [1:0] KEY,
     inout GSENSOR_SDI,
     inout GSENSOR_SDO,
     inout [15:0] DRAM_DQ,
+    inout [4:0] SW,
     output DRAM_CLK,
     output DRAM_UDQM,
     output DRAM_LDQM,
@@ -19,7 +19,7 @@ module project_top (
     output [12:0] DRAM_ADDR,
     output [1:0] DRAM_BA,
     output [2:0] LEDR,
-    output [0:0] GPIO,
+    output [4:0] GPIO,
     output [7:0] HEX0,
     HEX1,
     HEX2,
@@ -47,7 +47,11 @@ module project_top (
       .hexlo_export  ({HEX2, HEX1, HEX0}),      //   hexlo.export
       .hexhi_export  ({HEX5, HEX4, HEX3}),      //   hexhi.export
       .led_export    (LEDR),                    //     led.export
-      .speaker_export(GPIO)                     // speaker.export
+      .speaker_export(GPIO[0]),                 // speaker.export
+      .esp32_MISO    (GPIO[1]),                 //   esp32.MISO
+      .esp32_MOSI    (GPIO[2]),                 //        .MOSI
+      .esp32_SCLK    (GPIO[3]),                 //        .SCLK
+      .esp32_SS_n    (GPIO[4])                  //        .SS_n
   );
 
   PLL_DRAM pll_inst (
