@@ -1,0 +1,33 @@
+{
+    "cSpell.words": [
+        "endmodule",
+        "gpio",
+        "GSENSOR",
+        "HBACK",
+        "HCYCLE",
+        "hexhi",
+        "hexlo",
+        "HFRONT",
+        "HSYNC",
+        "inclk",
+        "inout",
+        "LDQM",
+        "LEDR",
+        "localparam",
+        "MOSI",
+        "nettype",
+        "nios",
+        "posedge",
+        "rdaddress",
+        "rdclock",
+        "SCLK",
+        "SDAT",
+        "UDQM",
+        "VBACK",
+        "VCYCLE",
+        "VFRONT",
+        "VSYNC",
+        "wraddress",
+        "wrclock"
+    ]
+}
