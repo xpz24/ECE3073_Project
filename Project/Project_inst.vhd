@@ -15,18 +15,18 @@
 			dram_dqm          : out   std_logic_vector(1 downto 0);                     -- dqm
 			dram_ras_n        : out   std_logic;                                        -- ras_n
 			dram_we_n         : out   std_logic;                                        -- we_n
-			hexhi_export      : out   std_logic_vector(23 downto 0);                    -- export
-			hexlo_export      : out   std_logic_vector(23 downto 0);                    -- export
-			led_export        : out   std_logic_vector(2 downto 0);                     -- export
-			speaker_export    : out   std_logic;                                        -- export
-			switch_export     : in    std_logic_vector(3 downto 0)  := (others => 'X'); -- export
 			esp32_MISO        : in    std_logic                     := 'X';             -- MISO
 			esp32_MOSI        : out   std_logic;                                        -- MOSI
 			esp32_SCLK        : out   std_logic;                                        -- SCLK
 			esp32_SS_n        : out   std_logic;                                        -- SS_n
+			hexhi_export      : out   std_logic_vector(23 downto 0);                    -- export
+			hexlo_export      : out   std_logic_vector(23 downto 0);                    -- export
+			led_export        : out   std_logic_vector(2 downto 0);                     -- export
 			pixel_addr_export : out   std_logic_vector(16 downto 0);                    -- export
 			pixel_data_export : out   std_logic_vector(3 downto 0);                     -- export
-			pixel_wren_export : out   std_logic                                         -- export
+			pixel_wren_export : out   std_logic;                                        -- export
+			speaker_export    : out   std_logic;                                        -- export
+			switch_export     : in    std_logic_vector(3 downto 0)  := (others => 'X')  -- export
 		);
 	end component Project;
 
@@ -47,17 +47,17 @@
 			dram_dqm          => CONNECTED_TO_dram_dqm,          --           .dqm
 			dram_ras_n        => CONNECTED_TO_dram_ras_n,        --           .ras_n
 			dram_we_n         => CONNECTED_TO_dram_we_n,         --           .we_n
-			hexhi_export      => CONNECTED_TO_hexhi_export,      --      hexhi.export
-			hexlo_export      => CONNECTED_TO_hexlo_export,      --      hexlo.export
-			led_export        => CONNECTED_TO_led_export,        --        led.export
-			speaker_export    => CONNECTED_TO_speaker_export,    --    speaker.export
-			switch_export     => CONNECTED_TO_switch_export,     --     switch.export
 			esp32_MISO        => CONNECTED_TO_esp32_MISO,        --      esp32.MISO
 			esp32_MOSI        => CONNECTED_TO_esp32_MOSI,        --           .MOSI
 			esp32_SCLK        => CONNECTED_TO_esp32_SCLK,        --           .SCLK
 			esp32_SS_n        => CONNECTED_TO_esp32_SS_n,        --           .SS_n
+			hexhi_export      => CONNECTED_TO_hexhi_export,      --      hexhi.export
+			hexlo_export      => CONNECTED_TO_hexlo_export,      --      hexlo.export
+			led_export        => CONNECTED_TO_led_export,        --        led.export
 			pixel_addr_export => CONNECTED_TO_pixel_addr_export, -- pixel_addr.export
 			pixel_data_export => CONNECTED_TO_pixel_data_export, -- pixel_data.export
-			pixel_wren_export => CONNECTED_TO_pixel_wren_export  -- pixel_wren.export
+			pixel_wren_export => CONNECTED_TO_pixel_wren_export, -- pixel_wren.export
+			speaker_export    => CONNECTED_TO_speaker_export,    --    speaker.export
+			switch_export     => CONNECTED_TO_switch_export      --     switch.export
 		);
 

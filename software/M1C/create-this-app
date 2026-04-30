@@ -3,9 +3,9 @@
 # This script creates the hello_ucosii application in this directory.
 
 
-BSP_DIR=../rtosAccel_bsp
+BSP_DIR=../M1C_bsp
 QUARTUS_PROJECT_DIR=../../
-NIOS2_APP_GEN_ARGS="--elf-name rtosAccel.elf --set OBJDUMP_INCLUDE_SOURCE 1 --src-files hello_ucosii.c"
+NIOS2_APP_GEN_ARGS="--elf-name M1C.elf --set OBJDUMP_INCLUDE_SOURCE 1 --src-files hello_ucosii.c"
 
 # If script is launched from Windows through Windows Subsystem for Linux (WSL).  
 # The adjust-path macro converts absolute windows 

@@ -8,7 +8,7 @@
 #define PIN_SCLK 8    // D8  -> GPIO8
 #define PIN_CS   20   // D7  -> GPIO20
 
-#define BUF_SIZE 300
+#define BUF_SIZE 64
 
 #define CMD_WRITE_MSG  0x01
 #define CMD_READ_REPLY 0x02
@@ -65,23 +65,9 @@ void setup() {
   }
 
   Serial.println("ESP32 SPI slave ready");
-  Serial.println("Press 'p' to print last received message.");
 }
 
 void loop() {
-  if (Serial.available()) {
-    char c = Serial.read();
-    if (c == 'p' || c == 'P') {
-      Serial.println("----- ESP32 saved received message -----");
-      if (strlen(last_received_msg) > 0) {
-        Serial.println(last_received_msg);
-      } else {
-        Serial.println("(none)");
-      }
-      Serial.println("----------------------------------------");
-    }
-  }
-
   memset(rx_buf, 0, BUF_SIZE);
 
   spi_slave_transaction_t t = {};
@@ -114,12 +100,13 @@ if (cmd == CMD_WRITE_MSG) {
   Serial.println("Received WRITE command from Nios II");
   Serial.print("Message: ");
   Serial.println(last_received_msg);
+  Serial.println("");
 
-  esp32_rx_count++;
   prepare_tx_message(esp32_rx_count);
+  esp32_rx_count++;
 
-  Serial.print("Prepared reply for next READ: ");
-  Serial.println((char*)&tx_buf[1]);
+  // Serial.print("Prepared reply for next READ: ");
+  // Serial.println((char*)&tx_buf[1]);
 
   read_armed = false;
 }

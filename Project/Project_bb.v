@@ -15,18 +15,18 @@ module Project (
 	dram_dqm,
 	dram_ras_n,
 	dram_we_n,
-	hexhi_export,
-	hexlo_export,
-	led_export,
-	speaker_export,
-	switch_export,
 	esp32_MISO,
 	esp32_MOSI,
 	esp32_SCLK,
 	esp32_SS_n,
+	hexhi_export,
+	hexlo_export,
+	led_export,
 	pixel_addr_export,
 	pixel_data_export,
-	pixel_wren_export);	
+	pixel_wren_export,
+	speaker_export,
+	switch_export);	
 
 	input		accel_MISO;
 	output		accel_MOSI;
@@ -43,16 +43,16 @@ module Project (
 	output	[1:0]	dram_dqm;
 	output		dram_ras_n;
 	output		dram_we_n;
-	output	[23:0]	hexhi_export;
-	output	[23:0]	hexlo_export;
-	output	[2:0]	led_export;
-	output		speaker_export;
-	input	[3:0]	switch_export;
 	input		esp32_MISO;
 	output		esp32_MOSI;
 	output		esp32_SCLK;
 	output		esp32_SS_n;
+	output	[23:0]	hexhi_export;
+	output	[23:0]	hexlo_export;
+	output	[2:0]	led_export;
 	output	[16:0]	pixel_addr_export;
 	output	[3:0]	pixel_data_export;
 	output		pixel_wren_export;
+	output		speaker_export;
+	input	[3:0]	switch_export;
 endmodule
