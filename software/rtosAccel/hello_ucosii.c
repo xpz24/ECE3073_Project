@@ -6,6 +6,7 @@
 #include "system.h"
 #include "esp32SPI.h"
 #include <string.h>
+//#include "vga_task.h"
 
 //#define IRQ_CONTROLLER_ID 0
 
@@ -16,24 +17,27 @@ typedef struct {
 } accl_context_t;
 
 // void accelerometer_isr(void *context, alt_u32 id); // Second param only exists for legacy API
-void task1(void *pdata); // basic uart
-void task2(void *pdata); // SPI accelerometer
+//void task1(void *pdata); // basic uart
+//void task2(void *pdata); // SPI accelerometer
 void task3(void *pdata); // Display HEX
 void task4(void *pdata); // SPI ESP32 communication
+//void task5(void *pdata); // VGA
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
-OS_STK task1_stk[TASK_STACKSIZE];
-OS_STK task2_stk[TASK_STACKSIZE];
+//OS_STK task1_stk[TASK_STACKSIZE];
+//OS_STK task2_stk[TASK_STACKSIZE];
 OS_STK task3_stk[TASK_STACKSIZE];
 OS_STK task4_stk[TASK_STACKSIZE];
+//OS_STK task5_stk[TASK_STACKSIZE];
 
 /* Definition of Task Priorities */
 
-#define TASK1_PRIORITY      1
-#define TASK2_PRIORITY      2
-#define TASK3_PRIORITY		3
-#define TASK4_PRIORITY 		4
+//#define TASK1_PRIORITY      1
+//#define TASK2_PRIORITY      2
+#define TASK3_PRIORITY		2
+#define TASK4_PRIORITY 		1
+//#define TASK5_PRIORITY 		5
 
 /* The main function creates two task and starts multi-tasking */
 int main(void) {
@@ -50,34 +54,34 @@ int main(void) {
 	printf(
 			"For the complete documentation, visit https://doc.micrium.com/display/ucos/\n\n\n");
 
-//	alt_up_accelerometer_spi_dev *accl;
-//	accl = alt_up_accelerometer_spi_open_dev(ACCELEROMETER_SPI_0_NAME);
-//	alt_up_accelerometer_spi_write(accl, 0x2E, 0x80); // Enable DATA_READY Interrupt
-//	alt_up_accelerometer_spi_write(accl, 0x2F, 0x00); // Enable INT1
+	//	alt_up_accelerometer_spi_dev *accl;
+	//	accl = alt_up_accelerometer_spi_open_dev(ACCELEROMETER_SPI_0_NAME);
+	//	alt_up_accelerometer_spi_write(accl, 0x2E, 0x80); // Enable DATA_READY Interrupt
+	//	alt_up_accelerometer_spi_write(accl, 0x2F, 0x00); // Enable INT1
 
 	// Setup IRQ
-//	accl_ctx.acclInst = accl;
+	//	accl_ctx.acclInst = accl;
 	// Enhanced API
-//	alt_ic_isr_register(IRQ_CONTROLLER_ID, ACCELEROMETER_SPI_0_IRQ,
-//			accelerometer_isr, &accl_ctx, NULL);
+	//	alt_ic_isr_register(IRQ_CONTROLLER_ID, ACCELEROMETER_SPI_0_IRQ,
+	//			accelerometer_isr, &accl_ctx, NULL);
 	// Legacy API
-//	alt_irq_register(ACCELEROMETER_SPI_0_IRQ, &accl_ctx, accelerometer_isr);
+	//	alt_irq_register(ACCELEROMETER_SPI_0_IRQ, &accl_ctx, accelerometer_isr);
 
 	accl_context_t accl_ctx;
 
-	OSTaskCreateExt(task1,
-	NULL, (void *) &task1_stk[TASK_STACKSIZE - 1],
-	TASK1_PRIORITY,
-	TASK1_PRIORITY, task1_stk,
-	TASK_STACKSIZE,
-	NULL, 0);
-
-	OSTaskCreateExt(task2, &accl_ctx, (void *) &task2_stk[TASK_STACKSIZE - 1],
-	TASK2_PRIORITY,
-	TASK2_PRIORITY, task2_stk,
-	TASK_STACKSIZE,
-	NULL, 0);
-
+//	OSTaskCreateExt(task1,
+//	NULL, (void *) &task1_stk[TASK_STACKSIZE - 1],
+//	TASK1_PRIORITY,
+//	TASK1_PRIORITY, task1_stk,
+//	TASK_STACKSIZE,
+//	NULL, 0);
+//
+//	OSTaskCreateExt(task2, &accl_ctx, (void *) &task2_stk[TASK_STACKSIZE - 1],
+//	TASK2_PRIORITY,
+//	TASK2_PRIORITY, task2_stk,
+//	TASK_STACKSIZE,
+//	NULL, 0);
+//
 	OSTaskCreateExt(task3,
 	NULL, (void *) &task3_stk[TASK_STACKSIZE - 1],
 	TASK3_PRIORITY,
@@ -86,15 +90,18 @@ int main(void) {
 	NULL, 0);
 
 	OSTaskCreateExt(task4,
-	NULL,
-	(void *)&task4_stk[TASK_STACKSIZE - 1],
+	NULL, (void *) &task4_stk[TASK_STACKSIZE - 1],
 	TASK4_PRIORITY,
-	TASK4_PRIORITY,
-	task4_stk,
+	TASK4_PRIORITY, task4_stk,
 	TASK_STACKSIZE,
-	NULL,
-	0);
+	NULL, 0);
 
+//	OSTaskCreateExt(task5,
+//	NULL, (void *) &task5_stk[TASK_STACKSIZE - 1],
+//	TASK5_PRIORITY,
+//	TASK5_PRIORITY, task5_stk,
+//	TASK_STACKSIZE,
+//	NULL, 0);
 
 	OSStart();
 	return 0;
@@ -219,61 +226,106 @@ void task3(void *pdata) {
 
 void task4(void *pdata) {
 
-    alt_u8 tx_buf[ESP32_MSG_SIZE];
-    alt_u8 rx_buf[ESP32_MSG_SIZE];
-    alt_u8 saved_msg[ESP32_MSG_SIZE];
+	alt_u8 tx_buf[ESP32_MSG_SIZE];
+	alt_u8 rx_buf[ESP32_MSG_SIZE];
+	alt_u8 saved_msg[ESP32_MSG_SIZE];
 
-    int count = 0;
+	int count = 0;
 
-    int prev_btn1 = 0;
-    int prev_btn2 = 0;
+	int prev_btn1 = 0;
+	int prev_btn2 = 0;
 
-    memset(saved_msg, 0, ESP32_MSG_SIZE);
+	memset(saved_msg, 0, ESP32_MSG_SIZE);
 
-    printf("[ESP32 SPI] Task started\n");
+	printf("[ESP32 SPI] Task started\n");
 
-    while (1) {
+	while (1) {
 
-        int buttons = IORD_ALTERA_AVALON_PIO_DATA(PIO_BUTTON_BASE);
+		int buttons = IORD_ALTERA_AVALON_PIO_DATA(PIO_BUTTON_BASE);
 
-        int btn1 = buttons & 0x1;  // Button 1
-        int btn2 = buttons & 0x2;  // Button 2
+		int btn1 = buttons & 0x1;  // Button 1
+		int btn2 = buttons & 0x2;  // Button 2
 
-        /* -------- BUTTON 1: SEND + RECEIVE -------- */
-        if (btn1 && !prev_btn1) {
+		/* -------- BUTTON 1: SEND + RECEIVE -------- */
+		if (btn1 && !prev_btn1) {
 
-            snprintf((char*)tx_buf, ESP32_MSG_SIZE,
-                     "Hello I am NIOSII count: %d", count);
+			/* STEP 1: WRITE message to ESP32 */
+			memset(tx_buf, 0, ESP32_MSG_SIZE);
+			tx_buf[0] = CMD_WRITE_MSG;
 
-            memset(rx_buf, 0, ESP32_MSG_SIZE);
+			snprintf((char *) &tx_buf[1], ESP32_MSG_SIZE - 1,
+					"Hello I am NIOSII count: %d", count);
 
-            printf("[ESP32 SPI] Sending: %s\n", tx_buf);
+			printf("[ESP32 SPI] Sending: %s\n", (char *) &tx_buf[1]);
 
-            if (esp32_spi_exchange(tx_buf, ESP32_MSG_SIZE,
-                                   rx_buf, ESP32_MSG_SIZE) == 0) {
+			if (esp32_spi_write(tx_buf, ESP32_MSG_SIZE) != 0) {
+				printf("[ESP32 SPI] WRITE message FAILED\n");
+			} else {
 
-                memcpy(saved_msg, rx_buf, ESP32_MSG_SIZE);
+				OSTimeDlyHMSM(0, 0, 0, 10);
 
-                printf("[ESP32 SPI] Received: %s\n", saved_msg);
+				/* STEP 2: SEND read command to ESP32 */
+				memset(tx_buf, 0, ESP32_MSG_SIZE);
+				tx_buf[0] = CMD_READ_REPLY;
 
-                count++;
-            } else {
-                printf("[ESP32 SPI] Exchange FAILED\n");
-            }
-        }
+				if (esp32_spi_write(tx_buf, 1) != 0) {
+					printf("[ESP32 SPI] READ command FAILED\n");
+				} else {
 
-        /* -------- BUTTON 2: PRINT STORED MESSAGE -------- */
-        if (btn2 && !prev_btn2) {
-            printf("[ESP32 SPI] Stored message:\n");
-            printf("%s\n", saved_msg);
-        }
+					OSTimeDlyHMSM(0, 0, 0, 10);
 
-        prev_btn1 = btn1;
-        prev_btn2 = btn2;
+					/* STEP 3: READ response from ESP32 */
+					memset(rx_buf, 0, ESP32_MSG_SIZE);
 
-        OSTimeDlyHMSM(0, 0, 0, 50); // debounce + CPU relief
-    }
+					if (esp32_spi_read(rx_buf, ESP32_MSG_SIZE) == 0) {
+
+						if (rx_buf[0] == CMD_READ_REPLY) {
+							memcpy(saved_msg, &rx_buf[1], ESP32_MSG_SIZE - 1);
+							saved_msg[ESP32_MSG_SIZE - 1] = '\0';
+
+							printf("[ESP32 SPI] Received: %s\n", saved_msg);
+							count++;
+						} else {
+							printf("[ESP32 SPI] Invalid reply header: 0x%02X\n",
+									rx_buf[0]);
+							printf("[ESP32 SPI] Raw data: %s\n",
+									(char *) &rx_buf[1]);
+						}
+
+					} else {
+						printf("[ESP32 SPI] READ response FAILED\n");
+					}
+				}
+			}
+		}
+
+		// BUTTON 2: PRINT STORED MESSAGE
+		if (btn2 && !prev_btn2) {
+			printf("[ESP32 SPI] Stored message:\n");
+			if (strlen((char*) saved_msg) > 0) {
+				printf("%s\n", saved_msg);
+			} else {
+				printf("(none)\n");
+			}
+		}
+
+		prev_btn1 = btn1;
+		prev_btn2 = btn2;
+
+		OSTimeDlyHMSM(0, 0, 0, 50);
+	}
 }
+
+//void task5(void *pdata) {
+//
+//	while (1) {
+//		draw_color_stripes();
+//		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
+//
+//		draw_vertical_stripes();
+//		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
+//	}
+//}
 
 //void accelerometer_isr(void *context, alt_u32 id) {
 //	accl_context_t *ctx = (accl_context_t *) context;

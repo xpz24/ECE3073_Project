@@ -23,7 +23,10 @@ module Project (
 	esp32_MISO,
 	esp32_MOSI,
 	esp32_SCLK,
-	esp32_SS_n);	
+	esp32_SS_n,
+	pixel_addr_export,
+	pixel_data_export,
+	pixel_wren_export);	
 
 	input		accel_MISO;
 	output		accel_MOSI;
@@ -49,4 +52,7 @@ module Project (
 	output		esp32_MOSI;
 	output		esp32_SCLK;
 	output		esp32_SS_n;
+	output	[16:0]	pixel_addr_export;
+	output	[3:0]	pixel_data_export;
+	output		pixel_wren_export;
 endmodule

@@ -4,30 +4,33 @@
 
 `timescale 1 ps / 1 ps
 module Project (
-		input  wire        accel_MISO,     //   accel.MISO
-		output wire        accel_MOSI,     //        .MOSI
-		output wire        accel_SCLK,     //        .SCLK
-		output wire        accel_SS_n,     //        .SS_n
-		input  wire [1:0]  button_export,  //  button.export
-		input  wire        clk_clk,        //     clk.clk
-		output wire [12:0] dram_addr,      //    dram.addr
-		output wire [1:0]  dram_ba,        //        .ba
-		output wire        dram_cas_n,     //        .cas_n
-		output wire        dram_cke,       //        .cke
-		output wire        dram_cs_n,      //        .cs_n
-		inout  wire [15:0] dram_dq,        //        .dq
-		output wire [1:0]  dram_dqm,       //        .dqm
-		output wire        dram_ras_n,     //        .ras_n
-		output wire        dram_we_n,      //        .we_n
-		input  wire        esp32_MISO,     //   esp32.MISO
-		output wire        esp32_MOSI,     //        .MOSI
-		output wire        esp32_SCLK,     //        .SCLK
-		output wire        esp32_SS_n,     //        .SS_n
-		output wire [23:0] hexhi_export,   //   hexhi.export
-		output wire [23:0] hexlo_export,   //   hexlo.export
-		output wire [2:0]  led_export,     //     led.export
-		output wire        speaker_export, // speaker.export
-		input  wire [3:0]  switch_export   //  switch.export
+		input  wire        accel_MISO,        //      accel.MISO
+		output wire        accel_MOSI,        //           .MOSI
+		output wire        accel_SCLK,        //           .SCLK
+		output wire        accel_SS_n,        //           .SS_n
+		input  wire [1:0]  button_export,     //     button.export
+		input  wire        clk_clk,           //        clk.clk
+		output wire [12:0] dram_addr,         //       dram.addr
+		output wire [1:0]  dram_ba,           //           .ba
+		output wire        dram_cas_n,        //           .cas_n
+		output wire        dram_cke,          //           .cke
+		output wire        dram_cs_n,         //           .cs_n
+		inout  wire [15:0] dram_dq,           //           .dq
+		output wire [1:0]  dram_dqm,          //           .dqm
+		output wire        dram_ras_n,        //           .ras_n
+		output wire        dram_we_n,         //           .we_n
+		input  wire        esp32_MISO,        //      esp32.MISO
+		output wire        esp32_MOSI,        //           .MOSI
+		output wire        esp32_SCLK,        //           .SCLK
+		output wire        esp32_SS_n,        //           .SS_n
+		output wire [23:0] hexhi_export,      //      hexhi.export
+		output wire [23:0] hexlo_export,      //      hexlo.export
+		output wire [2:0]  led_export,        //        led.export
+		output wire [16:0] pixel_addr_export, // pixel_addr.export
+		output wire [3:0]  pixel_data_export, // pixel_data.export
+		output wire        pixel_wren_export, // pixel_wren.export
+		output wire        speaker_export,    //    speaker.export
+		input  wire [3:0]  switch_export      //     switch.export
 	);
 
 	wire         niosii_debug_reset_request_reset;                            // NIOSII:debug_reset_request -> [rst_controller:reset_in0, rst_controller:reset_in1]
@@ -105,6 +108,21 @@ module Project (
 	wire   [1:0] mm_interconnect_0_pio_speaker_s1_address;                    // mm_interconnect_0:PIO_SPEAKER_s1_address -> PIO_SPEAKER:address
 	wire         mm_interconnect_0_pio_speaker_s1_write;                      // mm_interconnect_0:PIO_SPEAKER_s1_write -> PIO_SPEAKER:write_n
 	wire  [31:0] mm_interconnect_0_pio_speaker_s1_writedata;                  // mm_interconnect_0:PIO_SPEAKER_s1_writedata -> PIO_SPEAKER:writedata
+	wire         mm_interconnect_0_pio_pixel_addr_s1_chipselect;              // mm_interconnect_0:PIO_PIXEL_ADDR_s1_chipselect -> PIO_PIXEL_ADDR:chipselect
+	wire  [31:0] mm_interconnect_0_pio_pixel_addr_s1_readdata;                // PIO_PIXEL_ADDR:readdata -> mm_interconnect_0:PIO_PIXEL_ADDR_s1_readdata
+	wire   [1:0] mm_interconnect_0_pio_pixel_addr_s1_address;                 // mm_interconnect_0:PIO_PIXEL_ADDR_s1_address -> PIO_PIXEL_ADDR:address
+	wire         mm_interconnect_0_pio_pixel_addr_s1_write;                   // mm_interconnect_0:PIO_PIXEL_ADDR_s1_write -> PIO_PIXEL_ADDR:write_n
+	wire  [31:0] mm_interconnect_0_pio_pixel_addr_s1_writedata;               // mm_interconnect_0:PIO_PIXEL_ADDR_s1_writedata -> PIO_PIXEL_ADDR:writedata
+	wire         mm_interconnect_0_pio_pixel_data_s1_chipselect;              // mm_interconnect_0:PIO_PIXEL_DATA_s1_chipselect -> PIO_PIXEL_DATA:chipselect
+	wire  [31:0] mm_interconnect_0_pio_pixel_data_s1_readdata;                // PIO_PIXEL_DATA:readdata -> mm_interconnect_0:PIO_PIXEL_DATA_s1_readdata
+	wire   [1:0] mm_interconnect_0_pio_pixel_data_s1_address;                 // mm_interconnect_0:PIO_PIXEL_DATA_s1_address -> PIO_PIXEL_DATA:address
+	wire         mm_interconnect_0_pio_pixel_data_s1_write;                   // mm_interconnect_0:PIO_PIXEL_DATA_s1_write -> PIO_PIXEL_DATA:write_n
+	wire  [31:0] mm_interconnect_0_pio_pixel_data_s1_writedata;               // mm_interconnect_0:PIO_PIXEL_DATA_s1_writedata -> PIO_PIXEL_DATA:writedata
+	wire         mm_interconnect_0_pio_pixel_wren_s1_chipselect;              // mm_interconnect_0:PIO_PIXEL_WREN_s1_chipselect -> PIO_PIXEL_WREN:chipselect
+	wire  [31:0] mm_interconnect_0_pio_pixel_wren_s1_readdata;                // PIO_PIXEL_WREN:readdata -> mm_interconnect_0:PIO_PIXEL_WREN_s1_readdata
+	wire   [1:0] mm_interconnect_0_pio_pixel_wren_s1_address;                 // mm_interconnect_0:PIO_PIXEL_WREN_s1_address -> PIO_PIXEL_WREN:address
+	wire         mm_interconnect_0_pio_pixel_wren_s1_write;                   // mm_interconnect_0:PIO_PIXEL_WREN_s1_write -> PIO_PIXEL_WREN:write_n
+	wire  [31:0] mm_interconnect_0_pio_pixel_wren_s1_writedata;               // mm_interconnect_0:PIO_PIXEL_WREN_s1_writedata -> PIO_PIXEL_WREN:writedata
 	wire         mm_interconnect_0_accelerometer_spi_control_port_chipselect; // mm_interconnect_0:ACCELEROMETER_spi_control_port_chipselect -> ACCELEROMETER:spi_select
 	wire  [15:0] mm_interconnect_0_accelerometer_spi_control_port_readdata;   // ACCELEROMETER:data_to_cpu -> mm_interconnect_0:ACCELEROMETER_spi_control_port_readdata
 	wire   [2:0] mm_interconnect_0_accelerometer_spi_control_port_address;    // mm_interconnect_0:ACCELEROMETER_spi_control_port_address -> ACCELEROMETER:mem_addr
@@ -122,7 +140,7 @@ module Project (
 	wire         irq_mapper_receiver2_irq;                                    // SYS_TIMER:irq -> irq_mapper:receiver2_irq
 	wire         irq_mapper_receiver3_irq;                                    // ESP32:irq -> irq_mapper:receiver3_irq
 	wire  [31:0] niosii_irq_irq;                                              // irq_mapper:sender_irq -> NIOSII:irq
-	wire         rst_controller_reset_out_reset;                              // rst_controller:reset_out -> [ACCELEROMETER:reset_n, ESP32:reset_n, NIOSII:reset_n, ONCHIP:reset, PIO_BUTTON:reset_n, PIO_HEX_HI:reset_n, PIO_HEX_LO:reset_n, PIO_LED:reset_n, PIO_SPEAKER:reset_n, PIO_SWITCH:reset_n, SDRAM:reset_n, SYS_TIMER:reset_n, UART:rst_n, irq_mapper:reset, mm_interconnect_0:NIOSII_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
+	wire         rst_controller_reset_out_reset;                              // rst_controller:reset_out -> [ACCELEROMETER:reset_n, ESP32:reset_n, NIOSII:reset_n, ONCHIP:reset, PIO_BUTTON:reset_n, PIO_HEX_HI:reset_n, PIO_HEX_LO:reset_n, PIO_LED:reset_n, PIO_PIXEL_ADDR:reset_n, PIO_PIXEL_DATA:reset_n, PIO_PIXEL_WREN:reset_n, PIO_SPEAKER:reset_n, PIO_SWITCH:reset_n, SDRAM:reset_n, SYS_TIMER:reset_n, UART:rst_n, irq_mapper:reset, mm_interconnect_0:NIOSII_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
 	wire         rst_controller_reset_out_reset_req;                          // rst_controller:reset_req -> [NIOSII:reset_req, ONCHIP:reset_req, rst_translator:reset_req_in]
 
 	Project_ACCELEROMETER accelerometer (
@@ -243,7 +261,40 @@ module Project (
 		.out_port   (led_export)                               // external_connection.export
 	);
 
-	Project_PIO_SPEAKER pio_speaker (
+	Project_PIO_PIXEL_ADDR pio_pixel_addr (
+		.clk        (clk_clk),                                        //                 clk.clk
+		.reset_n    (~rst_controller_reset_out_reset),                //               reset.reset_n
+		.address    (mm_interconnect_0_pio_pixel_addr_s1_address),    //                  s1.address
+		.write_n    (~mm_interconnect_0_pio_pixel_addr_s1_write),     //                    .write_n
+		.writedata  (mm_interconnect_0_pio_pixel_addr_s1_writedata),  //                    .writedata
+		.chipselect (mm_interconnect_0_pio_pixel_addr_s1_chipselect), //                    .chipselect
+		.readdata   (mm_interconnect_0_pio_pixel_addr_s1_readdata),   //                    .readdata
+		.out_port   (pixel_addr_export)                               // external_connection.export
+	);
+
+	Project_PIO_PIXEL_DATA pio_pixel_data (
+		.clk        (clk_clk),                                        //                 clk.clk
+		.reset_n    (~rst_controller_reset_out_reset),                //               reset.reset_n
+		.address    (mm_interconnect_0_pio_pixel_data_s1_address),    //                  s1.address
+		.write_n    (~mm_interconnect_0_pio_pixel_data_s1_write),     //                    .write_n
+		.writedata  (mm_interconnect_0_pio_pixel_data_s1_writedata),  //                    .writedata
+		.chipselect (mm_interconnect_0_pio_pixel_data_s1_chipselect), //                    .chipselect
+		.readdata   (mm_interconnect_0_pio_pixel_data_s1_readdata),   //                    .readdata
+		.out_port   (pixel_data_export)                               // external_connection.export
+	);
+
+	Project_PIO_PIXEL_WREN pio_pixel_wren (
+		.clk        (clk_clk),                                        //                 clk.clk
+		.reset_n    (~rst_controller_reset_out_reset),                //               reset.reset_n
+		.address    (mm_interconnect_0_pio_pixel_wren_s1_address),    //                  s1.address
+		.write_n    (~mm_interconnect_0_pio_pixel_wren_s1_write),     //                    .write_n
+		.writedata  (mm_interconnect_0_pio_pixel_wren_s1_writedata),  //                    .writedata
+		.chipselect (mm_interconnect_0_pio_pixel_wren_s1_chipselect), //                    .chipselect
+		.readdata   (mm_interconnect_0_pio_pixel_wren_s1_readdata),   //                    .readdata
+		.out_port   (pixel_wren_export)                               // external_connection.export
+	);
+
+	Project_PIO_PIXEL_WREN pio_speaker (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_reset_out_reset),             //               reset.reset_n
 		.address    (mm_interconnect_0_pio_speaker_s1_address),    //                  s1.address
@@ -370,6 +421,21 @@ module Project (
 		.PIO_LED_s1_readdata                       (mm_interconnect_0_pio_led_s1_readdata),                       //                                   .readdata
 		.PIO_LED_s1_writedata                      (mm_interconnect_0_pio_led_s1_writedata),                      //                                   .writedata
 		.PIO_LED_s1_chipselect                     (mm_interconnect_0_pio_led_s1_chipselect),                     //                                   .chipselect
+		.PIO_PIXEL_ADDR_s1_address                 (mm_interconnect_0_pio_pixel_addr_s1_address),                 //                  PIO_PIXEL_ADDR_s1.address
+		.PIO_PIXEL_ADDR_s1_write                   (mm_interconnect_0_pio_pixel_addr_s1_write),                   //                                   .write
+		.PIO_PIXEL_ADDR_s1_readdata                (mm_interconnect_0_pio_pixel_addr_s1_readdata),                //                                   .readdata
+		.PIO_PIXEL_ADDR_s1_writedata               (mm_interconnect_0_pio_pixel_addr_s1_writedata),               //                                   .writedata
+		.PIO_PIXEL_ADDR_s1_chipselect              (mm_interconnect_0_pio_pixel_addr_s1_chipselect),              //                                   .chipselect
+		.PIO_PIXEL_DATA_s1_address                 (mm_interconnect_0_pio_pixel_data_s1_address),                 //                  PIO_PIXEL_DATA_s1.address
+		.PIO_PIXEL_DATA_s1_write                   (mm_interconnect_0_pio_pixel_data_s1_write),                   //                                   .write
+		.PIO_PIXEL_DATA_s1_readdata                (mm_interconnect_0_pio_pixel_data_s1_readdata),                //                                   .readdata
+		.PIO_PIXEL_DATA_s1_writedata               (mm_interconnect_0_pio_pixel_data_s1_writedata),               //                                   .writedata
+		.PIO_PIXEL_DATA_s1_chipselect              (mm_interconnect_0_pio_pixel_data_s1_chipselect),              //                                   .chipselect
+		.PIO_PIXEL_WREN_s1_address                 (mm_interconnect_0_pio_pixel_wren_s1_address),                 //                  PIO_PIXEL_WREN_s1.address
+		.PIO_PIXEL_WREN_s1_write                   (mm_interconnect_0_pio_pixel_wren_s1_write),                   //                                   .write
+		.PIO_PIXEL_WREN_s1_readdata                (mm_interconnect_0_pio_pixel_wren_s1_readdata),                //                                   .readdata
+		.PIO_PIXEL_WREN_s1_writedata               (mm_interconnect_0_pio_pixel_wren_s1_writedata),               //                                   .writedata
+		.PIO_PIXEL_WREN_s1_chipselect              (mm_interconnect_0_pio_pixel_wren_s1_chipselect),              //                                   .chipselect
 		.PIO_SPEAKER_s1_address                    (mm_interconnect_0_pio_speaker_s1_address),                    //                     PIO_SPEAKER_s1.address
 		.PIO_SPEAKER_s1_write                      (mm_interconnect_0_pio_speaker_s1_write),                      //                                   .write
 		.PIO_SPEAKER_s1_readdata                   (mm_interconnect_0_pio_speaker_s1_readdata),                   //                                   .readdata

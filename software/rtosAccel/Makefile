@@ -94,6 +94,7 @@ C_SRCS += hello_ucosii.c
 C_SRCS += adxl345.c
 C_SRCS += hex.c
 C_SRCS += esp32SPI.c
+C_SRCS += vga_task.c
 CXX_SRCS :=
 ASM_SRCS :=
 

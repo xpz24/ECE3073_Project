@@ -4,6 +4,9 @@
 #include "alt_types.h"
 
 #define ESP32_MSG_SIZE 64
+#define BUF_SIZE 300
+#define CMD_WRITE_MSG  0x01
+#define CMD_READ_REPLY 0x02
 
 int esp32_spi_write(const alt_u8 *tx_data, alt_u32 length);
 int esp32_spi_read(alt_u8 *rx_data, alt_u32 length);

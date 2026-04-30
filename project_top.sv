@@ -5,7 +5,8 @@ module project_top (
     inout GSENSOR_SDI,
     inout GSENSOR_SDO,
     inout [15:0] DRAM_DQ,
-    inout [4:0] SW,
+    input [3:0] SW,
+    inout [4:0] GPIO,
     output DRAM_CLK,
     output DRAM_UDQM,
     output DRAM_LDQM,
@@ -19,7 +20,6 @@ module project_top (
     output [12:0] DRAM_ADDR,
     output [1:0] DRAM_BA,
     output [2:0] LEDR,
-    output [4:0] GPIO,
     output [7:0] HEX0,
     HEX1,
     HEX2,
@@ -51,7 +51,7 @@ module project_top (
       .esp32_MISO    (GPIO[1]),                 //   esp32.MISO
       .esp32_MOSI    (GPIO[2]),                 //        .MOSI
       .esp32_SCLK    (GPIO[3]),                 //        .SCLK
-      .esp32_SS_n    (GPIO[4])                  //        .SS_n
+      .esp32_SS_n    (GPIO[4]),                 //        .SS_n
   );
 
   PLL_DRAM pll_inst (

@@ -12,8 +12,10 @@
         "MOSI",
         "nettype",
         "nios",
+        "rdaddress",
         "SCLK",
         "SDAT",
-        "UDQM"
+        "UDQM",
+        "wraddress"
     ]
 }
