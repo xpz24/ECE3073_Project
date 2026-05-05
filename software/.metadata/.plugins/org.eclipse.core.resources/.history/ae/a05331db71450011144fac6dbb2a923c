@@ -1,0 +1,121 @@
+// libraries
+#include <stdio.h>
+#include <stdint.h>
+#include "../project_M2_core1_bsp/HAL/inc/includes.h"
+#include "../project_M2_core1_bsp/system.h"
+#include "../project_M2_core1_bsp/HAL/inc/io.h"
+#include "interrupts.h"
+
+// FORWARD DECLARATION
+//extern void set_hex_message(const char* msg);
+
+// STACK AND PRIORITY
+#define SPI_TASK_PRIORITY  3
+#define SPI_TASK_STACKSIZE 2048
+
+OS_STK spi_task_stk[SPI_TASK_STACKSIZE];
+
+// PIN AND BASE ADDRESS DEFINITIONS
+volatile int* SPI_RxData   = (int*) CORE_1_SPI_BASE; // receive data
+volatile int* SPI_TxData   = (int*)(CORE_1_SPI_BASE + 4); // transmit data
+volatile int* SPI_Status   = (int*)(CORE_1_SPI_BASE + 8); // status
+volatile int* SPI_Control  = (int*)(CORE_1_SPI_BASE + 12); // control
+volatile int* SPI_SS       = (int*) CORE_1_SPI_SS_BASE; // SPI SS from GPIO
+
+// SDRAM STORAGE
+#define SDRAM_BASE SHARED_SDRAM_BASE
+#define MAX_PAYLOAD 256 // max 256 bytes per transfer
+volatile uint8_t* sdram = (volatile uint8_t*) SDRAM_BASE;
+
+// MASKING
+#define TRDY 0x40
+#define RRDY 0x80
+
+// PROTOCOL COMMANDS — must match ESP32 side
+#define CMD_TRIGGER_CAPTURE 0xA0  // FPGA tells ESP32 to capture
+#define CMD_REQUEST_DATA    0xA1
+#define CMD_ACK             0xAC
+#define CMD_READY           0xAD
+#define CMD_END             0xFF
+
+// CS LOW
+static void cs_low(void) {
+    *SPI_SS = 0x0;
+}
+
+// CS HIGH
+static void cs_high(void) {
+    *SPI_SS = 0x1;
+}
+
+static uint8_t spi_transfer(uint8_t tx) {
+    int timeout = 1000000;
+    while (!(*SPI_Status & TRDY)) {
+        if (--timeout == 0) {
+            printf("[ERROR] TRDY timeout\n");
+            return 0xEE;
+        }
+    }
+
+    *SPI_TxData = tx;
+
+    printf("[DEBUG] TX written\n");
+
+    timeout = 1000000;
+    while (!(*SPI_Status & RRDY)) {
+        if (--timeout == 0) {
+            printf("[ERROR] RRDY timeout\n");
+            return 0xEE;
+        }
+    }
+
+    printf("[DEBUG] RX ready\n");
+
+    return (uint8_t)(*SPI_RxData);
+}
+
+void simple_spi_test(void) {
+    uint8_t rx;
+
+    printf("[TEST] Starting SPI test\n");
+
+    cs_low();
+    for (volatile int d = 0; d < 5000; d++); // IMPORTANT settle time
+
+    // send ONLY ONE byte first
+    rx = spi_transfer(0xAA);
+
+    cs_high();
+
+    printf("[SPI] RX = 0x%02X\n", rx);
+}
+
+// SPI TASK
+void spi_task(void* pdata) {
+    *SPI_SS = 0x1;  // CS high initially
+    printf("[SPI] Task started.\n");
+    printf("[SPI] KEY0 = capture | KEY1 = print data\n");
+
+    while (1) {
+    	// KEY0
+		if (key_flags & (1 << 0)) {
+			key_flags &= ~(1 << 0);
+			printf("[TEST] Requesting data...\n");
+			simple_spi_test();
+		}
+        OSTimeDly(1);
+    }
+}
+
+// SPI INIT
+void spi_init(void) {
+    OSTaskCreateExt(spi_task,
+                    NULL,
+                    (void*)&spi_task_stk[SPI_TASK_STACKSIZE-1],
+                    SPI_TASK_PRIORITY,
+                    SPI_TASK_PRIORITY,
+                    spi_task_stk,
+                    SPI_TASK_STACKSIZE,
+                    NULL,
+                    0);
+}

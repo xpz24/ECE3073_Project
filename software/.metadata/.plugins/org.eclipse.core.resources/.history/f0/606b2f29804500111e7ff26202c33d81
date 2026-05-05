@@ -1,0 +1,229 @@
+// libraries
+#include <stdio.h>
+#include <stdint.h>
+#include "../project_M2_core1_bsp/HAL/inc/includes.h"
+#include "../project_M2_core1_bsp/system.h"
+#include "../project_M2_core1_bsp/HAL/inc/io.h"
+#include "interrupts.h"
+#include "altera_avalon_spi.h"
+#include "sys/alt_stdio.h"
+
+// STACK AND PRIORITY
+#define SPI_TASK_PRIORITY  3
+#define SPI_TASK_STACKSIZE 2048
+
+OS_STK spi_task_stk[SPI_TASK_STACKSIZE];
+
+// PIN AND BASE ADDRESS DEFINITIONS
+#define SPI_BASE CORE_1_SPI_BASE
+volatile uint8_t* SPI_SS = (uint8_t*) CORE_1_SPI_SS_BASE; // SPI SS from GPIO
+
+// SDRAM STORAGE
+#define SDRAM_BASE SHARED_SDRAM_BASE
+#define MAX_PAYLOAD 256
+volatile uint8_t* sdram = (volatile uint8_t*) SDRAM_BASE;
+
+// PROTOCOL COMMANDS
+#define CMD_TRIGGER_CAPTURE 0xA0
+#define CMD_REQUEST_DATA    0xA1
+#define CMD_ACK             0xAC
+#define CMD_READY           0xAD
+#define CMD_END             0xFF
+
+#define CAPTURE_BUFFER_SIZE 256
+
+static uint8_t capture_buffer[CAPTURE_BUFFER_SIZE];
+
+// CS LOW/HIGH
+static void cs_low(void) {
+    *SPI_SS = 0x0;
+}
+
+static void cs_high(void) {
+    *SPI_SS = 0x1;
+}
+
+// SPI transfer using HAL
+static uint8_t spi_transfer(uint8_t tx) {
+    uint8_t rx;
+
+    // alt_avalon_spi_command(base, slave, write_length, wdata, read_length, read_data, flags)
+    if (alt_avalon_spi_command(SPI_BASE, 0, 1, &tx, 1, &rx, 0) != 0) {
+        printf("[ERROR] SPI transfer failed\n");
+        return 0xEE;
+    }
+
+    return rx;
+}
+
+// Send command and wait for response
+static uint8_t send_command(uint8_t cmd, uint8_t expected_response) {
+    uint8_t response;
+
+    cs_low();
+    for (volatile int d = 0; d < 100; d++);
+    response = spi_transfer(cmd);
+    cs_high();
+
+    if (response != expected_response) {
+        printf("[SPI] Command 0x%02X failed. Got 0x%02X, expected 0x%02X\n",
+               cmd, response, expected_response);
+        return 0;
+    }
+    return 1;
+}
+
+// Request captured data from ESP32
+static void request_capture_data(void) {
+    uint8_t response;
+    uint16_t data_length;
+    uint16_t i;
+
+    printf("\n========== CAPTURE DATA REQUEST ==========\n");
+    printf("[SPI] Requesting capture data from ESP32...\n");
+
+    // Step 1: Send TRIGGER CAPTURE command
+    if (!send_command(CMD_TRIGGER_CAPTURE, CMD_ACK)) {
+        printf("[SPI] Trigger capture failed\n");
+        printf("==========================================\n");
+        return;
+    }
+    printf("[SPI] ESP32 acknowledged capture trigger\n");
+
+    // Small delay for ESP32 to capture
+    OSTimeDly(10);
+
+    // Step 2: Request the captured data
+    printf("[SPI] Requesting data...\n");
+    cs_low();
+    for (volatile int d = 0; d < 100; d++);
+    spi_transfer(CMD_REQUEST_DATA);
+
+    // Step 3: Read data length (2 bytes, little-endian)
+    uint8_t len_low = spi_transfer(0x00);
+    uint8_t len_high = spi_transfer(0x00);
+    data_length = (len_high << 8) | len_low;
+    printf("[SPI] Data length: %d bytes\n", data_length);
+
+    if (data_length > 0 && data_length <= CAPTURE_BUFFER_SIZE) {
+        printf("[SPI] Receiving %d bytes...\n", data_length);
+        printf("[SPI] Data: ");
+
+        // Read the actual data
+        for (i = 0; i < data_length && i < 32; i++) {
+            capture_buffer[i] = spi_transfer(0x00);
+            printf("%02X ", capture_buffer[i]);
+        }
+        if (data_length > 32) printf("...");
+        printf("\n");
+
+        // Read end marker
+        uint8_t end = spi_transfer(0x00);
+        cs_high();
+
+        if (end == CMD_END) {
+            printf("[SPI] Successfully received %d bytes\n", data_length);
+
+            // Store to SDRAM
+            for (i = 0; i < data_length; i++) {
+                sdram[i] = capture_buffer[i];
+            }
+            printf("[SPI] Data saved to SDRAM\n");
+        } else {
+            printf("[SPI] Expected END marker, got 0x%02X\n", end);
+        }
+    } else {
+        cs_high();
+        printf("[SPI] Invalid data length: %d\n", data_length);
+    }
+    printf("==========================================\n");
+}
+
+// Test communication
+static void test_communication(void) {
+    uint8_t test_values[] = {0x55, 0xAA, 0xA0, 0xAC};
+    int success = 0;
+
+    printf("\n========== SPI TEST ==========\n");
+
+    for (int i = 0; i < 4; i++) {
+        cs_low();
+        for (volatile int d = 0; d < 100; d++);
+        uint8_t response = spi_transfer(test_values[i]);
+        cs_high();
+
+        printf("Sent: 0x%02X, Received: 0x%02X", test_values[i], response);
+        if (response == test_values[i]) {
+            printf(" [OK]\n");
+            success++;
+        } else {
+            printf(" [FAIL]\n");
+        }
+        OSTimeDly(10);
+    }
+
+    printf("\nResult: %d/4 successful\n", success);
+    if (success == 4) {
+        printf("Communication is WORKING\n");
+    } else {
+        printf("Communication failed\n");
+    }
+    printf("==============================\n");
+}
+
+// SPI TASK
+void spi_task(void* pdata) {
+    *SPI_SS = 0x1;
+
+    printf("\n========================================\n");
+    printf("ESP32 SPI COMMUNICATION TEST\n");
+    printf("========================================\n");
+    printf("KEY0 - Test communication\n");
+    printf("KEY1 - Request capture data\n");
+    printf("========================================\n\n");
+
+    printf("Ready for commands...\n\n");
+
+    while (1) {
+        // KEY0 - Test communication
+        if (key_flags & (1 << 0)) {
+            key_flags &= ~(1 << 0);
+            test_communication();
+        }
+
+        // KEY1 - Request capture data
+        if (key_flags & (1 << 1)) {
+            key_flags &= ~(1 << 1);
+            request_capture_data();
+        }
+
+        OSTimeDly(1);
+    }
+}
+
+// SPI initialization using HAL
+void spi_init_hardware(void) {
+    printf("[SPI] Initializing Avalon SPI using HAL...\n");
+
+    // Do a dummy transfer to initialize the SPI controller
+    uint8_t test_byte = 0x00;
+    uint8_t dummy;
+
+    alt_avalon_spi_command(SPI_BASE, 0, 1, &test_byte, 1, &dummy, 0);
+
+    printf("[SPI] SPI Ready\n");
+}
+
+// SPI INIT
+void spi_init(void) {
+    spi_init_hardware();
+    OSTaskCreateExt(spi_task,
+                    NULL,
+                    (void*)&spi_task_stk[SPI_TASK_STACKSIZE-1],
+                    SPI_TASK_PRIORITY,
+                    SPI_TASK_PRIORITY,
+                    spi_task_stk,
+                    SPI_TASK_STACKSIZE,
+                    NULL,
+                    0);
+}

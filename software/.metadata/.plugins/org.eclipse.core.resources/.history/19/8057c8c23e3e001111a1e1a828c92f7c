@@ -1,0 +1,19 @@
+// libraries
+#include "../project_M2_bsp/system.h"
+#include "../project_M2_bsp/HAL/inc/alt_types.h"
+#include "../project_M2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+
+#define SPEAKER_BASE 0x04009050
+
+void beep(int freq_hz, int duration_ms) {
+    // assumes 50MHz NIOS clock
+    int half_period = (50000000 / freq_hz) / 2 / 10;
+    int iterations  = (freq_hz * duration_ms) / 1000;
+
+    for (int i = 0; i < iterations; i++) {
+        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 1);
+        for (volatile int j = 0; j < half_period; j++);
+        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
+        for (volatile int j = 0; j < half_period; j++);
+    }
+}

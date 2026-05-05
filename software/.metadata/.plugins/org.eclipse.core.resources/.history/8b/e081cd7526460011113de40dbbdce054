@@ -1,0 +1,20 @@
+// libraries
+#include <stdio.h>
+#include "../project_M2_core2_bsp/system.h"
+#include "../project_M2_core2_bsp/HAL/inc/alt_types.h"
+#include "../project_M2_core2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../project_M2_core2_bsp/HAL/inc/io.h"
+#include "../project_M2_core2_bsp/HAL/inc/includes.h"
+
+// forward declarations
+void vga_init(void);
+
+// main polling loop
+int main(void) {
+	OSInit();
+	printf("Hello from CPU1\n");
+
+	vga_init();
+
+	OSStart();
+}

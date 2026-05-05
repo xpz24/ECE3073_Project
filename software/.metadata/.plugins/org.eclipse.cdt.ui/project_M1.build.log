@@ -1,0 +1,13 @@
+00:11:18 **** Incremental Build of configuration Nios II for project project_M1 ****
+make all 
+Info: Building ../project_M1_bsp/
+C:/intelFPGA_lite/18.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/make --no-print-directory -C ../project_M1_bsp/
+[BSP build complete]
+Info: Compiling spi_loopback.c to obj/default/spi_loopback.o
+nios2-elf-gcc -xc -MP -MMD -c -I../project_M1_bsp//HAL/inc -I../project_M1_bsp/ -I../project_M1_bsp//drivers/inc  -pipe -D__hal__ -DALT_NO_INSTRUCTION_EMULATION -DALT_SINGLE_THREADED    -O0 -g -Wall   -mno-hw-div -mno-hw-mul -mno-hw-mulx -mgpopt=global  -o obj/default/spi_loopback.o spi_loopback.c
+spi_loopback.c:2:22: fatal error: includes.h: No such file or directory
+compilation terminated.
+make: *** [obj/default/spi_loopback.o] Error 1
+
+00:11:18 Build Finished (took 594ms)
+

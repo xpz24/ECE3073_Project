@@ -1,0 +1,33 @@
+// libraries
+#include <stdio.h>
+#include "../project_M2_core1_bsp/system.h"
+#include "../project_M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+
+// base addresses
+#define KEY_BASE CORE_1_KEY_BASE
+#define SW_BASE CORE_1_SW_BASE
+#define TX_BASE CORE_1_TX_BASE
+#define RX_BASE CORE_1_RX_BASE
+
+// key interrupts
+static void key1_irq_handler(void* context, alt_u32 id)
+{
+    // clear edge capture for KEY1 PIO
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY1_BASE, 0);
+
+    ready_flag = 1;
+
+    // tell CPU0: "I am ready"
+    IOWR_ALTERA_AVALON_PIO_DATA(TX_BASE, 1);
+    for (volatile int i = 0; i < 10000; i++);
+    IOWR_ALTERA_AVALON_PIO_DATA(TX_BASE, 0);
+}
+
+void init_key1_irq()
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY1_BASE, 0);
+
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(KEY1_BASE, 0x1);
+
+    alt_irq_register(KEY1_PIO_IRQ, NULL, key1_irq_handler);
+}

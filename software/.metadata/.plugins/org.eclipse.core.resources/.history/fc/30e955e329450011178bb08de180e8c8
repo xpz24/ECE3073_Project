@@ -1,0 +1,10 @@
+#ifndef INTERRUPTS_H
+#define INTERRUPTS_H
+
+#include <stdint.h>
+
+extern volatile int key_flags;
+
+void init_key_irq(void);
+
+#endif
