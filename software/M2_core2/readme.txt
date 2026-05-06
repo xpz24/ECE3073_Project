@@ -1,11 +1,9 @@
-Readme - Hello MicroC/OS-II Hello Software Example
+Readme - Custom NIOS II CPU architecture core 2
 
-Hello_uosii is a simple hello world program running MicroC/OS-II.  The
-purpose of the design is to be a very simple application that just
-demonstrates MicroC/OS-II running on NIOS II.  The design doesn't account
-for issues such as checking system call return codes. etc.
+This core handles VGA display with emergency halt function implemented.
+This core will clear the screen when KEY[0] is pressed and display an image
+stored in shared SDRAM when KEY[1] is pressed. When the device is flipped, the
+system will enter an emergency state, and an emergency stop image will be displayed.
 
-The MicroC/OS-II RTOS is not open-source software and can be used free of charge 
-for non-commercial purposes and academic projects only. 
-Use of the code is subject to the terms of an end-user license agreement, 
-please see the license files included in the BSP project.
+All images used in this CPU are saved in the shared SDRAM and will be read from
+the SDRAM when needed.

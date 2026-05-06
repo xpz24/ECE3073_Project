@@ -1,11 +1,11 @@
-Readme - Hello MicroC/OS-II Hello Software Example
+Readme - Custom NIOS II CPU architecture core 1
 
-Hello_uosii is a simple hello world program running MicroC/OS-II.  The
-purpose of the design is to be a very simple application that just
-demonstrates MicroC/OS-II running on NIOS II.  The design doesn't account
-for issues such as checking system call return codes. etc.
+This core handles all SPI communication with the external microcontroller
+board ESP32. The buttons are also apart of this core as it will be used
+to control the external camera and decide when to capture the picture,
+and when to display the image. When each key is pressed, it will notify
+the other cores and raise a flag across the other 2 cores for their own
+functionalities.
 
-The MicroC/OS-II RTOS is not open-source software and can be used free of charge 
-for non-commercial purposes and academic projects only. 
-Use of the code is subject to the terms of an end-user license agreement, 
-please see the license files included in the BSP project.
+- KEY[0] will determine when to capture the external data
+- KEY[1] will determine when to display the captured data or an image.
