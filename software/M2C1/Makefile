@@ -87,13 +87,10 @@ ACDS_VERSION := 23.1
 # Define path to the application ELF. 
 # It may be used by the makefile fragments so is defined before including them. 
 # 
-ELF := M1C.elf
+ELF := M2C1.elf
 
 # Paths to C, C++, and assembly source files.
-C_SRCS += hello_ucosii.c
-C_SRCS += adxl345.c
-C_SRCS += esp32SPI.c
-C_SRCS += hex.c
+C_SRCS += hello_world_small.c
 C_SRCS += vga_controller.c
 CXX_SRCS :=
 ASM_SRCS :=
@@ -114,7 +111,7 @@ CREATE_LINKER_MAP := 1
 # Common arguments for ALT_CFLAGSs
 APP_CFLAGS_DEFINED_SYMBOLS :=
 APP_CFLAGS_UNDEFINED_SYMBOLS :=
-APP_CFLAGS_OPTIMIZATION := -O0
+APP_CFLAGS_OPTIMIZATION := -Os
 APP_CFLAGS_DEBUG_LEVEL := -g
 APP_CFLAGS_WARNINGS := -Wall
 APP_CFLAGS_USER_FLAGS :=
@@ -129,10 +126,10 @@ CRT0 :=
 SYS_LIB :=
 
 # Define path to the root of the BSP.
-BSP_ROOT_DIR := ../M1C_bsp/
+BSP_ROOT_DIR := ../M2C1_bsp/
 
 # List of application specific include directories, library directories and library names
-APP_INCLUDE_DIRS :=
+APP_INCLUDE_DIRS := ../../project_eclipse/Shared
 APP_LIBRARY_DIRS :=
 APP_LIBRARY_NAMES :=
 

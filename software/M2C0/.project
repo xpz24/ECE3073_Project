@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>M1C</name>
+	<name>M2C0</name>
 	<comment></comment>
 	<projects>
+		<project>M2C0_bsp</project>
+		<project>Shared</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

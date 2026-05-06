@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "custom_defs.h"
 #include "includes.h"
 #include "adxl345.h"
 #include "hex.h"
@@ -6,40 +7,29 @@
 #include "system.h"
 #include "esp32SPI.h"
 #include <string.h>
-//#include "vga_task.h"
+#include "vga_controller.h"
 
-//#define IRQ_CONTROLLER_ID 0
-
-typedef struct {
-	alt_16 x;
-	alt_16 y;
-	alt_16 z;
-} accl_context_t;
-
-// void accelerometer_isr(void *context, alt_u32 id); // Second param only exists for legacy API
-//void task1(void *pdata); // basic uart
-//void task2(void *pdata); // SPI accelerometer
+void task1(void *pdata); // basic uart
+void task2(void *pdata); // SPI accelerometer
 void task3(void *pdata); // Display HEX
 void task4(void *pdata); // SPI ESP32 communication
-//void task5(void *pdata); // VGA
+void task5(void *pdata); // VGA
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
-//OS_STK task1_stk[TASK_STACKSIZE];
-//OS_STK task2_stk[TASK_STACKSIZE];
+OS_STK task1_stk[TASK_STACKSIZE];
+OS_STK task2_stk[TASK_STACKSIZE];
 OS_STK task3_stk[TASK_STACKSIZE];
 OS_STK task4_stk[TASK_STACKSIZE];
-//OS_STK task5_stk[TASK_STACKSIZE];
+OS_STK task5_stk[TASK_STACKSIZE];
 
 /* Definition of Task Priorities */
+#define TASK1_PRIORITY      1
+#define TASK2_PRIORITY      2
+#define TASK3_PRIORITY		3
+#define TASK4_PRIORITY 		4
+#define TASK5_PRIORITY 		5
 
-//#define TASK1_PRIORITY      1
-//#define TASK2_PRIORITY      2
-#define TASK3_PRIORITY		2
-#define TASK4_PRIORITY 		1
-//#define TASK5_PRIORITY 		5
-
-/* The main function creates two task and starts multi-tasking */
 int main(void) {
 
 	printf("MicroC/OS-II Licensing Terms\n");
@@ -54,34 +44,30 @@ int main(void) {
 	printf(
 			"For the complete documentation, visit https://doc.micrium.com/display/ucos/\n\n\n");
 
-	//	alt_up_accelerometer_spi_dev *accl;
-	//	accl = alt_up_accelerometer_spi_open_dev(ACCELEROMETER_SPI_0_NAME);
-	//	alt_up_accelerometer_spi_write(accl, 0x2E, 0x80); // Enable DATA_READY Interrupt
-	//	alt_up_accelerometer_spi_write(accl, 0x2F, 0x00); // Enable INT1
 
-	// Setup IRQ
-	//	accl_ctx.acclInst = accl;
-	// Enhanced API
-	//	alt_ic_isr_register(IRQ_CONTROLLER_ID, ACCELEROMETER_SPI_0_IRQ,
-	//			accelerometer_isr, &accl_ctx, NULL);
-	// Legacy API
-	//	alt_irq_register(ACCELEROMETER_SPI_0_IRQ, &accl_ctx, accelerometer_isr);
 
-	accl_context_t accl_ctx;
+	OSTaskCreateExt(task1,
+	NULL, (void *) &task1_stk[TASK_STACKSIZE - 1],
+	TASK1_PRIORITY,
+	TASK1_PRIORITY, task1_stk,
+	TASK_STACKSIZE,
+	NULL, 0);
 
-//	OSTaskCreateExt(task1,
-//	NULL, (void *) &task1_stk[TASK_STACKSIZE - 1],
-//	TASK1_PRIORITY,
-//	TASK1_PRIORITY, task1_stk,
-//	TASK_STACKSIZE,
-//	NULL, 0);
-//
-//	OSTaskCreateExt(task2, &accl_ctx, (void *) &task2_stk[TASK_STACKSIZE - 1],
-//	TASK2_PRIORITY,
-//	TASK2_PRIORITY, task2_stk,
-//	TASK_STACKSIZE,
-//	NULL, 0);
-//
+	OSStart();
+	return 0;
+}
+
+/* STARTUP TASK Prints "Hello World" and sleeps for three seconds */
+void task1(void* pdata) {
+	OSStatInit();
+	static accl_context_t accl_ctx;
+
+	OSTaskCreateExt(task2, &accl_ctx, (void *) &task2_stk[TASK_STACKSIZE - 1],
+	TASK2_PRIORITY,
+	TASK2_PRIORITY, task2_stk,
+	TASK_STACKSIZE,
+	NULL, 0);
+
 	OSTaskCreateExt(task3,
 	NULL, (void *) &task3_stk[TASK_STACKSIZE - 1],
 	TASK3_PRIORITY,
@@ -96,20 +82,12 @@ int main(void) {
 	TASK_STACKSIZE,
 	NULL, 0);
 
-//	OSTaskCreateExt(task5,
-//	NULL, (void *) &task5_stk[TASK_STACKSIZE - 1],
-//	TASK5_PRIORITY,
-//	TASK5_PRIORITY, task5_stk,
-//	TASK_STACKSIZE,
-//	NULL, 0);
-
-	OSStart();
-	return 0;
-}
-
-/* Prints "Hello World" and sleeps for three seconds */
-void task1(void* pdata) {
-	OSStatInit();
+	OSTaskCreateExt(task5,
+	NULL, (void *) &task5_stk[TASK_STACKSIZE - 1],
+	TASK5_PRIORITY,
+	TASK5_PRIORITY, task5_stk,
+	TASK_STACKSIZE,
+	NULL, 0);
 	while (1) {
 		printf("Hello from task1, every 3 seconds\n");
 		OSTimeDlyHMSM(0, 0, 3, 0);
@@ -232,8 +210,8 @@ void task4(void *pdata) {
 
 	int count = 0;
 
+	int prev_btn0 = 0;
 	int prev_btn1 = 0;
-	int prev_btn2 = 0;
 
 	memset(saved_msg, 0, ESP32_MSG_SIZE);
 
@@ -243,13 +221,13 @@ void task4(void *pdata) {
 
 		int buttons = IORD_ALTERA_AVALON_PIO_DATA(PIO_BUTTON_BASE);
 
-		int btn1 = buttons & 0x1;  // Button 1
-		int btn2 = buttons & 0x2;  // Button 2
+		int btn0 = buttons & 0x1;  // Key 0
+		int btn1 = buttons & 0x2;  // Key 1
 
-		/* -------- BUTTON 1: SEND + RECEIVE -------- */
-		if (btn1 && !prev_btn1) {
+		// BUTTON 1: SEND + RECEIVE
+		if (btn0 && !prev_btn0) {
 
-			/* STEP 1: WRITE message to ESP32 */
+			// WRITE message to ESP32
 			memset(tx_buf, 0, ESP32_MSG_SIZE);
 			tx_buf[0] = CMD_WRITE_MSG;
 
@@ -264,7 +242,7 @@ void task4(void *pdata) {
 
 				OSTimeDlyHMSM(0, 0, 0, 10);
 
-				/* STEP 2: SEND read command to ESP32 */
+				// SEND read command to ESP32
 				memset(tx_buf, 0, ESP32_MSG_SIZE);
 				tx_buf[0] = CMD_READ_REPLY;
 
@@ -274,7 +252,7 @@ void task4(void *pdata) {
 
 					OSTimeDlyHMSM(0, 0, 0, 10);
 
-					/* STEP 3: READ response from ESP32 */
+					// READ response from ESP32
 					memset(rx_buf, 0, ESP32_MSG_SIZE);
 
 					if (esp32_spi_read(rx_buf, ESP32_MSG_SIZE) == 0) {
@@ -299,8 +277,8 @@ void task4(void *pdata) {
 			}
 		}
 
-		// BUTTON 2: PRINT STORED MESSAGE
-		if (btn2 && !prev_btn2) {
+		// BUTTON 1: PRINT STORED MESSAGE
+		if (btn1 && !prev_btn1) {
 			printf("[ESP32 SPI] Stored message:\n");
 			if (strlen((char*) saved_msg) > 0) {
 				printf("%s\n", saved_msg);
@@ -309,23 +287,23 @@ void task4(void *pdata) {
 			}
 		}
 
+		prev_btn0 = btn0;
 		prev_btn1 = btn1;
-		prev_btn2 = btn2;
 
 		OSTimeDlyHMSM(0, 0, 0, 50);
 	}
 }
 
-//void task5(void *pdata) {
-//
-//	while (1) {
-//		draw_color_stripes();
-//		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
-//
-//		draw_vertical_stripes();
-//		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
-//	}
-//}
+void task5(void *pdata) {
+
+	while (1) {
+		draw_color_stripes();
+		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
+
+		draw_vertical_stripes();
+		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
+	}
+}
 
 //void accelerometer_isr(void *context, alt_u32 id) {
 //	accl_context_t *ctx = (accl_context_t *) context;

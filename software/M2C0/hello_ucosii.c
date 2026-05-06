@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "custom_defs.h"
+#include "shared_defs.h"
 #include "includes.h"
 #include "adxl345.h"
 #include "hex.h"
@@ -7,13 +7,14 @@
 #include "system.h"
 #include "esp32SPI.h"
 #include <string.h>
-#include "vga_controller.h"
+#include "custom_defs.h"
+//#include "vga_controller.h"
 
 void task1(void *pdata); // basic uart
 void task2(void *pdata); // SPI accelerometer
 void task3(void *pdata); // Display HEX
 void task4(void *pdata); // SPI ESP32 communication
-void task5(void *pdata); // VGA
+//void task5(void *pdata); // VGA
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
@@ -21,14 +22,14 @@ OS_STK task1_stk[TASK_STACKSIZE];
 OS_STK task2_stk[TASK_STACKSIZE];
 OS_STK task3_stk[TASK_STACKSIZE];
 OS_STK task4_stk[TASK_STACKSIZE];
-OS_STK task5_stk[TASK_STACKSIZE];
+//OS_STK task5_stk[TASK_STACKSIZE];
 
 /* Definition of Task Priorities */
 #define TASK1_PRIORITY      1
 #define TASK2_PRIORITY      2
 #define TASK3_PRIORITY		3
 #define TASK4_PRIORITY 		4
-#define TASK5_PRIORITY 		5
+//#define TASK5_PRIORITY 		5
 
 int main(void) {
 
@@ -43,8 +44,6 @@ int main(void) {
 			"for more information please see the license files included in the BSP project or contact Micrium.\n");
 	printf(
 			"For the complete documentation, visit https://doc.micrium.com/display/ucos/\n\n\n");
-
-
 
 	OSTaskCreateExt(task1,
 	NULL, (void *) &task1_stk[TASK_STACKSIZE - 1],
@@ -61,6 +60,9 @@ int main(void) {
 void task1(void* pdata) {
 	OSStatInit();
 	static accl_context_t accl_ctx;
+
+	init_frame_mutex();
+	init_esp32_ready_irq();
 
 	OSTaskCreateExt(task2, &accl_ctx, (void *) &task2_stk[TASK_STACKSIZE - 1],
 	TASK2_PRIORITY,
@@ -82,12 +84,12 @@ void task1(void* pdata) {
 	TASK_STACKSIZE,
 	NULL, 0);
 
-	OSTaskCreateExt(task5,
-	NULL, (void *) &task5_stk[TASK_STACKSIZE - 1],
-	TASK5_PRIORITY,
-	TASK5_PRIORITY, task5_stk,
-	TASK_STACKSIZE,
-	NULL, 0);
+//	OSTaskCreateExt(task5,
+//	NULL, (void *) &task5_stk[TASK_STACKSIZE - 1],
+//	TASK5_PRIORITY,
+//	TASK5_PRIORITY, task5_stk,
+//	TASK_STACKSIZE,
+//	NULL, 0);
 	while (1) {
 		printf("Hello from task1, every 3 seconds\n");
 		OSTimeDlyHMSM(0, 0, 3, 0);
@@ -128,7 +130,7 @@ void task3(void *pdata) {
 	process_string(stringToDisplay, processed, &processed_len);
 
 	int speaker = 0;
-	int speed = 300;
+	int speed = 3;
 	int scroll_pos = 0;
 	int scroll_counter = 0;
 	int total = processed_len + DISPLAY_WIDTH;
@@ -198,112 +200,73 @@ void task3(void *pdata) {
 			IOWR_ALTERA_AVALON_PIO_DATA(PIO_SPEAKER_BASE, 0);
 		}
 
-		OSTimeDlyHMSM(0, 0, 0, 1);
+		OSTimeDlyHMSM(0, 0, 0, 100);
 	}
 }
 
 void task4(void *pdata) {
+	volatile alt_u8 *shared_fb = (volatile alt_u8 *) SHARED_FB_BASE_ADDR;
 
-	alt_u8 tx_buf[ESP32_MSG_SIZE];
-	alt_u8 rx_buf[ESP32_MSG_SIZE];
-	alt_u8 saved_msg[ESP32_MSG_SIZE];
-
-	int count = 0;
-
-	int prev_btn0 = 0;
-	int prev_btn1 = 0;
-
-	memset(saved_msg, 0, ESP32_MSG_SIZE);
-
-	printf("[ESP32 SPI] Task started\n");
+	printf("[ESP32 SPI] Framebuffer RX task started\n");
+	printf("[ESP32 SPI] Shared FB base: 0x%08X\n", (unsigned int) shared_fb);
+	printf("[ESP32 SPI] Frame size: %d bytes\n", ESP32_FB_SIZE);
+	// Start with flag cleared
+	IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 0);
 
 	while (1) {
+//    	int ready = IORD_ALTERA_AVALON_PIO_DATA(PIO_SPI_READY_BASE) & 0x1;
+//
+//    	if (!ready) {
+//    	    printf("[ESP32 SPI] READY polled high\n");
+//    	    esp32_frame_ready = 1;
+//    	}
+//    	else {
+//    		esp32_frame_ready = 0;
+//    		printf("LOWLOWLOW\n");
+//    	}
+//    	static alt_u8 test_rx_buf[ESP32_FB_SIZE];
 
-		int buttons = IORD_ALTERA_AVALON_PIO_DATA(PIO_BUTTON_BASE);
+		if (esp32_frame_ready) {
+			printf("[ESP32 SPI] ESP32 ready, reading framebuffer...\n");
 
-		int btn0 = buttons & 0x1;  // Key 0
-		int btn1 = buttons & 0x2;  // Key 1
+			esp32_frame_ready = 0;
 
-		// BUTTON 1: SEND + RECEIVE
-		if (btn0 && !prev_btn0) {
+			if (frame_mutex != NULL) {
+				altera_avalon_mutex_lock(frame_mutex, FRAME_SPI_OWNER_ID);
+			}
 
-			// WRITE message to ESP32
-			memset(tx_buf, 0, ESP32_MSG_SIZE);
-			tx_buf[0] = CMD_WRITE_MSG;
+			int rc = esp32_spi_read_framebuffer((alt_u8 *) shared_fb);
+//             int rc = esp32_spi_read_framebuffer(test_rx_buf);
 
-			snprintf((char *) &tx_buf[1], ESP32_MSG_SIZE - 1,
-					"Hello I am NIOSII count: %d", count);
+			if (frame_mutex != NULL) {
+				altera_avalon_mutex_unlock(frame_mutex);
+			}
 
-			printf("[ESP32 SPI] Sending: %s\n", (char *) &tx_buf[1]);
+			if (rc == 0) {
+				printf("[ESP32 SPI] Framebuffer copied to SDRAM\n");
+				IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 1);
 
-			if (esp32_spi_write(tx_buf, ESP32_MSG_SIZE) != 0) {
-				printf("[ESP32 SPI] WRITE message FAILED\n");
 			} else {
+				printf("[ESP32 SPI] Framebuffer read FAILED\n");
+				IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 0);
 
-				OSTimeDlyHMSM(0, 0, 0, 10);
-
-				// SEND read command to ESP32
-				memset(tx_buf, 0, ESP32_MSG_SIZE);
-				tx_buf[0] = CMD_READ_REPLY;
-
-				if (esp32_spi_write(tx_buf, 1) != 0) {
-					printf("[ESP32 SPI] READ command FAILED\n");
-				} else {
-
-					OSTimeDlyHMSM(0, 0, 0, 10);
-
-					// READ response from ESP32
-					memset(rx_buf, 0, ESP32_MSG_SIZE);
-
-					if (esp32_spi_read(rx_buf, ESP32_MSG_SIZE) == 0) {
-
-						if (rx_buf[0] == CMD_READ_REPLY) {
-							memcpy(saved_msg, &rx_buf[1], ESP32_MSG_SIZE - 1);
-							saved_msg[ESP32_MSG_SIZE - 1] = '\0';
-
-							printf("[ESP32 SPI] Received: %s\n", saved_msg);
-							count++;
-						} else {
-							printf("[ESP32 SPI] Invalid reply header: 0x%02X\n",
-									rx_buf[0]);
-							printf("[ESP32 SPI] Raw data: %s\n",
-									(char *) &rx_buf[1]);
-						}
-
-					} else {
-						printf("[ESP32 SPI] READ response FAILED\n");
-					}
-				}
 			}
 		}
 
-		// BUTTON 1: PRINT STORED MESSAGE
-		if (btn1 && !prev_btn1) {
-			printf("[ESP32 SPI] Stored message:\n");
-			if (strlen((char*) saved_msg) > 0) {
-				printf("%s\n", saved_msg);
-			} else {
-				printf("(none)\n");
-			}
-		}
-
-		prev_btn0 = btn0;
-		prev_btn1 = btn1;
-
-		OSTimeDlyHMSM(0, 0, 0, 50);
+		OSTimeDlyHMSM(0, 0, 0, 1);
 	}
 }
 
-void task5(void *pdata) {
-
-	while (1) {
-		draw_color_stripes();
-		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
-
-		draw_vertical_stripes();
-		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
-	}
-}
+//void task5(void *pdata) {
+//
+//	while (1) {
+//		draw_color_stripes();
+//		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
+//
+//		draw_vertical_stripes();
+//		OSTimeDlyHMSM(0, 0, 1, 0);   // show for 1 sec
+//	}
+//}
 
 //void accelerometer_isr(void *context, alt_u32 id) {
 //	accl_context_t *ctx = (accl_context_t *) context;
