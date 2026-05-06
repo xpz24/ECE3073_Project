@@ -3,14 +3,15 @@
 #include <stdio.h>
 #include "driver/spi_slave.h"
 
-#define PIN_MOSI 10   // D10 -> GPIO10
-#define PIN_MISO 9    // D9  -> GPIO9
-#define PIN_SCLK 8    // D8  -> GPIO8
-#define PIN_CS   20   // D7  -> GPIO20
+#define PIN_MOSI 10  // D10 -> GPIO10
+#define PIN_MISO 9   // D9  -> GPIO9
+#define PIN_SCLK 8   // D8  -> GPIO8
+#define PIN_CS 2    // D0  -> GPIO02
+#define PIN_READY 3 // D1 -> GPIO01
 
-#define BUF_SIZE 64
+#define BUF_SIZE 38400
 
-#define CMD_WRITE_MSG  0x01
+#define CMD_WRITE_MSG 0x01
 #define CMD_READ_REPLY 0x02
 
 uint8_t rx_buf[BUF_SIZE];
@@ -89,40 +90,37 @@ void loop() {
 
   uint8_t cmd = rx_buf[0];
 
-if (cmd == CMD_WRITE_MSG) {
-  int msg_len = actual_len - 1;
-  if (msg_len < 0) msg_len = 0;
-  if (msg_len >= BUF_SIZE) msg_len = BUF_SIZE - 1;
+  if (cmd == CMD_WRITE_MSG) {
+    int msg_len = actual_len - 1;
+    if (msg_len < 0) msg_len = 0;
+    if (msg_len >= BUF_SIZE) msg_len = BUF_SIZE - 1;
 
-  memcpy(last_received_msg, &rx_buf[1], msg_len);
-  last_received_msg[msg_len] = '\0';
+    memcpy(last_received_msg, &rx_buf[1], msg_len);
+    last_received_msg[msg_len] = '\0';
 
-  Serial.println("Received WRITE command from Nios II");
-  Serial.print("Message: ");
-  Serial.println(last_received_msg);
-  Serial.println("");
+    Serial.println("Received WRITE command from Nios II");
+    Serial.print("Message: ");
+    Serial.println(last_received_msg);
+    Serial.println("");
 
-  prepare_tx_message(esp32_rx_count);
-  esp32_rx_count++;
+    prepare_tx_message(esp32_rx_count);
+    esp32_rx_count++;
 
-  // Serial.print("Prepared reply for next READ: ");
-  // Serial.println((char*)&tx_buf[1]);
+    // Serial.print("Prepared reply for next READ: ");
+    // Serial.println((char*)&tx_buf[1]);
 
-  read_armed = false;
-}
-else if (cmd == CMD_READ_REPLY) {
-  Serial.println("Received READ command from Nios II");
-  read_armed = true;
-}
-else if (cmd == 0x00 && read_armed) {
-  Serial.println("Response sent to Nios II");
-  Serial.print("Sent reply: ");
-  Serial.println((char*)&tx_buf[1]);
+    read_armed = false;
+  } else if (cmd == CMD_READ_REPLY) {
+    Serial.println("Received READ command from Nios II");
+    read_armed = true;
+  } else if (cmd == 0x00 && read_armed) {
+    Serial.println("Response sent to Nios II");
+    Serial.print("Sent reply: ");
+    Serial.println((char*)&tx_buf[1]);
 
-  read_armed = false;
-}
-else {
-  Serial.print("Unknown command received: 0x");
-  Serial.println(cmd, HEX);
-}
+    read_armed = false;
+  } else {
+    Serial.print("Unknown command received: 0x");
+    Serial.println(cmd, HEX);
+  }
 }

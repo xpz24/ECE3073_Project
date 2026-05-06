@@ -19,6 +19,7 @@ module Project (
 	esp32_MOSI,
 	esp32_SCLK,
 	esp32_SS_n,
+	frame_ready_export,
 	hexhi_export,
 	hexlo_export,
 	led_export,
@@ -26,6 +27,8 @@ module Project (
 	pixel_data_export,
 	pixel_wren_export,
 	speaker_export,
+	spi_ready_export,
+	swap_done_export,
 	switch_export);	
 
 	input		accel_MISO;
@@ -47,6 +50,7 @@ module Project (
 	output		esp32_MOSI;
 	output		esp32_SCLK;
 	output		esp32_SS_n;
+	output		frame_ready_export;
 	output	[23:0]	hexhi_export;
 	output	[23:0]	hexlo_export;
 	output	[2:0]	led_export;
@@ -54,5 +58,7 @@ module Project (
 	output	[3:0]	pixel_data_export;
 	output		pixel_wren_export;
 	output		speaker_export;
+	input		spi_ready_export;
+	input	[7:0]	swap_done_export;
 	input	[3:0]	switch_export;
 endmodule

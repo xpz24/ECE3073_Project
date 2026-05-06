@@ -6,7 +6,7 @@ module project_top (
     inout GSENSOR_SDI,
     inout GSENSOR_SDO,
     inout [15:0] DRAM_DQ,
-    inout [4:0] GPIO,
+    inout [5:0] GPIO,
     output DRAM_CLK,
     output DRAM_UDQM,
     output DRAM_LDQM,
@@ -32,40 +32,90 @@ module project_top (
     HEX4,
     HEX5
 );
-  logic vgaClock;
-  logic [3:0] pixelData;
+  logic        vgaClock;
+  logic [ 3:0] pixelData;
   logic [16:0] writeAddress;
   logic [16:0] readAddress;
-  logic writeEnable;
-  logic [3:0] vgaData;
+  logic        writeEnable;
+  logic [ 3:0] vgaData;
+
+  logic        front_buffer;  // 0 = RAM0 shown, 1 = RAM1 shown
+  logic        frame_ready;
+
+  logic [ 3:0] vgaData0;
+  logic [ 3:0] vgaData1;
+
+  logic        wren0;
+  logic        wren1;
+
+  logic        front_buffer_meta;
+  logic        front_buffer_sys;
+
+  always_ff @(posedge MAX10_CLK1_50) begin
+    front_buffer_meta <= front_buffer;
+    front_buffer_sys  <= front_buffer_meta;
+  end
+
+  logic back_buffer_sys;
+
+
+  assign back_buffer_sys = ~front_buffer_sys;
+
+  logic writeEnable_d;
+  logic write_pulse;
+
+  always_ff @(posedge MAX10_CLK1_50) begin
+    writeEnable_d <= writeEnable;
+  end
+
+  assign write_pulse = writeEnable & ~writeEnable_d;
+
+  assign wren0 = write_pulse && (back_buffer_sys == 1'b0);
+  assign wren1 = write_pulse && (back_buffer_sys == 1'b1);
+
+  //   VGA reads from front buffer only
+  assign vgaData = (front_buffer == 1'b0) ? vgaData0 : vgaData1;
+
+  logic swap_done_vga;
+  logic swap_done_meta;
+  logic swap_done_sys;
+
+  always_ff @(posedge MAX10_CLK1_50) begin
+    swap_done_meta <= swap_done_vga;
+    swap_done_sys  <= swap_done_meta;
+  end
+
   Project nios_inst (
-      .clk_clk          (MAX10_CLK1_50),           //  clk.clk
-      .dram_addr        (DRAM_ADDR),               // dram.addr
-      .dram_ba          (DRAM_BA),                 //     .ba
-      .dram_cas_n       (DRAM_CAS_N),              //     .cas_n
-      .dram_cke         (DRAM_CKE),                //     .cke
-      .dram_cs_n        (DRAM_CS_N),               //     .cs_n
-      .dram_dq          (DRAM_DQ),                 //     .dq
-      .dram_dqm         ({DRAM_UDQM, DRAM_LDQM}),  //     .dqm
-      .dram_ras_n       (DRAM_RAS_N),              //     .ras_n
-      .dram_we_n        (DRAM_WE_N),               //     .we_n
-      .accel_MISO       (GSENSOR_SDO),             // accel.MISO
-      .accel_MOSI       (GSENSOR_SDI),             //      .MOSI
-      .accel_SCLK       (GSENSOR_SCLK),            //      .SCLK
-      .accel_SS_n       (GSENSOR_CS_N),            //      .SS_n
-      .button_export    (KEY),                     // button.export
-      .switch_export    (SW),                      // switch.export
-      .hexlo_export     ({HEX2, HEX1, HEX0}),      //   hexlo.export
-      .hexhi_export     ({HEX5, HEX4, HEX3}),      //   hexhi.export
-      .led_export       (LEDR),                    //     led.export
-      .speaker_export   (GPIO[0]),                 // speaker.export
-      .esp32_MISO       (GPIO[1]),                 //   esp32.MISO
-      .esp32_MOSI       (GPIO[2]),                 //        .MOSI
-      .esp32_SCLK       (GPIO[3]),                 //        .SCLK
-      .esp32_SS_n       (GPIO[4]),                 //        .SS_n
-      .pixel_addr_export(writeAddress),            // pixel_addr.export
-      .pixel_data_export(pixelData),               // pixel_data.export
-      .pixel_wren_export(writeEnable)             // pixel_wren.export
+      .clk_clk           (MAX10_CLK1_50),           //  clk.clk
+      .dram_addr         (DRAM_ADDR),               // dram.addr
+      .dram_ba           (DRAM_BA),                 //     .ba
+      .dram_cas_n        (DRAM_CAS_N),              //     .cas_n
+      .dram_cke          (DRAM_CKE),                //     .cke
+      .dram_cs_n         (DRAM_CS_N),               //     .cs_n
+      .dram_dq           (DRAM_DQ),                 //     .dq
+      .dram_dqm          ({DRAM_UDQM, DRAM_LDQM}),  //     .dqm
+      .dram_ras_n        (DRAM_RAS_N),              //     .ras_n
+      .dram_we_n         (DRAM_WE_N),               //     .we_n
+      .accel_MISO        (GSENSOR_SDO),             // accel.MISO
+      .accel_MOSI        (GSENSOR_SDI),             //      .MOSI
+      .accel_SCLK        (GSENSOR_SCLK),            //      .SCLK
+      .accel_SS_n        (GSENSOR_CS_N),            //      .SS_n
+      .button_export     (KEY),                     // button.export
+      .switch_export     (SW),                      // switch.export
+      .hexlo_export      ({HEX2, HEX1, HEX0}),      //   hexlo.export
+      .hexhi_export      ({HEX5, HEX4, HEX3}),      //   hexhi.export
+      .led_export        (LEDR),                    //     led.export
+      .speaker_export    (GPIO[0]),                 // speaker.export
+      .esp32_MISO        (GPIO[1]),                 //   esp32.MISO
+      .esp32_MOSI        (GPIO[2]),                 //        .MOSI
+      .esp32_SCLK        (GPIO[3]),                 //        .SCLK
+      .esp32_SS_n        (GPIO[4]),                 //        .SS_n
+      .pixel_addr_export (writeAddress),            // pixel_addr.export
+      .pixel_data_export (pixelData),               // pixel_data.export
+      .pixel_wren_export (writeEnable),             // pixel_wren.export
+      .spi_ready_export  (GPIO[5]),                 //  spi_ready.export
+      .frame_ready_export(frame_ready),             // frame_ready.export
+      .swap_done_export  (swap_done_sys)            //   swap_done.export
   );
 
   PLL_DRAM pll_DRAM_inst (
@@ -78,19 +128,33 @@ module project_top (
       .c0(vgaClock)
   );
 
-  RAM_VGA RAM_VGA_inst (
+  RAM_VGA RAM_VGA_inst0 (
       .wrclock(MAX10_CLK1_50),
       .rdclock(vgaClock),
-      .wren(writeEnable),
+      .wren(wren0),
       .wraddress(writeAddress),
       .rdaddress(readAddress),
       .data(pixelData),
-      .q(vgaData)
+      .q(vgaData0)
+  );
+
+
+  RAM_VGA RAM_VGA_inst1 (
+      .wrclock(MAX10_CLK1_50),
+      .rdclock(vgaClock),
+      .wren(wren1),
+      .wraddress(writeAddress),
+      .rdaddress(readAddress),
+      .data(pixelData),
+      .q(vgaData1)
   );
 
   vga_controller VGA_C_inst (
       .VGA_CLK(vgaClock),
       .VGA_DATA(vgaData),
+      .frame_ready(frame_ready),
+      .front_buffer(front_buffer),
+      .swap_done(swap_done_vga),
       .VGA_ADDR(readAddress),
       .VGA_R(VGA_R),
       .VGA_G(VGA_G),
