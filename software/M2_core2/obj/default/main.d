@@ -9,7 +9,8 @@ obj/default/main.o: main.c ../M2_core2_bsp/system.h \
  ../M2_core2_bsp//HAL/inc/sys/alt_alarm.h \
  ../M2_core2_bsp//HAL/inc/sys/alt_llist.h \
  ../M2_core2_bsp//HAL/inc/priv/alt_alarm.h \
- ../M2_core2_bsp//UCOSII/inc/ucos_ii.h ../M2_core2_bsp//HAL/inc/os_cpu.h
+ ../M2_core2_bsp//UCOSII/inc/ucos_ii.h ../M2_core2_bsp//HAL/inc/os_cpu.h \
+ interrupts.h
 
 ../M2_core2_bsp/system.h:
 
@@ -48,3 +49,5 @@ obj/default/main.o: main.c ../M2_core2_bsp/system.h \
 ../M2_core2_bsp//UCOSII/inc/ucos_ii.h:
 
 ../M2_core2_bsp//HAL/inc/os_cpu.h:
+
+interrupts.h:

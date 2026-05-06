@@ -36,11 +36,11 @@ void init_key_irq(void) {
 }
 
 // pulse tx to notify cpu1
-void tx_pulse(alt_u32 flag)
+void tx_pulse(int base, alt_u32 flag)
 {
-    IOWR_ALTERA_AVALON_PIO_DATA(TX_3_1_BASE, flag);
+    IOWR_ALTERA_AVALON_PIO_DATA(base, flag);
     for (volatile int i = 0; i < 50; i++);
-    IOWR_ALTERA_AVALON_PIO_DATA(TX_3_1_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(base, 0);
 }
 
 static void rx_irq_handler(void *context, alt_u32 id)

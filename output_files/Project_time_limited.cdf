@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(10M50DAF484) Path("C:/Users/cklie/OneDrive/Documents/Academic/Monash/Y3/ECE3073/Quartus/Project/output_files/") File("Project_time_limited.sof") MfrSpec(OpMask(1));
+		Device PartName(10M50DAF484) Path("C:/Users/cklie/OneDrive/Documents/Academic/Monash/Y3/ECE3073/Quartus/Project/output_files/") File("Project.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 

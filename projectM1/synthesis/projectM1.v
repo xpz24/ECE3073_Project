@@ -39,8 +39,8 @@ module projectM1 (
 	wire   [2:0] core_1_2_tx_external_connection_export;                                                 // core_1_2_tx:out_port -> core_2_1_rx:in_port
 	wire   [2:0] core_3_1_tx_external_connection_export;                                                 // core_3_1_tx:out_port -> core_1_3_rx:in_port
 	wire   [2:0] core_1_3_tx_external_connection_export;                                                 // core_1_3_tx:out_port -> core_3_1_rx:in_port
-	wire         core_3_2_tx_external_connection_export;                                                 // core_3_2_tx:out_port -> core_2_3_rx:in_port
-	wire         core_2_3_tx_external_connection_export;                                                 // core_2_3_tx:out_port -> core_3_2_rx:in_port
+	wire   [2:0] core_3_2_tx_external_connection_export;                                                 // core_3_2_tx:out_port -> core_2_3_rx:in_port
+	wire   [2:0] core_2_3_tx_external_connection_export;                                                 // core_2_3_tx:out_port -> core_3_2_rx:in_port
 	wire         core_1_debug_reset_request_reset;                                                       // core_1:debug_reset_request -> [rst_controller:reset_in0, rst_controller:reset_in1, rst_controller_001:reset_in0, rst_controller_002:reset_in0, rst_controller_003:reset_in0, rst_controller_004:reset_in0, rst_controller_004:reset_in1]
 	wire  [31:0] core_1_data_master_readdata;                                                            // mm_interconnect_0:core_1_data_master_readdata -> core_1:d_readdata
 	wire         core_1_data_master_waitrequest;                                                         // mm_interconnect_0:core_1_data_master_waitrequest -> core_1:d_waitrequest
@@ -106,7 +106,7 @@ module projectM1 (
 	wire  [31:0] mm_interconnect_0_core_1_debug_mem_slave_writedata;                                     // mm_interconnect_0:core_1_debug_mem_slave_writedata -> core_1:debug_mem_slave_writedata
 	wire         mm_interconnect_0_core_1_memory_s1_chipselect;                                          // mm_interconnect_0:core_1_memory_s1_chipselect -> core_1_memory:chipselect
 	wire  [31:0] mm_interconnect_0_core_1_memory_s1_readdata;                                            // core_1_memory:readdata -> mm_interconnect_0:core_1_memory_s1_readdata
-	wire   [9:0] mm_interconnect_0_core_1_memory_s1_address;                                             // mm_interconnect_0:core_1_memory_s1_address -> core_1_memory:address
+	wire  [10:0] mm_interconnect_0_core_1_memory_s1_address;                                             // mm_interconnect_0:core_1_memory_s1_address -> core_1_memory:address
 	wire   [3:0] mm_interconnect_0_core_1_memory_s1_byteenable;                                          // mm_interconnect_0:core_1_memory_s1_byteenable -> core_1_memory:byteenable
 	wire         mm_interconnect_0_core_1_memory_s1_write;                                               // mm_interconnect_0:core_1_memory_s1_write -> core_1_memory:write
 	wire  [31:0] mm_interconnect_0_core_1_memory_s1_writedata;                                           // mm_interconnect_0:core_1_memory_s1_writedata -> core_1_memory:writedata
@@ -585,7 +585,7 @@ module projectM1 (
 		.out_port   (core_2_1_tx_external_connection_export)       // external_connection.export
 	);
 
-	projectM1_core_2_3_rx core_2_3_rx (
+	projectM1_core_1_2_rx core_2_3_rx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_002_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_2_3_rx_s1_address),    //                  s1.address
@@ -597,7 +597,7 @@ module projectM1 (
 		.irq        (irq_mapper_001_receiver3_irq)                 //                 irq.irq
 	);
 
-	projectM1_core_1_speaker core_2_3_tx (
+	projectM1_core_1_2_tx core_2_3_tx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_002_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_2_3_tx_s1_address),    //                  s1.address
@@ -733,7 +733,7 @@ module projectM1 (
 		.out_port   (core_3_1_tx_external_connection_export)       // external_connection.export
 	);
 
-	projectM1_core_2_3_rx core_3_2_rx (
+	projectM1_core_1_2_rx core_3_2_rx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_003_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_3_2_rx_s1_address),    //                  s1.address
@@ -745,7 +745,7 @@ module projectM1 (
 		.irq        (irq_mapper_002_receiver4_irq)                 //                 irq.irq
 	);
 
-	projectM1_core_1_speaker core_3_2_tx (
+	projectM1_core_1_2_tx core_3_2_tx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_003_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_3_2_tx_s1_address),    //                  s1.address

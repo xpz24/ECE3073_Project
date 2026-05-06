@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include "../M2_core1_bsp/system.h"
+#include "../M2_core1_bsp/HAL/inc/alt_types.h"
+#include "../M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core1_bsp/HAL/inc/io.h"
+#include "../M2_core1_bsp/HAL/inc/includes.h"
+#include "interrupts.h"
+
+void hex_init(void);
+void accel_init(void);
+
+#define START_PRIORITY  1
+#define START_STACKSIZE 2048
+OS_STK start_stk[START_STACKSIZE];
+
+void start_task(void* pdata) {
+    printf("Hello from CPU1\n");
+
+    OSTimeDly(20);
+    OSStatInit();
+
+    init_rx_irq();
+    hex_init();
+    accel_init();
+
+    printf("Start task deleting itself\n");
+    OSTaskDel(OS_PRIO_SELF);
+}
+
+int main(void) {
+    OSInit();
+    OSTaskCreateExt(start_task,
+                    NULL,
+                    (void*)&start_stk[START_STACKSIZE - 1],
+                    START_PRIORITY,
+                    START_PRIORITY,
+                    start_stk,
+                    START_STACKSIZE,
+                    NULL,
+                    0);
+    OSStart();
+}

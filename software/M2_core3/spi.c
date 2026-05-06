@@ -19,6 +19,8 @@ OS_STK spi_task_stk[SPI_TASK_STACKSIZE];
 #define SPI_BASE         CORE_3_SPI_BASE
 #define SDRAM_BASE       SHARED_SDRAM_BASE
 #define COUNTER_BASE     US_COUNTER_BASE
+#define TX_3_1_BASE      CORE_3_1_TX_BASE
+#define TX_3_2_BASE      CORE_3_2_TX_BASE
 
 // TX flag definitions
 #define TX_KEY0     0x1   /* bit 0: key 0, start capturing    */
@@ -272,12 +274,13 @@ void spi_task(void* pdata)
 //			printf("\n[LATENCY] SPI capture data: %lu us\n\n", end - start);
 			// notify core 1 key0 pressed
 			start = get_us();
-			tx_pulse(TX_KEY0);
+			tx_pulse(TX_3_1_BASE, TX_KEY0);
 			end = get_us();
-			printf("\n[LATENCY] Key0 to TX pulse: %lu us\n\n", end - start);
+			printf("\n[LATENCY] Key0 to TX pulse: %lu us\n", end - start);
+			// notify core 2 key0 pressed
+			tx_pulse(TX_3_2_BASE, TX_KEY0);
 		}
 		if (key_flags & (1 << 1)) {
-			printf("key1 pressed\n");
 			key_flags &= ~(1 << 1);
 //			start = get_us();
 //          request_capture_data();
@@ -285,9 +288,11 @@ void spi_task(void* pdata)
 //			printf("\n[LATENCY] SPI print data: %lu us\n\n", end - start);
 			// notify core 1 key1 pressed
 			start = get_us();
-			tx_pulse(TX_KEY1);
+			tx_pulse(TX_3_1_BASE, TX_KEY1);
 			end = get_us();
-			printf("\n[LATENCY] Key1 to TX pulse: %lu us\n\n", end - start);
+			printf("\n[LATENCY] Key1 to TX pulse: %lu us\n", end - start);
+			// notify core 2 key1 pressed
+			tx_pulse(TX_3_2_BASE, TX_KEY1);
 		}
     	OSTimeDly(5);
     }

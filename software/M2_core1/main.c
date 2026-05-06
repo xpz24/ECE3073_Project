@@ -9,6 +9,7 @@
 void hex_init(void);
 void accel_init(void);
 
+// start task
 #define START_PRIORITY  1
 #define START_STACKSIZE 2048
 OS_STK start_stk[START_STACKSIZE];
@@ -22,6 +23,7 @@ void start_task(void* pdata) {
     init_rx_irq();
     hex_init();
     accel_init();
+    alt_irq_enable_all(1);
 
     printf("Start task deleting itself\n");
     OSTaskDel(OS_PRIO_SELF);

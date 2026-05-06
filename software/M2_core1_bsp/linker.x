@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_1' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Mon May 04 21:27:06 SGT 2026
+ * Generated: Wed May 06 22:41:53 SGT 2026
  */
 
 /*
@@ -51,13 +51,13 @@
 MEMORY
 {
     shared_sdram : ORIGIN = 0x0, LENGTH = 2097152
-    reset : ORIGIN = 0x4001000, LENGTH = 32
-    core_1_memory : ORIGIN = 0x4001020, LENGTH = 4064
+    reset : ORIGIN = 0x4002000, LENGTH = 32
+    core_1_memory : ORIGIN = 0x4002020, LENGTH = 8160
 }
 
 /* Define symbols for each memory base-address */
 __alt_mem_shared_sdram = 0x0;
-__alt_mem_core_1_memory = 0x4001000;
+__alt_mem_core_1_memory = 0x4002000;
 
 OUTPUT_FORMAT( "elf32-littlenios2",
                "elf32-littlenios2",
@@ -338,6 +338,7 @@ SECTIONS
         PROVIDE (_alt_partition_shared_sdram_end = ABSOLUTE(.));
         _end = ABSOLUTE(.);
         end = ABSOLUTE(.);
+        __alt_stack_base = ABSOLUTE(.);
     } > shared_sdram
 
     PROVIDE (_alt_partition_shared_sdram_load_addr = LOADADDR(.shared_sdram));
@@ -355,7 +356,6 @@ SECTIONS
         *(.core_1_memory .core_1_memory. core_1_memory.*)
         . = ALIGN(4);
         PROVIDE (_alt_partition_core_1_memory_end = ABSOLUTE(.));
-        __alt_stack_base = ABSOLUTE(.);
     } > core_1_memory
 
     PROVIDE (_alt_partition_core_1_memory_load_addr = LOADADDR(.core_1_memory));
@@ -407,7 +407,7 @@ SECTIONS
 /*
  * Don't override this, override the __alt_stack_* symbols instead.
  */
-__alt_data_end = 0x4002000;
+__alt_data_end = 0x200000;
 
 /*
  * The next two symbols define the location of the default stack.  You can

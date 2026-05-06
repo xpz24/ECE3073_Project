@@ -144,7 +144,7 @@ module projectM1_mm_interconnect_0_router_004
     localparam PAD7 = log2ceil(64'h4001110 - 64'h4001100); 
     localparam PAD8 = log2ceil(64'h4001120 - 64'h4001110); 
     localparam PAD9 = log2ceil(64'h4001130 - 64'h4001128); 
-    localparam PAD10 = log2ceil(64'h40030a0 - 64'h4003090); 
+    localparam PAD10 = log2ceil(64'h4005120 - 64'h4005110); 
     localparam PAD11 = log2ceil(64'h4018000 - 64'h4010000); 
     // -------------------------------------------------------
     // Work out which address bits are significant based on the
@@ -264,8 +264,8 @@ module projectM1_mm_interconnect_0_router_004
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 31;
     end
 
-    // ( 0x4003090 .. 0x40030a0 )
-    if ( {address[RG:PAD10],{PAD10{1'b0}}} == 27'h4003090  && read_transaction  ) begin
+    // ( 0x4005110 .. 0x4005120 )
+    if ( {address[RG:PAD10],{PAD10{1'b0}}} == 27'h4005110  && read_transaction  ) begin
             src_channel = 39'b000000000010;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 38;
     end

@@ -1,5 +1,5 @@
 Assembler report for Project
-Mon May 04 22:26:01 2026
+Wed May 06 23:07:19 2026
 Quartus Prime Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 
 
@@ -38,7 +38,7 @@ refer to the applicable agreement for further details.
 +---------------------------------------------------------------+
 ; Assembler Summary                                             ;
 +-----------------------+---------------------------------------+
-; Assembler Status      ; Successful - Mon May 04 22:26:01 2026 ;
+; Assembler Status      ; Successful - Wed May 06 23:07:19 2026 ;
 ; Revision Name         ; Project                               ;
 ; Top-level Entity Name ; top_levelM1                           ;
 ; Family                ; MAX 10                                ;
@@ -78,8 +78,8 @@ refer to the applicable agreement for further details.
 +----------------+-----------------------------------------------------------------------------------------------------------------------------+
 ; Option         ; Setting                                                                                                                     ;
 +----------------+-----------------------------------------------------------------------------------------------------------------------------+
-; JTAG usercode  ; 0x00B5993C                                                                                                                  ;
-; Checksum       ; 0x00B5993C                                                                                                                  ;
+; JTAG usercode  ; 0x00BA6715                                                                                                                  ;
+; Checksum       ; 0x00BA6715                                                                                                                  ;
 +----------------+-----------------------------------------------------------------------------------------------------------------------------+
 
 
@@ -89,7 +89,7 @@ refer to the applicable agreement for further details.
 Info: *******************************************************************
 Info: Running Quartus Prime Assembler
     Info: Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
-    Info: Processing started: Mon May 04 22:25:56 2026
+    Info: Processing started: Wed May 06 23:07:12 2026
 Info: Command: quartus_asm --read_settings_files=off --write_settings_files=off Project -c Project
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (115031): Writing out detailed assembly data for power analysis
@@ -97,8 +97,8 @@ Info (115030): Assembler is generating device programming files
 Info (115017): Design contains a time-limited core -- only a single, time-limited programming file can be generated
 Info: Quartus Prime Assembler was successful. 0 errors, 2 warnings
     Info: Peak virtual memory: 4770 megabytes
-    Info: Processing ended: Mon May 04 22:26:01 2026
-    Info: Elapsed time: 00:00:05
-    Info: Total CPU time (on all processors): 00:00:05
+    Info: Processing ended: Wed May 06 23:07:20 2026
+    Info: Elapsed time: 00:00:08
+    Info: Total CPU time (on all processors): 00:00:07
 
 

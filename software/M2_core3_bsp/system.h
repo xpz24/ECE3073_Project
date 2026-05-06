@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_3' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Mon May 04 22:29:10 SGT 2026
+ * Generated: Wed May 06 19:15:43 SGT 2026
  */
 
 /*
@@ -250,7 +250,7 @@
 #define CORE_3_2_RX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_2_RX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_2_RX_CAPTURE 1
-#define CORE_3_2_RX_DATA_WIDTH 1
+#define CORE_3_2_RX_DATA_WIDTH 3
 #define CORE_3_2_RX_DO_TEST_BENCH_WIRING 0
 #define CORE_3_2_RX_DRIVEN_SIM_VALUE 0
 #define CORE_3_2_RX_EDGE_TYPE "RISING"
@@ -277,7 +277,7 @@
 #define CORE_3_2_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_2_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_2_TX_CAPTURE 0
-#define CORE_3_2_TX_DATA_WIDTH 1
+#define CORE_3_2_TX_DATA_WIDTH 3
 #define CORE_3_2_TX_DO_TEST_BENCH_WIRING 0
 #define CORE_3_2_TX_DRIVEN_SIM_VALUE 0
 #define CORE_3_2_TX_EDGE_TYPE "NONE"
@@ -559,7 +559,7 @@
  */
 
 #define ALT_MODULE_CLASS_us_counter altera_avalon_pio
-#define US_COUNTER_BASE 0x4003090
+#define US_COUNTER_BASE 0x4005110
 #define US_COUNTER_BIT_CLEARING_EDGE_REGISTER 0
 #define US_COUNTER_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define US_COUNTER_CAPTURE 0

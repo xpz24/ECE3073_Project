@@ -18,8 +18,8 @@
 
 int stable = 0;
 
-#define TX_1_2_BASE   CORE_1_2_TX_BASE
-#define TX_1_3_BASE   CORE_1_3_TX_BASE
+#define TX_1_2_BASE    CORE_1_2_TX_BASE
+#define TX_1_3_BASE    CORE_1_3_TX_BASE
 #define COUNTER_BASE   US_COUNTER_BASE
 
 #define EMERGENCY_START   0x1

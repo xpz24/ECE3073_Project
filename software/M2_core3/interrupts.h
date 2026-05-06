@@ -9,7 +9,7 @@ extern volatile int emergency_flag;
 
 // init functions
 void init_key_irq(void);
-void tx_pulse(alt_u32 flag);
+void tx_pulse(int base, alt_u32 flag);
 void init_rx_irq(void);
 
 #endif

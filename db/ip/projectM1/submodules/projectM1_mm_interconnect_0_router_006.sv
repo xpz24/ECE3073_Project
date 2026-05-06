@@ -163,6 +163,11 @@ module projectM1_mm_interconnect_0_router_006
 
 
 
+    // -------------------------------------------------------
+    // Write and read transaction signals
+    // -------------------------------------------------------
+    wire read_transaction;
+    assign read_transaction  = sink_data[PKT_TRANS_READ];
 
 
     projectM1_mm_interconnect_0_router_006_default_decode the_default_decode(
@@ -185,7 +190,11 @@ module projectM1_mm_interconnect_0_router_006
 
 
         if (destid == 0 ) begin
-            src_channel = 39'b1;
+            src_channel = 39'b01;
+        end
+
+        if (destid == 1  && read_transaction) begin
+            src_channel = 39'b10;
         end
 
 

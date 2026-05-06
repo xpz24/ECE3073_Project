@@ -1,0 +1,71 @@
+// libraries
+#include <stdio.h>
+#include "../M2_core2_bsp/system.h"
+#include "../M2_core2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core2_bsp/HAL/inc/includes.h"
+#include "../M2_core2_bsp/HAL/inc/io.h"
+#include "image_data.h"
+
+// base addresses
+#define PIXEL_ADDR_BASE CORE_2_PIXEL_ADDR_BASE
+#define PIXEL_DATA_BASE CORE_2_PIXEL_DATA_BASE
+#define PIXEL_WREN_BASE CORE_2_PIXEL_WREN_BASE
+
+// definitions
+#define VGA_PRIORITY 1
+#define VGA_STACKSIZE 4096
+
+OS_STK vga_stk[VGA_STACKSIZE];
+
+// write pixel function
+void write_pixel(unsigned int addr, unsigned char color) {
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xF);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
+}
+
+// draw horizontal color stripes function
+void draw_color_stripes() {
+	for (int y = 0; y < 240; y++) {
+		for (int x = 0; x < 320; x++) {
+			unsigned int addr = y * 320 + x;
+			unsigned char color = x / 20;
+			write_pixel(addr, color);
+		}
+	}
+}
+
+// draw vertical color stripes function
+void draw_vertical_stripes() {
+	for (int y = 0; y < 240; y++) {
+		unsigned char color = y / 15;
+		for (int x = 0; x < 320; x++) {
+			unsigned int addr = y * 320 + x;
+			write_pixel(addr, color);
+		}
+	}
+}
+
+// vga_task function to constantly draw horizontal and vertical color stripes
+void vga_task(void* pdata) {
+	while (1) {
+		draw_color_stripes();
+		OSTimeDly(1);
+		draw_vertical_stripes();
+		OSTimeDlyHMSM(0, 0, 0, 50); // ~50 ms
+	}
+}
+
+// vga_init
+void vga_init(void) {
+    OSTaskCreateExt(vga_task,
+                    NULL,
+                    &vga_stk[VGA_STACKSIZE - 1],
+                    VGA_PRIORITY,
+                    VGA_PRIORITY,
+                    vga_stk,
+                    VGA_STACKSIZE,
+                    NULL,
+                    0);
+}

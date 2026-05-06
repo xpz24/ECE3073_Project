@@ -156,10 +156,19 @@ void set_hex_message(const char* msg) {
     process_string(current_message);
 }
 
+void emergency_msg(void) {
+	unsigned char dash = SEG_DASH | 0x80;
+	unsigned char s = SEG_S | 0x80;
+	unsigned char t = SEG_T | 0x80;
+	unsigned char o = SEG_O | 0x80;
+	unsigned char p = SEG_P | 0x80;
+	write_hex(dash, s, t, o, p, dash);
+}
+
 // HEX TASK
 void hex_task(void* pdata) {
     // adjust to change scroll speed
-    int scroll_speed   = 50;
+    int scroll_speed   = 40;
     int scroll_pos     = 0;
     int scroll_counter = 0;
     int speaker        = 0;
@@ -175,8 +184,9 @@ void hex_task(void* pdata) {
     while (1) {
     	// check emergency state before updating
     	if (emergency_active) {
+    		emergency_msg();
 			while (emergency_active) {
-				OSTimeDly(10);
+				OSTimeDly(5);
 			}
 		}
     	// Check for new key press and update message
@@ -212,6 +222,8 @@ void hex_task(void* pdata) {
             scroll_counter = 0;
             traffic_led = 0;
             IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+            speaker = 0;
+			IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
         }
         // SW0 on - scroll/pause message
         else {
@@ -230,7 +242,8 @@ void hex_task(void* pdata) {
 
                     // speaker + traffic led
                     if (sw & 0x8) {
-                    	traffic_led = 7;
+                    	traffic_led++;
+                    	if (traffic_led > 7) traffic_led = 0;
                     	IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
 						speaker = !speaker;
 						IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);

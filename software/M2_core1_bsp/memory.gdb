@@ -3,7 +3,7 @@
 # Machine generated for CPU 'core_1' in SOPC Builder design 'projectM1'
 # SOPC Builder design path: ../../projectM1.sopcinfo
 #
-# Generated: Mon May 04 21:27:06 SGT 2026
+# Generated: Wed May 06 19:15:29 SGT 2026
 
 # DO NOT MODIFY THIS FILE
 #
@@ -50,4 +50,4 @@
 memory 0x0 0x4000000 cache
 
 # core_1_memory
-memory 0x4001000 0x4002000 cache
+memory 0x4002000 0x4004000 cache

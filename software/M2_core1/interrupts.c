@@ -33,7 +33,6 @@ void init_rx_irq(void)
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_1_3_BASE, 0);
     IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_1_3_BASE, 0x7);
     alt_irq_register(CORE_1_3_RX_IRQ, NULL, rx_irq_handler);
-    alt_irq_enable_all(1);
 }
 
 void tx_pulse(int base, alt_u32 flag)
