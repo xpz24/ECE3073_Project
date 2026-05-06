@@ -1,4 +1,4 @@
-Readme - Custom NIOS II CPU architecture core 1
+Readme - Custom NIOS II CPU architecture core 3
 
 This core handles all SPI communication with the external microcontroller
 board ESP32. The buttons are also apart of this core as it will be used
