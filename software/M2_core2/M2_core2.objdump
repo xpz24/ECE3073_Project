@@ -1729,8 +1729,8 @@ void vga_task(void *pdata) {
 			}
 			key_flags = 0;
   200768:	d0271915 	stw	zero,-25500(gp)
-			clear_framebuffer();
-  20076c:	020063c0 	call	20063c <clear_framebuffer>
+			write_framebuffer();
+  20076c:	02005640 	call	200564 <write_framebuffer>
 			printf("[VGA] EMERGENCY CLEARED - CONTINUING OPERATION\n\n");
   200770:	01000934 	movhi	r4,36
   200774:	21364e04 	addi	r4,r4,-9928

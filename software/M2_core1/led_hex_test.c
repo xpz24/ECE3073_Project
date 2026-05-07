@@ -61,6 +61,8 @@
 
 OS_STK hex_stk[HEX_STACKSIZE];
 
+volatile int emergency_clear = 0;
+
 // CHARACTER LOOKUP TABLE
 unsigned char seg_char(char c, int dp) {
     c = toupper((unsigned char)c);
@@ -186,8 +188,14 @@ void hex_task(void* pdata) {
     	if (emergency_active) {
     		emergency_msg();
 			while (emergency_active) {
+				int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
+				IOWR_ALTERA_AVALON_PIO_DATA(LEDR_BASE, sw);
+				if (sw & 512) {
+					emergency_clear = 1;
+				}
 				OSTimeDly(5);
 			}
+			emergency_clear = 0;
 		}
     	// Check for new key press and update message
 		const char* new_msg = NULL;

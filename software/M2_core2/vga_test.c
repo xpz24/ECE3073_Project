@@ -88,7 +88,7 @@ void vga_task(void *pdata) {
 				OSTimeDly(5);
 			}
 			key_flags = 0;
-			clear_framebuffer();
+			write_framebuffer();
 			printf("[VGA] EMERGENCY CLEARED - CONTINUING OPERATION\n\n");
 		}
 		// key0 simulates capturing data - save into sdram

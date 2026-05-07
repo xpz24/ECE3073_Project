@@ -55,6 +55,7 @@ void accel_task(void* pdata) {
 		alt_up_accelerometer_spi_read_y_axis(accel, &y);
 		alt_up_accelerometer_spi_read_z_axis(accel, &z);
 
+		// if emergency not active
 		if (!emergency_active) {
 			if (z < UPSIDE_DOWN_THRESH) {
 				stable++;
@@ -78,10 +79,11 @@ void accel_task(void* pdata) {
 				stable = 0; // reset if reading doesnt hold
 			}
 		}
+		// if emergency active
 		else {
 			if (z > UPRIGHT_THRESH) {
 				stable++;
-				if (stable >= STABLE_COUNT) {
+				if (stable >= STABLE_COUNT && emergency_clear) {
 					emergency_active = 0;
 					// notify core 2
 					start = get_us();

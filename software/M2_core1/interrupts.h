@@ -6,6 +6,7 @@
 // flags
 extern volatile int key_flags;
 extern volatile int emergency_active;
+extern volatile int emergency_clear;
 
 // init functions
 void init_rx_irq(void);

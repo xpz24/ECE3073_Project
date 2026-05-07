@@ -1,0 +1,279 @@
+// LIBRARIES
+#include <stdio.h>
+#include <ctype.h>
+#include "../M2_core1_bsp/system.h"
+#include "../M2_core1_bsp/HAL/inc/alt_types.h"
+#include "../M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core1_bsp/HAL/inc/includes.h"
+#include "../M2_core1_bsp/drivers/inc/altera_avalon_mutex.h"
+#include "interrupts.h"
+
+// BASE ADDRESSES
+#define SW_BASE CORE_1_SW_BASE
+#define LEDR_BASE CORE_1_LEDR_BASE
+#define HEX_LO_BASE CORE_1_HEX_LO_BASE
+#define HEX_HI_BASE CORE_1_HEX_HI_BASE
+#define SPEAKER_BASE CORE_1_SPEAKER_BASE
+#define TRAFFIC_LED_BASE CORE_1_TRAFFIC_LED_BASE
+#define TX_BASE CORE_1_3_TX_BASE
+#define RX_BASE CORE_1_3_RX_BASE
+
+// 7-SEGMENT DICTIONARY
+#define SEG_0     0x40
+#define SEG_1     0x79
+#define SEG_2     0x24
+#define SEG_3     0x30
+#define SEG_4     0x19
+#define SEG_5     0x12
+#define SEG_6     0x02
+#define SEG_7     0x78
+#define SEG_8     0x00
+#define SEG_9     0x10
+#define SEG_A     0x08
+#define SEG_B     0x03
+#define SEG_C     0x46
+#define SEG_D     0x21
+#define SEG_E     0x06
+#define SEG_F     0x0E
+#define SEG_G     0x02
+#define SEG_H     0x09
+#define SEG_I     0x79
+#define SEG_J     0x61
+#define SEG_L     0x47
+#define SEG_N     0x2B
+#define SEG_O     0x40
+#define SEG_P     0x0C
+#define SEG_R     0x2F
+#define SEG_S     0x12
+#define SEG_T     0x07
+#define SEG_U     0x41
+#define SEG_Y     0x11
+#define SEG_BLANK 0x7F
+#define SEG_DASH  0x3F
+#define SEG_EQUAL 0x37
+#define SEG_DOT   0xBF
+
+// DEFINITIONS
+#define DISPLAY_WIDTH 6
+
+#define HEX_PRIORITY    3
+#define HEX_STACKSIZE   2048
+
+OS_STK hex_stk[HEX_STACKSIZE];
+
+// CHARACTER LOOKUP TABLE
+unsigned char seg_char(char c, int dp) {
+    c = toupper((unsigned char)c);
+    static const unsigned char table[128] = {
+        ['0'] = SEG_0, ['1'] = SEG_1, ['2'] = SEG_2, ['3'] = SEG_3,
+        ['4'] = SEG_4, ['5'] = SEG_5, ['6'] = SEG_6, ['7'] = SEG_7,
+        ['8'] = SEG_8, ['9'] = SEG_9,
+        ['A'] = SEG_A, ['B'] = SEG_B, ['C'] = SEG_C, ['D'] = SEG_D,
+        ['E'] = SEG_E, ['F'] = SEG_F, ['G'] = SEG_G, ['H'] = SEG_H,
+        ['I'] = SEG_I, ['J'] = SEG_J, ['L'] = SEG_L, ['N'] = SEG_N,
+        ['O'] = SEG_O, ['P'] = SEG_P, ['R'] = SEG_R, ['S'] = SEG_S,
+        ['T'] = SEG_T, ['U'] = SEG_U, ['Y'] = SEG_Y,
+        ['-'] = SEG_DASH, [' '] = SEG_BLANK, ['='] = SEG_EQUAL
+    };
+    unsigned char seg = table[(unsigned char)c & 0x7F];
+    if (seg == 0 && c != '0' && c != '8') {
+        seg = SEG_BLANK;
+    }
+    // check if decimal point needed
+    seg = dp ? (seg & 0x7F) : (seg | 0x80);
+    return seg;
+}
+
+// CHARACTER STRUCT
+typedef struct {
+    char c; // character
+    int dp; // decimal point
+} display_char;
+
+// WRITE HEX FUNCTION
+void write_hex(unsigned char s5, unsigned char s4, unsigned char s3,
+               unsigned char s2, unsigned char s1, unsigned char s0) {
+    IOWR_ALTERA_AVALON_PIO_DATA(HEX_LO_BASE, ((alt_u32)s2 << 16) | ((alt_u32)s1 << 8) | (alt_u32)s0);
+    IOWR_ALTERA_AVALON_PIO_DATA(HEX_HI_BASE, ((alt_u32)s5 << 16) | ((alt_u32)s4 << 8) | (alt_u32)s3);
+}
+
+// CLEAR HEX FUNCTION
+void clear_hex(void) {
+    unsigned char blank = SEG_BLANK | 0x80;
+    write_hex(blank, blank, blank, blank, blank, blank);
+}
+
+// PROCESSED BUFFER
+static display_char processed[100];
+static int          processed_len = 0;
+
+// PROCESS STRING FUNCTION
+void process_string(const char *text) {
+    processed_len = 0;
+    for (int i = 0; text[i] != '\0'; i++) {
+        // skip '.' itself
+        if (text[i] == '.') continue;
+        processed[processed_len].c  = text[i];
+        // check if next char is '.'
+        processed[processed_len].dp = (text[i + 1] == '.') ? 1 : 0;
+        processed_len++;
+    }
+}
+
+// SCROLL STRING FUNCTION
+void scroll_step(int pos, int cpuFlag) {
+    int len = processed_len;
+    unsigned char display[6];
+    int offset = 0;
+
+    if (cpuFlag) {
+    	offset = 2; // reserve HEX0 and HEX1 for cpu usage
+    	int cpu = (int)OSCPUUsage;
+    	if (cpu > 99) cpu = 99;
+    	display[0] = seg_char('0' + (cpu / 10), 0);
+		display[1] = seg_char('0' + (cpu % 10), 0);
+    }
+
+    // Fill remaining display slots
+    for (int j = offset; j < DISPLAY_WIDTH; j++) {
+        int char_idx = pos + j - DISPLAY_WIDTH;
+        if (char_idx >= 0 && char_idx < len)
+            display[j] = seg_char(processed[char_idx].c, processed[char_idx].dp);
+        else
+            display[j] = seg_char(' ', 0);
+    }
+    // Write to displays (HEX5 is leftmost = display[5])
+    write_hex(display[0], display[1], display[2], display[3], display[4], display[5]);
+}
+
+// current message
+static const char* current_message = "----";
+int cpuFlag = 0;
+
+// set hex message
+void set_hex_message(const char* msg) {
+    current_message = msg;
+    process_string(current_message);
+}
+
+void emergency_msg(void) {
+	unsigned char dash = SEG_DASH | 0x80;
+	unsigned char s = SEG_S | 0x80;
+	unsigned char t = SEG_T | 0x80;
+	unsigned char o = SEG_O | 0x80;
+	unsigned char p = SEG_P | 0x80;
+	write_hex(dash, s, t, o, p, dash);
+}
+
+// HEX TASK
+void hex_task(void* pdata) {
+    // adjust to change scroll speed
+    int scroll_speed   = 40;
+    int scroll_pos     = 0;
+    int scroll_counter = 0;
+    int speaker        = 0;
+    int traffic_led    = 0;
+    const char* last_message = NULL;
+
+    process_string(current_message);
+    int total = processed_len + DISPLAY_WIDTH;
+    clear_hex();
+    printf("[HEX] Task started.\n");
+    printf("[HEX] System ready. Flip switches to display messages.\n");
+
+    while (1) {
+    	int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
+		IOWR_ALTERA_AVALON_PIO_DATA(LEDR_BASE, sw); // Mirror switches to LEDs to see what's active
+
+    	// check emergency state before updating
+    	if (emergency_active) {
+    		emergency_msg();
+			while (emergency_active) {
+				OSTimeDly(5);
+			}
+		}
+    	// Check for new key press and update message
+		const char* new_msg = NULL;
+
+		if (key_flags & (1 << 0)) {
+			key_flags &= ~(1 << 0);
+			new_msg = "CAPTURING";
+		} else if (key_flags & (1 << 1)) {
+			key_flags &= ~(1 << 1);
+			new_msg = "DISPLAYING";
+		}
+
+		// If message changed, reset scroll
+		if (new_msg != NULL && new_msg != last_message) {
+			current_message = new_msg;
+			last_message    = new_msg;
+			process_string(current_message);
+			total = processed_len + DISPLAY_WIDTH;
+			scroll_pos     = 0;
+			scroll_counter = 0;
+		}
+
+		int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
+        IOWR_ALTERA_AVALON_PIO_DATA(LEDR_BASE, sw); // Mirror switches to LEDs to see what's active
+
+        // SW0 off — everything off
+        if (!(sw & 0x1)) {
+            clear_hex();
+            set_hex_message("----");
+			total = processed_len + DISPLAY_WIDTH;
+            scroll_pos     = 0;
+            scroll_counter = 0;
+            traffic_led = 0;
+            IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+            speaker = 0;
+			IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
+        }
+        // SW0 on - scroll/pause message
+        else {
+        	// cpu usage
+        	cpuFlag = (sw & 0x4) ? 1 : 0;
+            // always display current position
+            scroll_step(scroll_pos, cpuFlag);
+            // SW0 + SW1 - scroll message
+            if (sw & 0x2) {
+                scroll_counter++;
+                if (scroll_counter >= scroll_speed) {
+                    scroll_counter = 0;
+                    scroll_pos++;
+                    // wrap around
+                    if (scroll_pos >= (total)) scroll_pos = 0;
+
+                    // speaker + traffic led
+                    if (sw & 0x8) {
+                    	traffic_led++;
+                    	if (traffic_led > 7) traffic_led = 0;
+                    	IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+						speaker = !speaker;
+						IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
+					} else {
+						traffic_led = 0;
+						IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+						speaker = 0;
+						IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
+					}
+                }
+            }
+        }
+
+        // small delay to prevent cpu hogging
+        OSTimeDly(10);
+    }
+}
+
+// hex_init
+void hex_init(void) {
+    OSTaskCreateExt(hex_task,
+    				NULL,
+                    (void*)&hex_stk[HEX_STACKSIZE-1],
+                    HEX_PRIORITY,
+                    HEX_PRIORITY,
+                    hex_stk,
+                    HEX_STACKSIZE,
+                    NULL,
+                    0);
+}
