@@ -19,10 +19,10 @@
 #define FB_SIZE   (FB_WIDTH * FB_HEIGHT)  // 76800 pixels
 
 // sdram buffer address
-#define SDRAM_FB_ADDR 0x3ED000UL
-static uint8_t *sdram_fb = (uint8_t *)SDRAM_FB_ADDR;
+#define SDRAM_FB_ADDR 0x400000UL // make sure addresses don't overlap
+static uint16_t *sdram_fb = (uint16_t *)SDRAM_FB_ADDR;
 #define EMERGENCY_FB_ADDR 0x3DA000
-static uint8_t *emergency_fb = (uint8_t *)EMERGENCY_FB_ADDR;
+static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
 
 // task config
 #define VGA_STACKSIZE 4096
@@ -31,10 +31,10 @@ OS_STK vga_stk[VGA_STACKSIZE];
 
 // write_pixel()
 // addr  : 0 to 76799 (row-major: addr = x + y * FB_WIDTH)
-// color : 4-bit grayscale value (0x0 = black, 0xF = white)
-void write_pixel(unsigned int addr, unsigned char color) {
+// color : 12-bit RGB444 value
+void write_pixel(unsigned int addr, uint16_t color) {
     IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
-    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xF);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xFFF);
     IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
     IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
 }
@@ -71,12 +71,13 @@ void vga_task(void *pdata) {
 
 	// copy image from flash into sdram
 	printf("[VGA] Copying image to SDRAM at 0x%08X...\n", (unsigned int)SDRAM_FB_ADDR);
-	memcpy(sdram_fb, baby_image_data, IMG_SIZE);
-	memcpy(emergency_fb, emergency_image_data, IMG_SIZE);
-	printf("[VGA] Image ready in SDRAM (%d bytes).\n", IMG_SIZE);
+	memcpy(sdram_fb, baby_image_data, IMG_BYTES);
+	memcpy(emergency_fb, emergency_image_data, IMG_BYTES);
+	printf("[VGA] Image ready in SDRAM (%d bytes).\n", IMG_BYTES);
 
 	// start with black screen
 	clear_framebuffer();
+	int current_state = 0;
 	printf("[VGA] Display cleared. Waiting for KEY1 from Core 3...\n");
 
 	// main loop
@@ -88,18 +89,25 @@ void vga_task(void *pdata) {
 				OSTimeDly(5);
 			}
 			key_flags = 0;
-			write_framebuffer();
+			if (current_state) {
+				write_framebuffer();
+			}
+			else {
+				clear_framebuffer();
+			}
 			printf("[VGA] EMERGENCY CLEARED - CONTINUING OPERATION\n\n");
 		}
 		// key0 simulates capturing data - save into sdram
 		if (key_flags & (1 << 0)) {
 			key_flags &= ~(1 << 0);
+			current_state = 0;
 			printf("[VGA] Clearing image\n");
 			clear_framebuffer();
 		}
 		// key1 reads data from sdram and display onto vga
 		if (key_flags & (1 << 1)) {
 			key_flags &= ~(1 << 1);
+			current_state = 1;
 			printf("[VGA] Displaying image from SDRAM\n");
 			write_framebuffer();
 		}

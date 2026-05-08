@@ -49,21 +49,21 @@ module projectM1_mm_interconnect_0_router_033_default_decode
                DEFAULT_RD_CHANNEL = -1,
                DEFAULT_DESTID = 4 
    )
-  (output [93 - 89 : 0] default_destination_id,
-   output [32-1 : 0] default_wr_channel,
-   output [32-1 : 0] default_rd_channel,
-   output [32-1 : 0] default_src_channel
+  (output [95 - 90 : 0] default_destination_id,
+   output [36-1 : 0] default_wr_channel,
+   output [36-1 : 0] default_rd_channel,
+   output [36-1 : 0] default_src_channel
   );
 
   assign default_destination_id = 
-    DEFAULT_DESTID[93 - 89 : 0];
+    DEFAULT_DESTID[95 - 90 : 0];
 
   generate
     if (DEFAULT_CHANNEL == -1) begin : no_default_channel_assignment
       assign default_src_channel = '0;
     end
     else begin : default_channel_assignment
-      assign default_src_channel = 32'b1 << DEFAULT_CHANNEL;
+      assign default_src_channel = 36'b1 << DEFAULT_CHANNEL;
     end
   endgenerate
 
@@ -73,8 +73,8 @@ module projectM1_mm_interconnect_0_router_033_default_decode
       assign default_rd_channel = '0;
     end
     else begin : default_rw_channel_assignment
-      assign default_wr_channel = 32'b1 << DEFAULT_WR_CHANNEL;
-      assign default_rd_channel = 32'b1 << DEFAULT_RD_CHANNEL;
+      assign default_wr_channel = 36'b1 << DEFAULT_WR_CHANNEL;
+      assign default_rd_channel = 36'b1 << DEFAULT_RD_CHANNEL;
     end
   endgenerate
 
@@ -93,7 +93,7 @@ module projectM1_mm_interconnect_0_router_033
     // Command Sink (Input)
     // -------------------
     input                       sink_valid,
-    input  [107-1 : 0]    sink_data,
+    input  [109-1 : 0]    sink_data,
     input                       sink_startofpacket,
     input                       sink_endofpacket,
     output                      sink_ready,
@@ -102,8 +102,8 @@ module projectM1_mm_interconnect_0_router_033
     // Command Source (Output)
     // -------------------
     output                          src_valid,
-    output reg [107-1    : 0] src_data,
-    output reg [32-1 : 0] src_channel,
+    output reg [109-1    : 0] src_data,
+    output reg [36-1 : 0] src_channel,
     output                          src_startofpacket,
     output                          src_endofpacket,
     input                           src_ready
@@ -114,12 +114,12 @@ module projectM1_mm_interconnect_0_router_033
     // -------------------------------------------------------
     localparam PKT_ADDR_H = 62;
     localparam PKT_ADDR_L = 36;
-    localparam PKT_DEST_ID_H = 93;
-    localparam PKT_DEST_ID_L = 89;
-    localparam PKT_PROTECTION_H = 97;
-    localparam PKT_PROTECTION_L = 95;
-    localparam ST_DATA_W = 107;
-    localparam ST_CHANNEL_W = 32;
+    localparam PKT_DEST_ID_H = 95;
+    localparam PKT_DEST_ID_L = 90;
+    localparam PKT_PROTECTION_H = 99;
+    localparam PKT_PROTECTION_L = 97;
+    localparam ST_DATA_W = 109;
+    localparam ST_CHANNEL_W = 36;
     localparam DECODER_TYPE = 1;
 
     localparam PKT_TRANS_WRITE = 65;
@@ -158,7 +158,7 @@ module projectM1_mm_interconnect_0_router_033
     assign src_valid         = sink_valid;
     assign src_startofpacket = sink_startofpacket;
     assign src_endofpacket   = sink_endofpacket;
-    wire [32-1 : 0] default_src_channel;
+    wire [36-1 : 0] default_src_channel;
 
 
 
@@ -190,11 +190,11 @@ module projectM1_mm_interconnect_0_router_033
 
 
         if (destid == 4 ) begin
-            src_channel = 32'b01;
+            src_channel = 36'b01;
         end
 
         if (destid == 5  && read_transaction) begin
-            src_channel = 32'b10;
+            src_channel = 36'b10;
         end
 
 

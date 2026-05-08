@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>ucosii</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>May 7, 2026 11:27:46 AM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1778124466517</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>May 8, 2026 10:55:02 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1778252102335</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\cklie\OneDrive\Documents\Academic\Monash\Y3\ECE3073\Quartus\Project\software\M2_core2_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\projectM1.sopcinfo</SopcDesignFile>
@@ -1742,25 +1742,25 @@
                 <regionName>shared_sdram</regionName>
                 <memoryName>shared_sdram</memoryName>
                 <offset>2097152</offset>
-                <size>2097152</size>
+                <size>4194304</size>
                 <baseAddress>0x200000</baseAddress>
-                <addressRange>0x00200000 - 0x003FFFFF</addressRange>
+                <addressRange>0x00200000 - 0x005FFFFF</addressRange>
         </LinkerRegion>
         <LinkerRegion>
                 <regionName>reset</regionName>
                 <memoryName>core_2_memory</memoryName>
                 <offset>0</offset>
                 <size>32</size>
-                <baseAddress>0x4010000</baseAddress>
-                <addressRange>0x04010000 - 0x0401001F</addressRange>
+                <baseAddress>0x4001000</baseAddress>
+                <addressRange>0x04001000 - 0x0400101F</addressRange>
         </LinkerRegion>
         <LinkerRegion>
                 <regionName>core_2_memory</regionName>
                 <memoryName>core_2_memory</memoryName>
                 <offset>32</offset>
-                <size>32736</size>
-                <baseAddress>0x4010020</baseAddress>
-                <addressRange>0x04010020 - 0x04017FFF</addressRange>
+                <size>4064</size>
+                <baseAddress>0x4001020</baseAddress>
+                <addressRange>0x04001020 - 0x04001FFF</addressRange>
         </LinkerRegion>
         <MemoryMap>
                 <slaveDescriptor>shared_sdram</slaveDescriptor>
@@ -1769,76 +1769,76 @@
                 <attributes>memory</attributes>
         </MemoryMap>
         <MemoryMap>
+                <slaveDescriptor>core_2_memory</slaveDescriptor>
+                <addressRange>0x04001000 - 0x04001FFF</addressRange>
+                <addressSpan>4096</addressSpan>
+                <attributes>memory</attributes>
+        </MemoryMap>
+        <MemoryMap>
                 <slaveDescriptor>core_2_timer</slaveDescriptor>
-                <addressRange>0x04001020 - 0x0400103F</addressRange>
+                <addressRange>0x04003020 - 0x0400303F</addressRange>
                 <addressSpan>32</addressSpan>
                 <attributes>timer</attributes>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_3_rx</slaveDescriptor>
-                <addressRange>0x040010B0 - 0x040010BF</addressRange>
+                <addressRange>0x040030B0 - 0x040030BF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_3_tx</slaveDescriptor>
-                <addressRange>0x040010C0 - 0x040010CF</addressRange>
+                <addressRange>0x040030C0 - 0x040030CF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_pixel_addr</slaveDescriptor>
-                <addressRange>0x040010D0 - 0x040010DF</addressRange>
+                <addressRange>0x040030D0 - 0x040030DF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_pixel_data</slaveDescriptor>
-                <addressRange>0x040010E0 - 0x040010EF</addressRange>
+                <addressRange>0x040030E0 - 0x040030EF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_pixel_wren</slaveDescriptor>
-                <addressRange>0x040010F0 - 0x040010FF</addressRange>
+                <addressRange>0x040030F0 - 0x040030FF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_1_rx</slaveDescriptor>
-                <addressRange>0x04001100 - 0x0400110F</addressRange>
+                <addressRange>0x04003100 - 0x0400310F</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
+                <slaveDescriptor>us_counter</slaveDescriptor>
+                <addressRange>0x04003110 - 0x0400311F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_1_tx</slaveDescriptor>
-                <addressRange>0x04001110 - 0x0400111F</addressRange>
+                <addressRange>0x04003120 - 0x0400312F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_2_jtag</slaveDescriptor>
-                <addressRange>0x04001128 - 0x0400112F</addressRange>
+                <addressRange>0x04003138 - 0x0400313F</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes>printable</attributes>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>us_counter</slaveDescriptor>
-                <addressRange>0x04005110 - 0x0400511F</addressRange>
-                <addressSpan>16</addressSpan>
-                <attributes/>
-        </MemoryMap>
-        <MemoryMap>
                 <slaveDescriptor>mutex_0</slaveDescriptor>
-                <addressRange>0x040051B0 - 0x040051B7</addressRange>
+                <addressRange>0x040031B0 - 0x040031B7</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes/>
-        </MemoryMap>
-        <MemoryMap>
-                <slaveDescriptor>core_2_memory</slaveDescriptor>
-                <addressRange>0x04010000 - 0x04017FFF</addressRange>
-                <addressSpan>32768</addressSpan>
-                <attributes>memory</attributes>
         </MemoryMap>
         <LinkerSection>
                 <sectionName>.text</sectionName>
@@ -1858,10 +1858,10 @@
         </LinkerSection>
         <LinkerSection>
                 <sectionName>.heap</sectionName>
-                <regionName>core_2_memory</regionName>
+                <regionName>shared_sdram</regionName>
         </LinkerSection>
         <LinkerSection>
                 <sectionName>.stack</sectionName>
-                <regionName>core_2_memory</regionName>
+                <regionName>shared_sdram</regionName>
         </LinkerSection>
 </sch:Settings>

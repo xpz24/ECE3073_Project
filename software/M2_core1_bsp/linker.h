@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_1' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Wed May 06 19:19:50 SGT 2026
+ * Generated: Fri May 08 22:54:09 SGT 2026
  */
 
 /*
@@ -65,9 +65,9 @@
  *
  */
 
-#define CORE_1_MEMORY_REGION_BASE 0x4002020
-#define CORE_1_MEMORY_REGION_SPAN 8160
-#define RESET_REGION_BASE 0x4002000
+#define CORE_1_MEMORY_REGION_BASE 0x4001020
+#define CORE_1_MEMORY_REGION_SPAN 4064
+#define RESET_REGION_BASE 0x4001000
 #define RESET_REGION_SPAN 32
 #define SHARED_SDRAM_REGION_BASE 0x0
 #define SHARED_SDRAM_REGION_SPAN 2097152

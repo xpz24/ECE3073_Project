@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_2' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Wed May 06 17:05:22 SGT 2026
+ * Generated: Fri May 08 22:55:02 SGT 2026
  */
 
 /*
@@ -50,14 +50,14 @@
 
 MEMORY
 {
-    shared_sdram : ORIGIN = 0x200000, LENGTH = 2097152
-    reset : ORIGIN = 0x4010000, LENGTH = 32
-    core_2_memory : ORIGIN = 0x4010020, LENGTH = 32736
+    shared_sdram : ORIGIN = 0x200000, LENGTH = 4194304
+    reset : ORIGIN = 0x4001000, LENGTH = 32
+    core_2_memory : ORIGIN = 0x4001020, LENGTH = 4064
 }
 
 /* Define symbols for each memory base-address */
 __alt_mem_shared_sdram = 0x0;
-__alt_mem_core_2_memory = 0x4010000;
+__alt_mem_core_2_memory = 0x4001000;
 
 OUTPUT_FORMAT( "elf32-littlenios2",
                "elf32-littlenios2",
@@ -336,6 +336,9 @@ SECTIONS
         *(.shared_sdram .shared_sdram. shared_sdram.*)
         . = ALIGN(4);
         PROVIDE (_alt_partition_shared_sdram_end = ABSOLUTE(.));
+        _end = ABSOLUTE(.);
+        end = ABSOLUTE(.);
+        __alt_stack_base = ABSOLUTE(.);
     } > shared_sdram
 
     PROVIDE (_alt_partition_shared_sdram_load_addr = LOADADDR(.shared_sdram));
@@ -353,9 +356,6 @@ SECTIONS
         *(.core_2_memory .core_2_memory. core_2_memory.*)
         . = ALIGN(4);
         PROVIDE (_alt_partition_core_2_memory_end = ABSOLUTE(.));
-        _end = ABSOLUTE(.);
-        end = ABSOLUTE(.);
-        __alt_stack_base = ABSOLUTE(.);
     } > core_2_memory
 
     PROVIDE (_alt_partition_core_2_memory_load_addr = LOADADDR(.core_2_memory));
@@ -407,7 +407,7 @@ SECTIONS
 /*
  * Don't override this, override the __alt_stack_* symbols instead.
  */
-__alt_data_end = 0x4018000;
+__alt_data_end = 0x600000;
 
 /*
  * The next two symbols define the location of the default stack.  You can
@@ -423,4 +423,4 @@ PROVIDE( __alt_stack_limit   = __alt_stack_base );
  * Override this symbol to put the heap in a different memory.
  */
 PROVIDE( __alt_heap_start    = end );
-PROVIDE( __alt_heap_limit    = 0x4018000 );
+PROVIDE( __alt_heap_limit    = 0x600000 );

@@ -40,7 +40,7 @@ module projectM1 (
 	input	[1:0]	key_export;
 	output	[9:0]	ledr_export;
 	output	[16:0]	pixel_addr_export;
-	output	[3:0]	pixel_data_export;
+	output	[11:0]	pixel_data_export;
 	output		pixel_wren_export;
 	output	[12:0]	sdram_addr;
 	output	[1:0]	sdram_ba;

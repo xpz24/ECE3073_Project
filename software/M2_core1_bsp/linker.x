@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_1' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Wed May 06 22:41:53 SGT 2026
+ * Generated: Fri May 08 22:54:09 SGT 2026
  */
 
 /*
@@ -51,13 +51,13 @@
 MEMORY
 {
     shared_sdram : ORIGIN = 0x0, LENGTH = 2097152
-    reset : ORIGIN = 0x4002000, LENGTH = 32
-    core_1_memory : ORIGIN = 0x4002020, LENGTH = 8160
+    reset : ORIGIN = 0x4001000, LENGTH = 32
+    core_1_memory : ORIGIN = 0x4001020, LENGTH = 4064
 }
 
 /* Define symbols for each memory base-address */
 __alt_mem_shared_sdram = 0x0;
-__alt_mem_core_1_memory = 0x4002000;
+__alt_mem_core_1_memory = 0x4001000;
 
 OUTPUT_FORMAT( "elf32-littlenios2",
                "elf32-littlenios2",

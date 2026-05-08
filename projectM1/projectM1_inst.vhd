@@ -10,7 +10,7 @@
 			key_export          : in    std_logic_vector(1 downto 0)  := (others => 'X'); -- export
 			ledr_export         : out   std_logic_vector(9 downto 0);                     -- export
 			pixel_addr_export   : out   std_logic_vector(16 downto 0);                    -- export
-			pixel_data_export   : out   std_logic_vector(3 downto 0);                     -- export
+			pixel_data_export   : out   std_logic_vector(11 downto 0);                    -- export
 			pixel_wren_export   : out   std_logic;                                        -- export
 			sdram_addr          : out   std_logic_vector(12 downto 0);                    -- addr
 			sdram_ba            : out   std_logic_vector(1 downto 0);                     -- ba

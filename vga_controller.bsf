@@ -26,8 +26,8 @@ refer to the applicable agreement for further details.
 	(port
 		(pt 0 32)
 		(input)
-		(text "VGA_DATA[3..0]" (rect 0 0 79 12)(font "Arial" ))
-		(text "VGA_DATA[3..0]" (rect 21 27 100 39)(font "Arial" ))
+		(text "VGA_DATA[11..0]" (rect 0 0 81 12)(font "Arial" ))
+		(text "VGA_DATA[11..0]" (rect 21 27 102 39)(font "Arial" ))
 		(line (pt 0 32)(pt 16 32)(line_width 3))
 	)
 	(port
@@ -117,6 +117,26 @@ refer to the applicable agreement for further details.
 	(parameter
 		"V_CYCLE"
 		"525"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"H_START"
+		""
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"H_END"
+		""
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"V_START"
+		""
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"V_END"
+		""
 		""
 		(type "PARAMETER_SIGNED_DEC")	)
 	(drawing

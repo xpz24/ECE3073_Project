@@ -2338,12 +2338,12 @@ defparam projectM1_core_1_cpu_ociram_sp_ram.lpm_file = "projectM1_core_1_cpu_oci
 defparam projectM1_core_1_cpu_ociram_sp_ram.lpm_file = "projectM1_core_1_cpu_ociram_default_contents.hex";
 `endif
 //synthesis translate_on
-  assign cfgrom_readdata = (MonAReg[4 : 2] == 3'd0)? 32'h04002020 :
+  assign cfgrom_readdata = (MonAReg[4 : 2] == 3'd0)? 32'h04001020 :
     (MonAReg[4 : 2] == 3'd1)? 32'h00001b1b :
     (MonAReg[4 : 2] == 3'd2)? 32'h00040000 :
     (MonAReg[4 : 2] == 3'd3)? 32'h00000100 :
     (MonAReg[4 : 2] == 3'd4)? 32'h20000000 :
-    (MonAReg[4 : 2] == 3'd5)? 32'h04002000 :
+    (MonAReg[4 : 2] == 3'd5)? 32'h04001000 :
     (MonAReg[4 : 2] == 3'd6)? 32'h00000000 :
     32'h00000000;
 
@@ -3862,8 +3862,8 @@ reg              wait_for_one_post_bret_inst;
     (W_br_taken | R_ctrl_uncond_cti_non_br)   ? 2'b10 :
     2'b11;
 
-  assign F_pc_no_crst_nxt = (F_pc_sel_nxt == 2'b00)? 16779272 :
-    (F_pc_sel_nxt == 2'b01)? 16781832 :
+  assign F_pc_no_crst_nxt = (F_pc_sel_nxt == 2'b00)? 16778248 :
+    (F_pc_sel_nxt == 2'b01)? 16779784 :
     (F_pc_sel_nxt == 2'b10)? E_arith_result[26 : 2] :
     F_pc_plus_one;
 
@@ -3874,7 +3874,7 @@ reg              wait_for_one_post_bret_inst;
   always @(posedge clk or negedge reset_n)
     begin
       if (reset_n == 0)
-          F_pc <= 16779264;
+          F_pc <= 16778240;
       else if (F_pc_en)
           F_pc <= F_pc_nxt;
     end

@@ -123,28 +123,46 @@ void process_string(const char *text) {
 }
 
 // SCROLL STRING FUNCTION
-void scroll_step(int pos, int cpuFlag) {
+void scroll_step(int pos, int cpuFlag, int num) {
     int len = processed_len;
     unsigned char display[6];
-    int offset = 0;
-
+    // cpu usage
     if (cpuFlag) {
-    	offset = 2; // reserve HEX0 and HEX1 for cpu usage
     	int cpu = (int)OSCPUUsage;
     	if (cpu > 99) cpu = 99;
-    	display[0] = seg_char('0' + (cpu / 10), 0);
-		display[1] = seg_char('0' + (cpu % 10), 0);
-    }
 
-    // Fill remaining display slots
-    for (int j = offset; j < DISPLAY_WIDTH; j++) {
-        int char_idx = pos + j - DISPLAY_WIDTH;
-        if (char_idx >= 0 && char_idx < len)
-            display[j] = seg_char(processed[char_idx].c, processed[char_idx].dp);
-        else
-            display[j] = seg_char(' ', 0);
+		switch (cpu) {
+			case 1:
+				num = SEG_1 | 0x80;
+				break;
+			case 2:
+				num = SEG_2 | 0x80;
+				break;
+			case 3:
+				num = SEG_3 | 0x80;
+				break;
+			default:
+				num = SEG_1 | 0x80;
+				break;
+		}
+		display[0] = SEG_C | 0x80;
+		display[1] = num;
+		display[2] = SEG_DASH | 0x80;
+		display[3] = SEG_DASH | 0x80;
+		display[4] = seg_char('0' + (cpu / 10), 0);
+		display[5] = seg_char('0' + (cpu % 10), 0);
     }
-    // Write to displays (HEX5 is leftmost = display[5])
+    // scrolling text
+    else {
+    	for (int j = 0; j < DISPLAY_WIDTH; j++) {
+			int char_idx = pos + j - DISPLAY_WIDTH;
+			if (char_idx >= 0 && char_idx < len)
+				display[j] = seg_char(processed[char_idx].c, processed[char_idx].dp);
+			else
+				display[j] = seg_char(' ', 0);
+		}
+    }
+    // Write to displays
     write_hex(display[0], display[1], display[2], display[3], display[4], display[5]);
 }
 
@@ -158,6 +176,7 @@ void set_hex_message(const char* msg) {
     process_string(current_message);
 }
 
+// emergency message
 void emergency_msg(void) {
 	unsigned char dash = SEG_DASH | 0x80;
 	unsigned char s = SEG_S | 0x80;
@@ -238,30 +257,34 @@ void hex_task(void* pdata) {
         	// cpu usage
         	cpuFlag = (sw & 0x4) ? 1 : 0;
             // always display current position
-            scroll_step(scroll_pos, cpuFlag);
+            scroll_step(scroll_pos, cpuFlag, 1);
             // SW0 + SW1 - scroll message
             if (sw & 0x2) {
-                scroll_counter++;
-                if (scroll_counter >= scroll_speed) {
-                    scroll_counter = 0;
-                    scroll_pos++;
-                    // wrap around
-                    if (scroll_pos >= (total)) scroll_pos = 0;
+            	if (cpuFlag);
+            	else {
+            		scroll_counter++;
+					if (scroll_counter >= scroll_speed) {
+						scroll_counter = 0;
+						scroll_pos++;
+						// wrap around
+						if (scroll_pos >= (total)) scroll_pos = 0;
 
-                    // speaker + traffic led
-                    if (sw & 0x8) {
-                    	traffic_led++;
-                    	if (traffic_led > 7) traffic_led = 0;
-                    	IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
-						speaker = !speaker;
-						IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
-					} else {
-						traffic_led = 0;
-						IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
-						speaker = 0;
-						IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
+						// SW0 + SW1 + SW3 - speaker + traffic led
+						if (sw & 0x8) {
+							traffic_led++;
+							if (traffic_led > 7) traffic_led = 0;
+							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+							speaker = !speaker;
+							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
+						}
+						else {
+							traffic_led = 0;
+							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+							speaker = 0;
+							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
+						}
 					}
-                }
+            	}
             }
         }
 

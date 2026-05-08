@@ -94,7 +94,7 @@ void accel_task(void* pdata) {
 					start = get_us();
 					tx_pulse(TX_1_3_BASE, EMERGENCY_STOP);
 					end = get_us();
-					printf("[LATENCY] Start Emergency Core 3 TX pulse: %lu us\n\n", end - start);
+					printf("[LATENCY] Clear Emergency Core 3 TX pulse: %lu us\n\n", end - start);
 					printf("[ACCEL] X=%ld Y=%ld Z=%ld\n", x, y, z);
 					printf("[ACCEL] Board upright, resuming.\n");
 				}

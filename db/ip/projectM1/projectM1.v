@@ -14,7 +14,7 @@ module projectM1 (
 		input  wire [1:0]  key_export,          //         key.export
 		output wire [9:0]  ledr_export,         //        ledr.export
 		output wire [16:0] pixel_addr_export,   //  pixel_addr.export
-		output wire [3:0]  pixel_data_export,   //  pixel_data.export
+		output wire [11:0] pixel_data_export,   //  pixel_data.export
 		output wire        pixel_wren_export,   //  pixel_wren.export
 		output wire [12:0] sdram_addr,          //       sdram.addr
 		output wire [1:0]  sdram_ba,            //            .ba
@@ -36,7 +36,7 @@ module projectM1 (
 	);
 
 	wire   [2:0] core_2_1_tx_external_connection_export;                                                 // core_2_1_tx:out_port -> core_1_2_rx:in_port
-	wire   [2:0] core_1_2_tx_external_connection_export;                                                 // core_1_2_tx:out_port -> core_2_1_rx:in_port
+	wire   [3:0] core_1_2_tx_external_connection_export;                                                 // core_1_2_tx:out_port -> core_2_1_rx:in_port
 	wire   [2:0] core_3_1_tx_external_connection_export;                                                 // core_3_1_tx:out_port -> core_1_3_rx:in_port
 	wire   [2:0] core_1_3_tx_external_connection_export;                                                 // core_1_3_tx:out_port -> core_3_1_rx:in_port
 	wire   [2:0] core_3_2_tx_external_connection_export;                                                 // core_3_2_tx:out_port -> core_2_3_rx:in_port
@@ -104,13 +104,6 @@ module projectM1 (
 	wire   [3:0] mm_interconnect_0_core_1_debug_mem_slave_byteenable;                                    // mm_interconnect_0:core_1_debug_mem_slave_byteenable -> core_1:debug_mem_slave_byteenable
 	wire         mm_interconnect_0_core_1_debug_mem_slave_write;                                         // mm_interconnect_0:core_1_debug_mem_slave_write -> core_1:debug_mem_slave_write
 	wire  [31:0] mm_interconnect_0_core_1_debug_mem_slave_writedata;                                     // mm_interconnect_0:core_1_debug_mem_slave_writedata -> core_1:debug_mem_slave_writedata
-	wire         mm_interconnect_0_core_1_memory_s1_chipselect;                                          // mm_interconnect_0:core_1_memory_s1_chipselect -> core_1_memory:chipselect
-	wire  [31:0] mm_interconnect_0_core_1_memory_s1_readdata;                                            // core_1_memory:readdata -> mm_interconnect_0:core_1_memory_s1_readdata
-	wire  [10:0] mm_interconnect_0_core_1_memory_s1_address;                                             // mm_interconnect_0:core_1_memory_s1_address -> core_1_memory:address
-	wire   [3:0] mm_interconnect_0_core_1_memory_s1_byteenable;                                          // mm_interconnect_0:core_1_memory_s1_byteenable -> core_1_memory:byteenable
-	wire         mm_interconnect_0_core_1_memory_s1_write;                                               // mm_interconnect_0:core_1_memory_s1_write -> core_1_memory:write
-	wire  [31:0] mm_interconnect_0_core_1_memory_s1_writedata;                                           // mm_interconnect_0:core_1_memory_s1_writedata -> core_1_memory:writedata
-	wire         mm_interconnect_0_core_1_memory_s1_clken;                                               // mm_interconnect_0:core_1_memory_s1_clken -> core_1_memory:clken
 	wire         mm_interconnect_0_shared_sdram_s1_chipselect;                                           // mm_interconnect_0:shared_sdram_s1_chipselect -> shared_sdram:az_cs
 	wire  [15:0] mm_interconnect_0_shared_sdram_s1_readdata;                                             // shared_sdram:za_data -> mm_interconnect_0:shared_sdram_s1_readdata
 	wire         mm_interconnect_0_shared_sdram_s1_waitrequest;                                          // shared_sdram:za_waitrequest -> mm_interconnect_0:shared_sdram_s1_waitrequest
@@ -183,6 +176,13 @@ module projectM1 (
 	wire   [1:0] mm_interconnect_0_core_1_3_rx_s1_address;                                               // mm_interconnect_0:core_1_3_rx_s1_address -> core_1_3_rx:address
 	wire         mm_interconnect_0_core_1_3_rx_s1_write;                                                 // mm_interconnect_0:core_1_3_rx_s1_write -> core_1_3_rx:write_n
 	wire  [31:0] mm_interconnect_0_core_1_3_rx_s1_writedata;                                             // mm_interconnect_0:core_1_3_rx_s1_writedata -> core_1_3_rx:writedata
+	wire         mm_interconnect_0_core_1_memory_s1_chipselect;                                          // mm_interconnect_0:core_1_memory_s1_chipselect -> core_1_memory:chipselect
+	wire  [31:0] mm_interconnect_0_core_1_memory_s1_readdata;                                            // core_1_memory:readdata -> mm_interconnect_0:core_1_memory_s1_readdata
+	wire   [9:0] mm_interconnect_0_core_1_memory_s1_address;                                             // mm_interconnect_0:core_1_memory_s1_address -> core_1_memory:address
+	wire   [3:0] mm_interconnect_0_core_1_memory_s1_byteenable;                                          // mm_interconnect_0:core_1_memory_s1_byteenable -> core_1_memory:byteenable
+	wire         mm_interconnect_0_core_1_memory_s1_write;                                               // mm_interconnect_0:core_1_memory_s1_write -> core_1_memory:write
+	wire  [31:0] mm_interconnect_0_core_1_memory_s1_writedata;                                           // mm_interconnect_0:core_1_memory_s1_writedata -> core_1_memory:writedata
+	wire         mm_interconnect_0_core_1_memory_s1_clken;                                               // mm_interconnect_0:core_1_memory_s1_clken -> core_1_memory:clken
 	wire         mm_interconnect_0_core_2_jtag_avalon_jtag_slave_chipselect;                             // mm_interconnect_0:core_2_jtag_avalon_jtag_slave_chipselect -> core_2_jtag:av_chipselect
 	wire  [31:0] mm_interconnect_0_core_2_jtag_avalon_jtag_slave_readdata;                               // core_2_jtag:av_readdata -> mm_interconnect_0:core_2_jtag_avalon_jtag_slave_readdata
 	wire         mm_interconnect_0_core_2_jtag_avalon_jtag_slave_waitrequest;                            // core_2_jtag:av_waitrequest -> mm_interconnect_0:core_2_jtag_avalon_jtag_slave_waitrequest
@@ -208,13 +208,6 @@ module projectM1 (
 	wire   [1:0] mm_interconnect_0_core_2_1_rx_s1_address;                                               // mm_interconnect_0:core_2_1_rx_s1_address -> core_2_1_rx:address
 	wire         mm_interconnect_0_core_2_1_rx_s1_write;                                                 // mm_interconnect_0:core_2_1_rx_s1_write -> core_2_1_rx:write_n
 	wire  [31:0] mm_interconnect_0_core_2_1_rx_s1_writedata;                                             // mm_interconnect_0:core_2_1_rx_s1_writedata -> core_2_1_rx:writedata
-	wire         mm_interconnect_0_core_2_memory_s1_chipselect;                                          // mm_interconnect_0:core_2_memory_s1_chipselect -> core_2_memory:chipselect
-	wire  [31:0] mm_interconnect_0_core_2_memory_s1_readdata;                                            // core_2_memory:readdata -> mm_interconnect_0:core_2_memory_s1_readdata
-	wire  [12:0] mm_interconnect_0_core_2_memory_s1_address;                                             // mm_interconnect_0:core_2_memory_s1_address -> core_2_memory:address
-	wire   [3:0] mm_interconnect_0_core_2_memory_s1_byteenable;                                          // mm_interconnect_0:core_2_memory_s1_byteenable -> core_2_memory:byteenable
-	wire         mm_interconnect_0_core_2_memory_s1_write;                                               // mm_interconnect_0:core_2_memory_s1_write -> core_2_memory:write
-	wire  [31:0] mm_interconnect_0_core_2_memory_s1_writedata;                                           // mm_interconnect_0:core_2_memory_s1_writedata -> core_2_memory:writedata
-	wire         mm_interconnect_0_core_2_memory_s1_clken;                                               // mm_interconnect_0:core_2_memory_s1_clken -> core_2_memory:clken
 	wire         mm_interconnect_0_core_2_pixel_wren_s1_chipselect;                                      // mm_interconnect_0:core_2_pixel_wren_s1_chipselect -> core_2_pixel_wren:chipselect
 	wire  [31:0] mm_interconnect_0_core_2_pixel_wren_s1_readdata;                                        // core_2_pixel_wren:readdata -> mm_interconnect_0:core_2_pixel_wren_s1_readdata
 	wire   [1:0] mm_interconnect_0_core_2_pixel_wren_s1_address;                                         // mm_interconnect_0:core_2_pixel_wren_s1_address -> core_2_pixel_wren:address
@@ -245,6 +238,13 @@ module projectM1 (
 	wire   [1:0] mm_interconnect_0_core_2_3_rx_s1_address;                                               // mm_interconnect_0:core_2_3_rx_s1_address -> core_2_3_rx:address
 	wire         mm_interconnect_0_core_2_3_rx_s1_write;                                                 // mm_interconnect_0:core_2_3_rx_s1_write -> core_2_3_rx:write_n
 	wire  [31:0] mm_interconnect_0_core_2_3_rx_s1_writedata;                                             // mm_interconnect_0:core_2_3_rx_s1_writedata -> core_2_3_rx:writedata
+	wire         mm_interconnect_0_core_2_memory_s1_chipselect;                                          // mm_interconnect_0:core_2_memory_s1_chipselect -> core_2_memory:chipselect
+	wire  [31:0] mm_interconnect_0_core_2_memory_s1_readdata;                                            // core_2_memory:readdata -> mm_interconnect_0:core_2_memory_s1_readdata
+	wire   [9:0] mm_interconnect_0_core_2_memory_s1_address;                                             // mm_interconnect_0:core_2_memory_s1_address -> core_2_memory:address
+	wire   [3:0] mm_interconnect_0_core_2_memory_s1_byteenable;                                          // mm_interconnect_0:core_2_memory_s1_byteenable -> core_2_memory:byteenable
+	wire         mm_interconnect_0_core_2_memory_s1_write;                                               // mm_interconnect_0:core_2_memory_s1_write -> core_2_memory:write
+	wire  [31:0] mm_interconnect_0_core_2_memory_s1_writedata;                                           // mm_interconnect_0:core_2_memory_s1_writedata -> core_2_memory:writedata
+	wire         mm_interconnect_0_core_2_memory_s1_clken;                                               // mm_interconnect_0:core_2_memory_s1_clken -> core_2_memory:clken
 	wire         mm_interconnect_0_core_3_jtag_avalon_jtag_slave_chipselect;                             // mm_interconnect_0:core_3_jtag_avalon_jtag_slave_chipselect -> core_3_jtag:av_chipselect
 	wire  [31:0] mm_interconnect_0_core_3_jtag_avalon_jtag_slave_readdata;                               // core_3_jtag:av_readdata -> mm_interconnect_0:core_3_jtag_avalon_jtag_slave_readdata
 	wire         mm_interconnect_0_core_3_jtag_avalon_jtag_slave_waitrequest;                            // core_3_jtag:av_waitrequest -> mm_interconnect_0:core_3_jtag_avalon_jtag_slave_waitrequest
@@ -260,13 +260,6 @@ module projectM1 (
 	wire   [3:0] mm_interconnect_0_core_3_debug_mem_slave_byteenable;                                    // mm_interconnect_0:core_3_debug_mem_slave_byteenable -> core_3:debug_mem_slave_byteenable
 	wire         mm_interconnect_0_core_3_debug_mem_slave_write;                                         // mm_interconnect_0:core_3_debug_mem_slave_write -> core_3:debug_mem_slave_write
 	wire  [31:0] mm_interconnect_0_core_3_debug_mem_slave_writedata;                                     // mm_interconnect_0:core_3_debug_mem_slave_writedata -> core_3:debug_mem_slave_writedata
-	wire         mm_interconnect_0_core_3_memory_s1_chipselect;                                          // mm_interconnect_0:core_3_memory_s1_chipselect -> core_3_memory:chipselect
-	wire  [31:0] mm_interconnect_0_core_3_memory_s1_readdata;                                            // core_3_memory:readdata -> mm_interconnect_0:core_3_memory_s1_readdata
-	wire  [12:0] mm_interconnect_0_core_3_memory_s1_address;                                             // mm_interconnect_0:core_3_memory_s1_address -> core_3_memory:address
-	wire   [3:0] mm_interconnect_0_core_3_memory_s1_byteenable;                                          // mm_interconnect_0:core_3_memory_s1_byteenable -> core_3_memory:byteenable
-	wire         mm_interconnect_0_core_3_memory_s1_write;                                               // mm_interconnect_0:core_3_memory_s1_write -> core_3_memory:write
-	wire  [31:0] mm_interconnect_0_core_3_memory_s1_writedata;                                           // mm_interconnect_0:core_3_memory_s1_writedata -> core_3_memory:writedata
-	wire         mm_interconnect_0_core_3_memory_s1_clken;                                               // mm_interconnect_0:core_3_memory_s1_clken -> core_3_memory:clken
 	wire         mm_interconnect_0_core_3_timer_s1_chipselect;                                           // mm_interconnect_0:core_3_timer_s1_chipselect -> core_3_timer:chipselect
 	wire  [15:0] mm_interconnect_0_core_3_timer_s1_readdata;                                             // core_3_timer:readdata -> mm_interconnect_0:core_3_timer_s1_readdata
 	wire   [2:0] mm_interconnect_0_core_3_timer_s1_address;                                              // mm_interconnect_0:core_3_timer_s1_address -> core_3_timer:address
@@ -297,6 +290,13 @@ module projectM1 (
 	wire   [1:0] mm_interconnect_0_core_3_key_s1_address;                                                // mm_interconnect_0:core_3_key_s1_address -> core_3_key:address
 	wire         mm_interconnect_0_core_3_key_s1_write;                                                  // mm_interconnect_0:core_3_key_s1_write -> core_3_key:write_n
 	wire  [31:0] mm_interconnect_0_core_3_key_s1_writedata;                                              // mm_interconnect_0:core_3_key_s1_writedata -> core_3_key:writedata
+	wire         mm_interconnect_0_core_3_memory_s1_chipselect;                                          // mm_interconnect_0:core_3_memory_s1_chipselect -> core_3_memory:chipselect
+	wire  [31:0] mm_interconnect_0_core_3_memory_s1_readdata;                                            // core_3_memory:readdata -> mm_interconnect_0:core_3_memory_s1_readdata
+	wire   [9:0] mm_interconnect_0_core_3_memory_s1_address;                                             // mm_interconnect_0:core_3_memory_s1_address -> core_3_memory:address
+	wire   [3:0] mm_interconnect_0_core_3_memory_s1_byteenable;                                          // mm_interconnect_0:core_3_memory_s1_byteenable -> core_3_memory:byteenable
+	wire         mm_interconnect_0_core_3_memory_s1_write;                                               // mm_interconnect_0:core_3_memory_s1_write -> core_3_memory:write
+	wire  [31:0] mm_interconnect_0_core_3_memory_s1_writedata;                                           // mm_interconnect_0:core_3_memory_s1_writedata -> core_3_memory:writedata
+	wire         mm_interconnect_0_core_3_memory_s1_clken;                                               // mm_interconnect_0:core_3_memory_s1_clken -> core_3_memory:clken
 	wire         mm_interconnect_0_core_3_spi_spi_control_port_chipselect;                               // mm_interconnect_0:core_3_spi_spi_control_port_chipselect -> core_3_spi:spi_select
 	wire  [15:0] mm_interconnect_0_core_3_spi_spi_control_port_readdata;                                 // core_3_spi:data_to_cpu -> mm_interconnect_0:core_3_spi_spi_control_port_readdata
 	wire   [2:0] mm_interconnect_0_core_3_spi_spi_control_port_address;                                  // mm_interconnect_0:core_3_spi_spi_control_port_address -> core_3_spi:mem_addr
@@ -398,7 +398,7 @@ module projectM1 (
 		.irq        (irq_mapper_receiver5_irq)                     //                 irq.irq
 	);
 
-	projectM1_core_1_2_tx core_1_3_tx (
+	projectM1_core_1_3_tx core_1_3_tx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_reset_out_reset),             //               reset.reset_n
 		.address    (mm_interconnect_0_core_1_3_tx_s1_address),    //                  s1.address
@@ -520,7 +520,7 @@ module projectM1 (
 		.irq        (irq_mapper_receiver3_irq)                      //   irq.irq
 	);
 
-	projectM1_core_1_2_tx core_1_traffic_led (
+	projectM1_core_1_3_tx core_1_traffic_led (
 		.clk        (clk_clk),                                            //                 clk.clk
 		.reset_n    (~rst_controller_reset_out_reset),                    //               reset.reset_n
 		.address    (mm_interconnect_0_core_1_traffic_led_s1_address),    //                  s1.address
@@ -562,7 +562,7 @@ module projectM1 (
 		.dummy_ci_port                       ()                                                      // custom_instruction_master.readra
 	);
 
-	projectM1_core_1_2_rx core_2_1_rx (
+	projectM1_core_2_1_rx core_2_1_rx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_002_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_2_1_rx_s1_address),    //                  s1.address
@@ -574,7 +574,7 @@ module projectM1 (
 		.irq        (irq_mapper_001_receiver0_irq)                 //                 irq.irq
 	);
 
-	projectM1_core_1_2_tx core_2_1_tx (
+	projectM1_core_1_3_tx core_2_1_tx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_002_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_2_1_tx_s1_address),    //                  s1.address
@@ -597,7 +597,7 @@ module projectM1 (
 		.irq        (irq_mapper_001_receiver3_irq)                 //                 irq.irq
 	);
 
-	projectM1_core_1_2_tx core_2_3_tx (
+	projectM1_core_1_3_tx core_2_3_tx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_002_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_2_3_tx_s1_address),    //                  s1.address
@@ -722,7 +722,7 @@ module projectM1 (
 		.irq        (irq_mapper_002_receiver3_irq)                 //                 irq.irq
 	);
 
-	projectM1_core_1_2_tx core_3_1_tx (
+	projectM1_core_1_3_tx core_3_1_tx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_003_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_3_1_tx_s1_address),    //                  s1.address
@@ -745,7 +745,7 @@ module projectM1 (
 		.irq        (irq_mapper_002_receiver4_irq)                 //                 irq.irq
 	);
 
-	projectM1_core_1_2_tx core_3_2_tx (
+	projectM1_core_1_3_tx core_3_2_tx (
 		.clk        (clk_clk),                                     //                 clk.clk
 		.reset_n    (~rst_controller_003_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_3_2_tx_s1_address),    //                  s1.address
