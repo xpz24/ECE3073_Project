@@ -11,6 +11,7 @@
 // definitions
 #define ACCEL_PRIORITY    2
 #define ACCEL_STACKSIZE   4096
+OS_STK accel_stk[ACCEL_STACKSIZE];
 
 #define UPSIDE_DOWN_THRESH  (-200)
 #define UPRIGHT_THRESH      ( 200)
@@ -25,9 +26,16 @@ int stable = 0;
 #define EMERGENCY_START   0x1
 #define EMERGENCY_STOP    0x2
 
-OS_STK accel_stk[ACCEL_STACKSIZE];
-
 volatile int emergency_active;
+
+// tilting for scrolling text
+#define TILT_THRESHOLD  150
+#define TILT_MASK       (0x3 << 2)
+#define TILT_NORMAL     (0x0 << 2)
+#define TILT_RIGHT      (0x1 << 2)
+#define TILT_UPSIDEDOWN (0x2 << 2)
+#define TILT_LEFT       (0x3 << 2)
+#define TILT_STABLE_COUNT 3
 
 // read current microsecond count
 static inline alt_u32 get_us(void) {
@@ -49,6 +57,10 @@ void accel_task(void* pdata) {
 	alt_u32 start = 0;
 	alt_u32 end = 0;
 
+	alt_u32 last_tilt_dir = TILT_NORMAL;
+	alt_u32 candidate_tilt = TILT_NORMAL;
+	int tilt_stable = 0;
+
 	// continuously read axis data
 	while (1) {
 		alt_up_accelerometer_spi_read_x_axis(accel, &x);
@@ -57,6 +69,7 @@ void accel_task(void* pdata) {
 
 		// if emergency not active
 		if (!emergency_active) {
+			// check for emergency
 			if (z < UPSIDE_DOWN_THRESH) {
 				stable++;
 				if (stable >= STABLE_COUNT) {
@@ -77,6 +90,28 @@ void accel_task(void* pdata) {
 			}
 			else {
 				stable = 0; // reset if reading doesnt hold
+			}
+			// determine tilt
+			alt_u32 tilt_dir;
+			if      (x >  TILT_THRESHOLD) tilt_dir = TILT_RIGHT;
+			else if (x < -TILT_THRESHOLD) tilt_dir = TILT_LEFT;
+			else if (y >  TILT_THRESHOLD) tilt_dir = TILT_UPSIDEDOWN;
+			else if (y < -TILT_THRESHOLD) tilt_dir = TILT_UPSIDEDOWN;
+			else                          tilt_dir = TILT_NORMAL;
+			// read-modify-write: preserve emergency bits [1:0], update tilt bits [3:2]
+			// only write PIO if direction changed
+			if (tilt_dir == candidate_tilt) {
+				tilt_stable++;
+				if (tilt_stable >= TILT_STABLE_COUNT && tilt_dir != last_tilt_dir) {
+					last_tilt_dir = tilt_dir;
+					alt_u32 current = IORD_ALTERA_AVALON_PIO_DATA(TX_1_2_BASE);
+					current = (current & ~TILT_MASK) | tilt_dir;
+					IOWR_ALTERA_AVALON_PIO_DATA(TX_1_2_BASE, current);
+				}
+			}
+			else {
+				candidate_tilt = tilt_dir;
+				tilt_stable = 0;
 			}
 		}
 		// if emergency active

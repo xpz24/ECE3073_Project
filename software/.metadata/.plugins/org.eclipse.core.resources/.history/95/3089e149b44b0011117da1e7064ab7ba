@@ -1,0 +1,23 @@
+#ifndef INTERRUPTS_H
+#define INTERRUPTS_H
+
+#include <stdint.h>
+
+// flags
+volatile int key_flags;
+volatile int emergency_flag;
+
+// tilting
+#define TILT_MASK       (0x3 << 2)
+#define TILT_NORMAL     0x0
+#define TILT_RIGHT      0x1
+#define TILT_UPSIDEDOWN 0x2
+#define TILT_LEFT       0x3
+
+volatile uint8_t tilt_flag;  // updated by ISR, read by vga_task
+
+// init functions
+void init_rx_3_2_irq(void);
+void init_rx_1_2_irq(void);
+
+#endif

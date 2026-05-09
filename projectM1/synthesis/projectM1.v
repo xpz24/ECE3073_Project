@@ -36,7 +36,7 @@ module projectM1 (
 	);
 
 	wire   [2:0] core_2_1_tx_external_connection_export;                                                 // core_2_1_tx:out_port -> core_1_2_rx:in_port
-	wire   [3:0] core_1_2_tx_external_connection_export;                                                 // core_1_2_tx:out_port -> core_2_1_rx:in_port
+	wire   [5:0] core_1_2_tx_external_connection_export;                                                 // core_1_2_tx:out_port -> core_2_1_rx:in_port
 	wire   [2:0] core_3_1_tx_external_connection_export;                                                 // core_3_1_tx:out_port -> core_1_3_rx:in_port
 	wire   [2:0] core_1_3_tx_external_connection_export;                                                 // core_1_3_tx:out_port -> core_3_1_rx:in_port
 	wire   [2:0] core_3_2_tx_external_connection_export;                                                 // core_3_2_tx:out_port -> core_2_3_rx:in_port

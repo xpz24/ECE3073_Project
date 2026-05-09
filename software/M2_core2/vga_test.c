@@ -7,6 +7,7 @@
 #include "../M2_core2_bsp/HAL/inc/io.h"
 #include "interrupts.h"
 #include "image_data.h"
+#include "vga_text_render.h"
 
 // base addresses
 #define PIXEL_ADDR_BASE CORE_2_PIXEL_ADDR_BASE
@@ -18,20 +19,23 @@
 #define FB_HEIGHT 240
 #define FB_SIZE   (FB_WIDTH * FB_HEIGHT)  // 76800 pixels
 
-// sdram buffer address
-#define SDRAM_FB_ADDR 0x400000UL // make sure addresses don't overlap
-static uint16_t *sdram_fb = (uint16_t *)SDRAM_FB_ADDR;
-#define EMERGENCY_FB_ADDR 0x3DA000
+// sdram buffer address for emergency stop
+#define EMERGENCY_FB_ADDR  0x3DA000
 static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
+
+// scrolling text
+int scroll_timer = 0;
+#define SCROLL_SPEED 50
 
 // task config
 #define VGA_STACKSIZE 4096
 #define VGA_PRIORITY  2
 OS_STK vga_stk[VGA_STACKSIZE];
 
+// shared variable: set by whichever task receives Grove AI data, 0x00 = no new data
+volatile char ai_detected_char = 0x00;
+
 // write_pixel()
-// addr  : 0 to 76799 (row-major: addr = x + y * FB_WIDTH)
-// color : 12-bit RGB444 value
 void write_pixel(unsigned int addr, uint16_t color) {
     IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
     IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xFFF);
@@ -39,16 +43,7 @@ void write_pixel(unsigned int addr, uint16_t color) {
     IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
 }
 
-// write_framebuffer()
-// Reads from SDRAM, pushes all pixels to RAM2Port.
-// VGA controller then displays it continuously on its own.
-static void write_framebuffer(void) {
-    unsigned int i;
-    for (i = 0; i < FB_SIZE; i++) {
-        write_pixel(i, sdram_fb[i]);
-    }
-}
-
+// write_emergency()
 static void write_emergency(void) {
     unsigned int i;
     for (i = 0; i < FB_SIZE; i++) {
@@ -57,7 +52,6 @@ static void write_emergency(void) {
 }
 
 // clear_framebuffer()
-// Fills display with black.
 static void clear_framebuffer(void) {
     unsigned int i;
     for (i = 0; i < FB_SIZE; i++) {
@@ -69,47 +63,80 @@ static void clear_framebuffer(void) {
 void vga_task(void *pdata) {
 	printf("[VGA] Start task\n");
 
-	// copy image from flash into sdram
-	printf("[VGA] Copying image to SDRAM at 0x%08X...\n", (unsigned int)SDRAM_FB_ADDR);
-	memcpy(sdram_fb, baby_image_data, IMG_BYTES);
 	memcpy(emergency_fb, emergency_image_data, IMG_BYTES);
-	printf("[VGA] Image ready in SDRAM (%d bytes).\n", IMG_BYTES);
+	printf("[VGA] Emergency image ready in SDRAM (%d bytes).\n", IMG_BYTES);
 
-	// start with black screen
 	clear_framebuffer();
-	int current_state = 0;
-	printf("[VGA] Display cleared. Waiting for KEY1 from Core 3...\n");
+
+	int display_active = 0;
+	uint8_t last_tilt = TILT_NORMAL;
+
+	printf("[VGA] Ready.\n");
+
+	static const char test_chars[] = "HELLO123WORLD";
+	int test_idx = 0;
+	int test_timer = 0;
 
 	// main loop
 	while (1) {
+		// emergency
 		if (emergency_flag) {
-			printf("\n[VGA] EMERGENCY STOP - HALTING OPERATION\n");
+			printf("\n[VGA] EMERGENCY STOP\n");
 			write_emergency();
-			while (emergency_flag) {
-				OSTimeDly(5);
-			}
+			while (emergency_flag) OSTimeDly(5);
 			key_flags = 0;
-			if (current_state) {
-				write_framebuffer();
-			}
-			else {
-				clear_framebuffer();
-			}
-			printf("[VGA] EMERGENCY CLEARED - CONTINUING OPERATION\n\n");
+			ai_detected_char = 0x00;
+			//restore previous mode
+			if (display_active) vga_text_init();
+			else clear_framebuffer();
+			printf("[VGA] EMERGENCY CLEARED\n\n");
 		}
-		// key0 simulates capturing data - save into sdram
+		// KEY0 clears screen
 		if (key_flags & (1 << 0)) {
 			key_flags &= ~(1 << 0);
-			current_state = 0;
-			printf("[VGA] Clearing image\n");
+			display_active = 0;
+			last_tilt = TILT_NORMAL;
+			printf("[VGA] Cleared\n");
 			clear_framebuffer();
 		}
-		// key1 reads data from sdram and display onto vga
+		// key1 ai text display
 		if (key_flags & (1 << 1)) {
 			key_flags &= ~(1 << 1);
-			current_state = 1;
-			printf("[VGA] Displaying image from SDRAM\n");
-			write_framebuffer();
+			display_active = 1;
+			last_tilt = TILT_NORMAL;
+			printf("[VGA] Text mode on\n");
+			vga_text_init();
+		}
+		// ai text updates + tilt scroll
+		if (display_active) {
+			test_timer++;
+			if (test_timer >= 50 && test_idx < (int)(sizeof(test_chars) - 1)) {
+				test_timer = 0;
+				ai_detected_char = test_chars[test_idx];
+				test_idx++;
+			}
+			// new character from grove ai
+			char c = ai_detected_char;
+			if (c != 0x00) {
+				ai_detected_char = 0x00;
+				printf("[VGA] Char: %c\n",c);
+				vga_text_update(c);
+			}
+			// tilt: scroll history
+			uint8_t tilt = tilt_flag;
+			if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
+			    scroll_timer++;
+			    if (scroll_timer >= SCROLL_SPEED) {
+			        scroll_timer = 0;
+			        vga_tilt_scroll(tilt == TILT_LEFT ? -1 : +1);
+			    }
+			}
+			else {
+			    scroll_timer = 0;  // reset timer when not tilting
+			    if (tilt != last_tilt && tilt == TILT_NORMAL)
+			        vga_tilt_reset();
+			}
+			last_tilt = tilt;
 		}
 		OSTimeDly(10);
     }

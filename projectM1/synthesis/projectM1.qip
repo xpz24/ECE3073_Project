@@ -2,7 +2,7 @@ set_global_assignment -entity "projectM1" -library "projectM1" -name IP_TOOL_NAM
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_TOOL_VERSION "18.1"
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_TOOL_ENV "Qsys"
 set_global_assignment -library "projectM1" -name SOPCINFO_FILE [file join $::quartus(qip_path) "../../projectM1.sopcinfo"]
-set_global_assignment -entity "projectM1" -library "projectM1" -name SLD_INFO "QSYS_NAME projectM1 HAS_SOPCINFO 1 GENERATION_ID 1778251393"
+set_global_assignment -entity "projectM1" -library "projectM1" -name SLD_INFO "QSYS_NAME projectM1 HAS_SOPCINFO 1 GENERATION_ID 1778337555"
 set_global_assignment -library "projectM1" -name MISC_FILE [file join $::quartus(qip_path) "../projectM1.cmp"]
 set_global_assignment -library "projectM1" -name SLD_FILE [file join $::quartus(qip_path) "projectM1.regmap"]
 set_global_assignment -library "projectM1" -name SLD_FILE [file join $::quartus(qip_path) "projectM1.debuginfo"]
@@ -16,7 +16,7 @@ set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONEN
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_REPORT_HIERARCHY "On"
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_INTERNAL "Off"
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_VERSION "MS4w"
-set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTc3ODI1MTM5Mw==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTc3ODMzNzU1NQ==::QXV0byBHRU5FUkFUSU9OX0lE"
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::TUFYIDEw::QXV0byBERVZJQ0VfRkFNSUxZ"
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::MTBNNTBEQUY0ODRDN0c=::QXV0byBERVZJQ0U="
 set_global_assignment -entity "projectM1" -library "projectM1" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::Nw==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
@@ -1683,7 +1683,7 @@ set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name
 set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "Z2VuZXJhdGVJUlE=::dHJ1ZQ==::R2VuZXJhdGUgSVJR"
 set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "aXJxVHlwZQ==::RURHRQ==::SVJRIFR5cGU="
 set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "c2ltRG9UZXN0QmVuY2hXaXJpbmc=::ZmFsc2U=::SGFyZHdpcmUgUElPIGlucHV0cyBpbiB0ZXN0IGJlbmNo"
-set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "d2lkdGg=::NA==::V2lkdGggKDEtMzIgYml0cyk="
+set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "d2lkdGg=::Ng==::V2lkdGggKDEtMzIgYml0cyk="
 set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "Y2xvY2tSYXRl::NTAwMDAwMDA=::Y2xvY2tSYXRl"
 set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "ZGVyaXZlZF9oYXNfdHJp::ZmFsc2U=::ZGVyaXZlZF9oYXNfdHJp"
 set_global_assignment -entity "projectM1_core_2_1_rx" -library "projectM1" -name IP_COMPONENT_PARAMETER "ZGVyaXZlZF9oYXNfb3V0::ZmFsc2U=::ZGVyaXZlZF9oYXNfb3V0"
@@ -2232,7 +2232,7 @@ set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name
 set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "Yml0TW9kaWZ5aW5nT3V0UmVn::ZmFsc2U=::RW5hYmxlIGluZGl2aWR1YWwgYml0IHNldHRpbmcvY2xlYXJpbmc="
 set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "ZGlyZWN0aW9u::T3V0cHV0::RGlyZWN0aW9u"
 set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "cmVzZXRWYWx1ZQ==::MA==::T3V0cHV0IFBvcnQgUmVzZXQgVmFsdWU="
-set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "d2lkdGg=::NA==::V2lkdGggKDEtMzIgYml0cyk="
+set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "d2lkdGg=::Ng==::V2lkdGggKDEtMzIgYml0cyk="
 set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "Y2xvY2tSYXRl::NTAwMDAwMDA=::Y2xvY2tSYXRl"
 set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "ZGVyaXZlZF9oYXNfdHJp::ZmFsc2U=::ZGVyaXZlZF9oYXNfdHJp"
 set_global_assignment -entity "projectM1_core_1_2_tx" -library "projectM1" -name IP_COMPONENT_PARAMETER "ZGVyaXZlZF9oYXNfb3V0::dHJ1ZQ==::ZGVyaXZlZF9oYXNfb3V0"

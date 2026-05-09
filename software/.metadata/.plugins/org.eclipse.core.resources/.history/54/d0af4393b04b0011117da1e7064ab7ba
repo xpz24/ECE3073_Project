@@ -1,0 +1,61 @@
+// libraries
+#include <stdio.h>
+#include "../M2_core2_bsp/system.h"
+#include "../M2_core2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core2_bsp/HAL/inc/sys/alt_irq.h"
+#include "../M2_core2_bsp/HAL/inc/includes.h"
+#include "interrupts.h"
+
+// base addresses
+#define RX_2_3_BASE   CORE_2_3_RX_BASE
+#define RX_2_1_BASE   CORE_2_1_RX_BASE
+
+// RX flag values
+#define RX_KEY0          0x1
+#define RX_KEY1          0x2
+#define EMERGENCY_START  0x1
+#define EMERGENCY_CLEAR  0x2
+
+// flags
+volatile int key_flags = 0;
+volatile int emergency_flag = 0;
+
+// rx_3_2_irq_handler
+static void rx_3_2_irq_handler(void *context, alt_u32 id)
+{
+    int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_3_BASE) & 0x7;
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_3_BASE, 0);
+
+    // decode incoming RX pulse into key_flags bits
+    if (val & RX_KEY0)
+        key_flags |= (1 << 0);   // maps to "CAPTURING IMAGE"
+    if (val & RX_KEY1)
+        key_flags |= (1 << 1);   // maps to "DISPLAYING IMAGE"
+}
+
+void init_rx_3_2_irq(void)
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_3_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_3_BASE, 0x7);
+    alt_irq_register(CORE_2_3_RX_IRQ, NULL, rx_3_2_irq_handler);
+}
+
+// rx_1_2_irq_handler
+static void rx_1_2_irq_handler(void *context, alt_u32 id)
+{
+	int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE) & 0x7;
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
+
+	// decode incoming RX pulse into flags
+	if (val & EMERGENCY_START)
+		emergency_flag = 1;
+	if (val & EMERGENCY_CLEAR)
+		emergency_flag = 0;
+}
+
+void init_rx_1_2_irq(void)
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_1_BASE, 0x7);
+    alt_irq_register(CORE_2_1_RX_IRQ, NULL, rx_1_2_irq_handler);
+}
