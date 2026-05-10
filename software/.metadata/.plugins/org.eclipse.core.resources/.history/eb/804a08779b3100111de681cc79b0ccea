@@ -1,0 +1,8 @@
+# include <stdio.h>
+# include "includes.h"
+# include "altera_up_avalon_accelerometer_spi.h"
+
+# define ACCEL_PRIORITY 0
+# define ACCEL_STACKSIZE 2048
+
+OS_STK

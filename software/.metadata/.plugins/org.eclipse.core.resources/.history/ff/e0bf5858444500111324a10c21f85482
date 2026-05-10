@@ -1,0 +1,45 @@
+// libraries
+#include <stdio.h>
+#include "../project_M2_core1_bsp/system.h"
+#include "../project_M2_core1_bsp/HAL/inc/alt_types.h"
+#include "../project_M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../project_M2_core1_bsp/drivers/inc/altera_up_avalon_accelerometer_spi.h"
+#include "../project_M2_core1_bsp/HAL/inc/io.h"
+#include "../project_M2_core1_bsp/HAL/inc/includes.h"
+#include "interrupts.h"
+
+// forward declarations
+void spi_init(void);
+void accel_init(void);
+void hex_init(void);
+
+// start task stack
+#define START_PRIORITY  1
+#define START_STACKSIZE 2048
+OS_STK start_stk[START_STACKSIZE];
+
+// start task — runs after OSStart(), safe to call OSStatInit() here
+void start_task(void* pdata) {
+    OSStatInit();
+    printf("Hello from CPU0\n");
+    init_key_irq();
+    init_esp32_irq();
+    hex_init();
+    spi_init();
+    OSTaskDel(OS_PRIO_SELF);    // delete start task when done
+}
+
+// main polling loop
+int main(void) {
+	OSInit();
+	OSTaskCreateExt(start_task,
+					NULL,
+					(void*)&start_stk[START_STACKSIZE - 1],
+					START_PRIORITY,
+					START_PRIORITY,
+					start_stk,
+					START_STACKSIZE,
+					NULL,
+					0);
+	OSStart();
+}

@@ -1,0 +1,28 @@
+// libraries
+# include <stdio.h>
+# include "../project_M1_bsp/system.h"
+# include "../project_M1_bsp/HAL/inc/alt_types.h"
+# include "../project_M1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+# include "../project_M1_bsp/drivers/inc/altera_up_avalon_accelerometer_spi.h"
+
+// function declarations
+//int accel_main(void);
+int led_hex_main(void);
+//int VGATask(void);
+
+// main polling loop
+int main(void) {
+	printf("System started\n");
+
+//	// accel mode
+//	printf("Entering ACCEL mode\n");
+//	accel_main();
+
+	// led/hex mode
+	printf("Entering LED/HEX mode\n");
+	led_hex_main();
+
+//	// vga test
+//	printf("Entering VGA mode\n");
+//	VGATask();
+}

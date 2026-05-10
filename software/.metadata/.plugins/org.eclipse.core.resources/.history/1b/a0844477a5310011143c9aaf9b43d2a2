@@ -1,0 +1,84 @@
+/*
+ * main.c
+ *
+ *  Created on: Apr 6, 2026
+ *      Author: cklie
+ */
+
+# include <stdio.h>
+# include "../project_M1_bsp/system.h"
+# include "../project_M1_bsp/HAL/inc/alt_types.h"
+//# include "includes.h"
+# include "../project_M1_bsp/drivers/inc/altera_up_avalon_accelerometer_spi.h"
+
+# define ACCEL_PRIORITY 0
+# define ACCEL_STACKSIZE 2048
+
+int main(void) {
+    alt_up_accelerometer_spi_dev *accel;
+    alt_32 x, y, z;
+
+    accel = alt_up_accelerometer_spi_open_dev("/dev/accelerometer_spi_0");
+    if (!accel) {
+        printf("[ACCEL] Failed to open device.\n");
+        return -1;
+    }
+
+    printf("[ACCEL] Device initialized\n");
+
+    while (1) {
+        alt_up_accelerometer_spi_read_x_axis(accel, &x);
+        alt_up_accelerometer_spi_read_y_axis(accel, &y);
+        alt_up_accelerometer_spi_read_z_axis(accel, &z);
+        printf("X=%ld Y=%ld Z=%ld\n", x, y, z);
+
+        volatile int i;
+        for (i = 0; i < 1000000; i++);
+    }
+
+    return 0;
+}
+
+//OS_STK accel_stk[ACCEL_STACKSIZE];
+//char output[64];
+//
+//void ACCELtask(void* pdata) {
+//	alt_up_accelerometer_spi_dev *accel = alt_up_accelerometer_spi_open_dev("/dev/accelerometer_spi_0");
+//	if (!accel) {
+//		printf("[ACCEL] Failed to open device.\n");
+//		return;
+//	}
+//	else {
+//		printf("[ACCEL] Device initialized successfully\n");
+//	}
+//
+//	alt_32 x, y, z;
+//
+//	// Continuously read axis data
+//	while (1) {
+//		alt_up_accelerometer_spi_read_x_axis(accel, &x);
+//		alt_up_accelerometer_spi_read_y_axis(accel, &y);
+//		alt_up_accelerometer_spi_read_z_axis(accel, &z);
+//
+//		sprintf(output, "[ACCEL] X=%ld, Y=%ld, Z=%ld\n", x, y, z);
+//		printf("%s", output);
+//
+//		OSTimeDlyHMSM(0, 0, 1, 0);
+//	}
+//}
+//
+//int main(void) {
+//	OSTaskCreateExt(ACCELtask,
+//					NULL,
+//					(void*)&accel_stk[ACCEL_STACKSIZE - 1],
+//					ACCEL_PRIORITY,
+//					ACCEL_PRIORITY,
+//					accel_stk,
+//					ACCEL_STACKSIZE,
+//					NULL,
+//					0);
+//	OSStart();
+//	return 0;
+//}
+
+

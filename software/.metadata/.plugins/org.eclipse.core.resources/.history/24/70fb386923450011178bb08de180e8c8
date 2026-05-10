@@ -1,0 +1,5 @@
+// libraries
+#include <stdio.h>
+#include "../project_M2_core1_bsp/system.h"
+
+extern volatile uint32_t key_flags;

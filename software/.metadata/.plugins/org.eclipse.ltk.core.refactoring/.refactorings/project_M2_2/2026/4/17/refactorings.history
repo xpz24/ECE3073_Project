@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;project_M2/spi_loopback.c&apos; to &apos;spi.c&apos;" description="Rename resource &apos;spi_loopback.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="spi_loopback.c" name="spi.c" stamp="1776860115707" updateReferences="true"/>
+</session>

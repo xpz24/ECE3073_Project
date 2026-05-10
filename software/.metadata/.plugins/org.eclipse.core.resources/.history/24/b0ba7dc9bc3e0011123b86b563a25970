@@ -1,0 +1,111 @@
+// libraries
+#include <stdio.h>
+#include <stdint.h>
+#include "../project_M2_bsp/HAL/inc/includes.h"
+#include "../project_M2_bsp/system.h"
+#include "../project_M2_bsp/HAL/inc/io.h"
+
+// STACK AND PRIORITY
+#define SPI_TASK_STACKSIZE 1024
+#define SPI_TASK_PRIORITY  2
+
+OS_STK spi_task_stk[SPI_TASK_STACKSIZE];
+
+// PIN AND BASE ADDRESS DEFINITIONS
+#define LED9 (1 << 9)
+volatile int* OutPort_LEDR = (int*) PIO_LEDR_BASE; // ledr
+volatile int* SPI_RxData   = (int*) 0x04009000; // receive data
+volatile int* SPI_TxData   = (int*) 0x04009004; // transmit data
+volatile int* SPI_Status   = (int*) 0x04009008; // status
+volatile int* SPI_Control  = (int*) 0x0400900c; // control
+
+volatile int* SPI_SS       = (int*) PIO_SPI_SS_BASE; // SPI SS from GPIO
+
+volatile int* PIO_KEY = (int*) PIO_KEY_BASE; // keys (active low)
+
+#define SDRAM_BASE   0x00000000
+#define CAPTURE_LEN  32
+
+volatile uint8_t* sdram = (volatile uint8_t*) SDRAM_BASE;
+
+// MASKING
+#define TRDY 0x40
+#define RRDY 0x80
+
+// capture spi data
+void capture_spi_data(void) {
+    uint8_t tx = 0x67;
+    uint8_t rx = 0x00;
+
+    printf("[KEY0] Capturing %d bytes...\n", CAPTURE_LEN);
+
+    for (int i = 0; i < CAPTURE_LEN; i++) {
+
+        *SPI_SS = 0x0;
+        for (volatile int d = 0; d < 5000; d++);
+
+        while (!(*SPI_Status & TRDY));
+        *SPI_TxData = tx;
+
+        while (!(*SPI_Status & RRDY));
+        rx = *SPI_RxData;
+
+        sdram[i] = rx;
+
+        *SPI_SS = 0x1;
+        OSTimeDlyHMSM(0, 0, 0, 1);
+    }
+
+    printf("[KEY0] Done. First byte: 0x%02X\n", sdram[0]);
+}
+
+// print sdram
+void print_sdram(void) {
+    printf("[KEY1] Reading SDRAM...\n");
+
+    for (int i = 0; i < CAPTURE_LEN; i++) {
+        printf("SDRAM[%02d] = 0x%02X\n", i, sdram[i]);
+    }
+
+    printf("[KEY1] Done.\n");
+}
+
+// SPI TASK
+void spi_task(void* pdata) {
+    uint8_t prev = 0xF;
+    uint8_t curr;
+
+    *SPI_SS = 0x1;
+    printf("[SYSTEM] KEY0 = capture | KEY1 = print\n");
+
+    while (1) {
+        curr = (uint8_t)(*PIO_KEY & 0xF);
+
+        // KEY0 pressed (capture)
+        if (!(curr & 0x1) && (prev & 0x1)) {
+            capture_spi_data();
+        }
+
+        // KEY1 pressed (print)
+        if (!(curr & 0x2) && (prev & 0x2)) {
+            print_sdram();
+        }
+
+        prev = curr;
+
+        OSTimeDlyHMSM(0, 0, 0, 50); // debounce
+    }
+}
+
+// SPI INIT — call this from main before OSStart
+void spi_init(void) {
+    OSTaskCreateExt(spi_task,
+                    NULL,
+                    (void*)&spi_task_stk[SPI_TASK_STACKSIZE-1],
+                    SPI_TASK_PRIORITY,
+                    SPI_TASK_PRIORITY,
+                    spi_task_stk,
+                    SPI_TASK_STACKSIZE,
+                    NULL,
+                    0);
+}

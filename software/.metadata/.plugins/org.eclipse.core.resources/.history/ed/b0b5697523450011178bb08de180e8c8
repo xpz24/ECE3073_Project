@@ -1,0 +1,4 @@
+// libraries
+#include "alt_types.h"
+
+extern volatile uint32_t key_flags;

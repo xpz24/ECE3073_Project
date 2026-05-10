@@ -1,0 +1,13 @@
+#ifndef INTERRUPTS_H
+#define INTERRUPTS_H
+
+#include <stdint.h>
+
+// flags
+extern volatile int key_flags;
+extern volatile int esp32_ready_flag;
+
+// init functions
+void init_key_irq(void);
+
+#endif

@@ -1,0 +1,57 @@
+// libraries
+#include <stdio.h>
+#include "../project_M2_core1_bsp/system.h"
+#include "../project_M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../project_M2_core1_bsp/HAL/inc/sys/alt_irq.h"
+
+// base addresses
+#define KEY_BASE CORE_1_KEY_BASE
+#define SW_BASE CORE_1_SW_BASE
+#define TX_BASE CORE_1_TX_BASE
+#define RX_BASE CORE_1_RX_BASE
+
+// flags
+volatile int key_flags = 0;
+volatile int sw_flags = 0;
+
+// key interrupts
+static void key_irq_handler(void* context, alt_u32 id) {
+	int edge = IORD_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE);
+
+    // clear edge capture for KEY1 PIO
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+
+    // store which key(s) triggered
+    key_flags |= edge;
+
+    // notify cpu 1
+//    IOWR_ALTERA_AVALON_PIO_DATA(TX_BASE, edge);
+}
+
+void init_key_irq()
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(KEY_BASE, 0xF);
+    alt_irq_register(CORE_1_KEY_IRQ, NULL, key_irq_handler);
+    alt_irq_enable_all(1);
+}
+
+
+// sw interrupts
+static void sw_irq_handler(void* context, alt_u32 id) {
+	sw_flags = IORD_ALTERA_AVALON_PIO_EDGE_CAP(SW_BASE);
+
+    // clear edge capture for KEY1 PIO
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(SW_BASE, 0);
+
+    // notify cpu 1
+//    IOWR_ALTERA_AVALON_PIO_DATA(TX_BASE, edge);
+}
+
+void sw_key_irq()
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(SW_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(SW_BASE, 0x3FF); // all 10 switches
+    alt_irq_register(CORE_1_KEY_IRQ, NULL, sw_irq_handler);
+    alt_irq_enable_all(1);
+}

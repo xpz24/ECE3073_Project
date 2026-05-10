@@ -1,0 +1,32 @@
+// libraries
+#include <stdio.h>
+#include "../project_M2_core1_bsp/system.h"
+#include "../project_M2_core1_bsp/HAL/inc/alt_types.h"
+#include "../project_M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../project_M2_core1_bsp/drivers/inc/altera_up_avalon_accelerometer_spi.h"
+#include "../project_M2_core1_bsp/HAL/inc/io.h"
+#include "../project_M2_core1_bsp/HAL/inc/includes.h"
+#include "interrupts.h"
+
+// forward declarations
+void spi_init(void);
+void accel_init(void);
+void hex_init(void);
+
+// main polling loop
+int main(void) {
+	OSInit();
+	printf("Hello from CPU0\n");
+
+	// enable interrupts
+	init_key_irq();
+	init_sw_irq();
+
+//	spi_init();
+
+//	accel_init();
+
+	hex_init();
+
+	OSStart();
+}

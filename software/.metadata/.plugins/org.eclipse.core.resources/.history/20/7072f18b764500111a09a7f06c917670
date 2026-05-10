@@ -1,0 +1,235 @@
+// libraries
+#include <stdio.h>
+#include <stdint.h>
+#include "../project_M2_core1_bsp/HAL/inc/includes.h"
+#include "../project_M2_core1_bsp/system.h"
+#include "../project_M2_core1_bsp/HAL/inc/io.h"
+#include "interrupts.h"
+
+// FORWARD DECLARATION
+//extern void set_hex_message(const char* msg);
+
+// STACK AND PRIORITY
+#define SPI_TASK_PRIORITY  3
+#define SPI_TASK_STACKSIZE 2048
+
+OS_STK spi_task_stk[SPI_TASK_STACKSIZE];
+
+// PIN AND BASE ADDRESS DEFINITIONS
+volatile int* SPI_RxData   = (int*) CORE_1_SPI_BASE; // receive data
+volatile int* SPI_TxData   = (int*)(CORE_1_SPI_BASE + 4); // transmit data
+volatile int* SPI_Status   = (int*)(CORE_1_SPI_BASE + 8); // status
+volatile int* SPI_Control  = (int*)(CORE_1_SPI_BASE + 12); // control
+volatile int* SPI_SS       = (int*) CORE_1_SPI_SS_BASE; // SPI SS from GPIO
+
+// SDRAM STORAGE
+#define SDRAM_BASE SHARED_SDRAM_BASE
+#define MAX_PAYLOAD 256 // max 256 bytes per transfer
+volatile uint8_t* sdram = (volatile uint8_t*) SDRAM_BASE;
+
+// MASKING
+#define TRDY 0x40
+#define RRDY 0x80
+
+// PROTOCOL COMMANDS — must match ESP32 side
+#define CMD_TRIGGER_CAPTURE 0xA0  // FPGA tells ESP32 to capture
+#define CMD_REQUEST_DATA    0xA1
+#define CMD_ACK             0xAC
+#define CMD_READY           0xAD
+#define CMD_END             0xFF
+
+#define CAPTURE_BUFFER_SIZE 256
+
+// Buffer to store captured data
+static uint8_t capture_buffer[CAPTURE_BUFFER_SIZE];
+static uint16_t capture_index = 0;
+
+// CS LOW
+static void cs_low(void) {
+    *SPI_SS = 0x0;
+}
+
+// CS HIGH
+static void cs_high(void) {
+    *SPI_SS = 0x1;
+}
+
+// Send command to ESP32 and wait for response
+static uint8_t send_command(uint8_t cmd, uint8_t expected_response) {
+    uint8_t response;
+
+    cs_low();
+    for (volatile int d = 0; d < 100; d++);
+
+    response = spi_transfer(cmd);
+
+    cs_high();
+
+    if (response != expected_response) {
+        printf("[SPI] Command 0x%02X failed. Got 0x%02X, expected 0x%02X\n",
+               cmd, response, expected_response);
+        return 0;
+    }
+
+    return 1;
+}
+
+// Request captured data from ESP32
+static void request_capture_data(void) {
+    uint8_t response;
+    uint16_t data_length;
+    uint16_t i;
+
+    printf("[SPI] Requesting capture data from ESP32...\n");
+
+    // Step 1: Send TRIGGER CAPTURE command to ESP32
+    if (!send_command(CMD_TRIGGER_CAPTURE, CMD_ACK)) {
+        printf("[SPI] Trigger capture failed\n");
+        return;
+    }
+    printf("[SPI] ESP32 acknowledged capture trigger\n");
+
+    // Small delay for ESP32 to capture
+    OSTimeDly(10);
+
+    // Step 2: Request the captured data
+    cs_low();
+    for (volatile int d = 0; d < 100; d++);
+
+    spi_transfer(CMD_REQUEST_DATA);
+
+    // Step 3: Read data length (2 bytes, little-endian)
+    uint8_t len_low = spi_transfer(0x00);
+    uint8_t len_high = spi_transfer(0x00);
+    data_length = (len_high << 8) | len_low;
+
+    if (data_length > 0 && data_length <= CAPTURE_BUFFER_SIZE) {
+        printf("[SPI] Receiving %d bytes of data...\n", data_length);
+
+        // Read the actual data
+        for (i = 0; i < data_length; i++) {
+            capture_buffer[i] = spi_transfer(0x00);
+        }
+
+        // Read end marker
+        uint8_t end = spi_transfer(0x00);
+
+        cs_high();
+
+        if (end == CMD_END) {
+            printf("[SPI] Successfully received %d bytes\n", data_length);
+
+            // Print first few bytes as example
+            printf("[SPI] First 16 bytes: ");
+            for (i = 0; i < (data_length > 16 ? 16 : data_length); i++) {
+                printf("%02X ", capture_buffer[i]);
+            }
+            printf("\n");
+
+            // Store to SDRAM if needed
+            for (i = 0; i < data_length; i++) {
+                sdram[i] = capture_buffer[i];
+            }
+            printf("[SPI] Data saved to SDRAM\n");
+        } else {
+            printf("[SPI] Expected END marker, got 0x%02X\n", end);
+        }
+    } else {
+        cs_high();
+        printf("[SPI] Invalid data length: %d\n", data_length);
+    }
+}
+
+// spi transfer
+static uint8_t spi_transfer(uint8_t tx) {
+    int timeout;
+
+    // Wait for TX ready (TRDY is always 1, but keep for safety)
+    timeout = 1000000;
+    while (!(*SPI_Status & TRDY)) {
+        if (--timeout == 0) {
+            printf("[ERROR] TRDY timeout. Status=0x%02X\n", *SPI_Status);
+            return 0xEE;
+        }
+    }
+
+    // Start transfer
+    *SPI_TxData = tx;
+
+    // Fixed delay - this is what worked in loopback
+    // Adjust based on your SPI clock speed
+    for (volatile int d = 0; d < 1000; d++);
+
+    // Read the received data (safe after delay)
+    uint8_t rx = (uint8_t)(*SPI_RxData);
+
+    return rx;
+}
+
+static void test_esp_communication(void) {
+    uint8_t response;
+
+    printf("[TEST] Testing communication with ESP32...\n");
+
+    // Send a simple test byte
+    cs_low();
+    for (volatile int d = 0; d < 100; d++);
+
+    response = spi_transfer(0x55);  // Test pattern
+
+    cs_high();
+
+    printf("[TEST] ESP32 responded with: 0x%02X\n", response);
+}
+
+// SPI TASK
+void spi_task(void* pdata) {
+    *SPI_SS = 0x1;  // CS high initially
+    printf("[SPI] Task started.\n");
+    printf("[SPI] KEY0 = capture | KEY1 = print data\n");
+
+    while (1) {
+    	// KEY0
+		if (key_flags & (1 << 0)) {
+			key_flags &= ~(1 << 0);
+			printf("[TEST] Requesting data...\n");
+			test_esp_communication();
+		}
+		if (key_flags & (1 << 1)) {
+			key_flags &= ~(1 << 1);
+			printf("\n[CAPTURE] Starting capture sequence...\n");
+			request_capture_data();
+		}
+        OSTimeDly(1);
+    }
+}
+
+// Fix your SPI initialization - ensure correct mode
+void spi_init_hardware(void) {
+    // Assuming you have an SPI controller at CORE_1_SPI_BASE
+    // Configure for MODE0 (CPOL=0, CPHA=0)
+
+    // Example configuration (adjust registers based on your SPI controller):
+    // *SPI_Control = 0x00;  // Disable first
+    // Configure clock divider, mode, etc.
+    *SPI_Control |= (0 << 2);  // CPHA = 0
+    *SPI_Control |= (0 << 3);  // CPOL = 0
+    // Set clock rate (e.g., 1MHz)
+    // *SPI_ClockDivider = some_value;
+    // Enable SPI
+    // *SPI_Control |= 0x01;
+}
+
+// SPI INIT
+void spi_init(void) {
+	spi_init_hardware();
+    OSTaskCreateExt(spi_task,
+                    NULL,
+                    (void*)&spi_task_stk[SPI_TASK_STACKSIZE-1],
+                    SPI_TASK_PRIORITY,
+                    SPI_TASK_PRIORITY,
+                    spi_task_stk,
+                    SPI_TASK_STACKSIZE,
+                    NULL,
+                    0);
+}

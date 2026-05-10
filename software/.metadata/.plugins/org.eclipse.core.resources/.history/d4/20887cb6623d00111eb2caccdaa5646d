@@ -1,0 +1,59 @@
+// libraries
+#include <stdio.h>
+#include "../project_M2_bsp/system.h"
+#include "../project_M2_bsp/HAL/inc/alt_types.h"
+#include "../project_M2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../project_M2_bsp/drivers/inc/altera_up_avalon_accelerometer_spi.h"
+#include "../project_M2_bsp/HAL/inc/includes.h"
+#include "../project_M2_bsp/HAL/inc/io.h"
+
+// parameters
+#define ACCEL_PRIORITY 1
+#define ACCEL_STACKSIZE 2048
+
+OS_STK accel_stk[ACCEL_STACKSIZE];
+
+// accel task
+void accel_task(void* pdata) {
+	alt_up_accelerometer_spi_dev *accel = alt_up_accelerometer_spi_open_dev("/dev/accelerometer_spi_0");
+	if (!accel) {
+		printf("[ACCEL] Failed to open device.\n");
+		return;
+	}
+	else {
+		printf("[ACCEL] Device initialized.\n");
+	}
+
+	char output[64];
+	alt_32 x, y, z;
+
+	// continuously read axis data
+	while (1) {
+		alt_up_accelerometer_spi_read_x_axis(accel, &x);
+		alt_up_accelerometer_spi_read_y_axis(accel, &y);
+		alt_up_accelerometer_spi_read_z_axis(accel, &z);
+
+		sprintf(output, "[ACCEL] X=%ld Y=%ld Z=%ld\n", x, y, z);
+		printf("%s",output);
+
+		OSTimeDlyHMSM(0, 0, 1, 0);
+//		for (volatile int i = 0; i < 100000; i++);
+	}
+}
+
+// accel main function
+int accel_main(void) {
+	OSInit();
+	OSTaskCreateExt(accel_task,
+					NULL,
+					(void*)&accel_stk[ACCEL_STACKSIZE-1],
+					ACCEL_PRIORITY,
+					ACCEL_PRIORITY,
+					accel_stk,
+					ACCEL_STACKSIZE,
+					NULL,
+					0);
+
+	OSStart();
+	return 0;
+}
