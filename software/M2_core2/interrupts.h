@@ -6,14 +6,12 @@
 // flags
 extern volatile int key_flags;
 extern volatile int emergency_flag;
-extern volatile uint8_t tilt_flag;
+extern volatile int tilt_flag;
 
 // tilting
-#define TILT_MASK       (0x3 << 2)
-#define TILT_NORMAL     0x0
-#define TILT_RIGHT      0x1
-#define TILT_UPSIDEDOWN 0x2
-#define TILT_LEFT       0x3
+#define TILT_NORMAL    0x4
+#define TILT_LEFT      0x8
+#define TILT_RIGHT     0xC
 
 // init functions
 void init_rx_3_2_irq(void);

@@ -15,7 +15,7 @@ OS_STK accel_stk[ACCEL_STACKSIZE];
 
 #define UPSIDE_DOWN_THRESH  (-200)
 #define UPRIGHT_THRESH      ( 200)
-#define STABLE_COUNT        5
+#define STABLE_COUNT        3
 
 int stable = 0;
 
@@ -29,12 +29,11 @@ int stable = 0;
 volatile int emergency_active;
 
 // tilting for scrolling text
-#define TILT_THRESHOLD  150
-#define TILT_MASK       (0x3 << 2)
-#define TILT_NORMAL     (0x0 << 2)
-#define TILT_RIGHT      (0x1 << 2)
-#define TILT_UPSIDEDOWN (0x2 << 2)
-#define TILT_LEFT       (0x3 << 2)
+#define TILT_THRESHOLD    60
+#define NORMAL_THRESHOLD  1
+#define TILT_NORMAL       0x4
+#define TILT_LEFT         0x8
+#define TILT_RIGHT        0xC
 #define TILT_STABLE_COUNT 3
 
 // read current microsecond count
@@ -89,29 +88,23 @@ void accel_task(void* pdata) {
 				}
 			}
 			else {
-				stable = 0; // reset if reading doesnt hold
+				stable = 0; // reset if reading doesn't hold
 			}
 			// determine tilt
 			alt_u32 tilt_dir;
-			if      (x >  TILT_THRESHOLD) tilt_dir = TILT_RIGHT;
-			else if (x < -TILT_THRESHOLD) tilt_dir = TILT_LEFT;
-			else if (y >  TILT_THRESHOLD) tilt_dir = TILT_UPSIDEDOWN;
-			else if (y < -TILT_THRESHOLD) tilt_dir = TILT_UPSIDEDOWN;
-			else                          tilt_dir = TILT_NORMAL;
-			// read-modify-write: preserve emergency bits [1:0], update tilt bits [3:2]
-			// only write PIO if direction changed
-			if (tilt_dir == candidate_tilt) {
-				tilt_stable++;
-				if (tilt_stable >= TILT_STABLE_COUNT && tilt_dir != last_tilt_dir) {
-					last_tilt_dir = tilt_dir;
-					alt_u32 current = IORD_ALTERA_AVALON_PIO_DATA(TX_1_2_BASE);
-					current = (current & ~TILT_MASK) | tilt_dir;
-					IOWR_ALTERA_AVALON_PIO_DATA(TX_1_2_BASE, current);
-				}
-			}
+			if      (x >  TILT_THRESHOLD) tilt_dir = TILT_LEFT;
+			else if (x < -TILT_THRESHOLD) tilt_dir = TILT_RIGHT;
+			else if (x >= -NORMAL_THRESHOLD || x <= NORMAL_THRESHOLD) tilt_dir = TILT_NORMAL;
+			// accumulate stability
+			if (tilt_dir == candidate_tilt) tilt_stable++;
 			else {
 				candidate_tilt = tilt_dir;
 				tilt_stable = 0;
+			}
+			// only pulse flag if direction changed and stable
+			if (tilt_stable >= TILT_STABLE_COUNT && tilt_dir != last_tilt_dir) {
+				last_tilt_dir = tilt_dir;
+				tx_pulse(TX_1_2_BASE, tilt_dir);
 			}
 		}
 		// if emergency active

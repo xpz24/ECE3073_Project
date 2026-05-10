@@ -13,7 +13,7 @@
 // flags
 volatile int key_flags = 0;
 volatile int emergency_flag = 0;
-volatile uint8_t tilt_flag = 0;
+volatile int tilt_flag = 0;
 
 // RX flag values
 #define RX_KEY0          0x1
@@ -45,19 +45,20 @@ void init_rx_3_2_irq(void)
 // rx_1_2_irq_handler
 static void rx_1_2_irq_handler(void *context, alt_u32 id)
 {
-	int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE) & 0x3F;
+	int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE) & 0x1F;
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
-
-	// decode incoming RX pulse into flags
+	// emergency flags
 	if (val & EMERGENCY_START) emergency_flag = 1;
 	if (val & EMERGENCY_CLEAR) emergency_flag = 0;
-	if (val & TILT_MASK)
-		tilt_flag = (val & TILT_MASK) >> 2;
+	// tilt flags
+	if      (val == TILT_NORMAL) tilt_flag = TILT_NORMAL;
+	else if (val == TILT_LEFT)   tilt_flag = TILT_LEFT;
+	else if (val == TILT_RIGHT)  tilt_flag = TILT_RIGHT;
 }
 
 void init_rx_1_2_irq(void)
 {
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
-    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_1_BASE, 0x3F);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_1_BASE, 0x1F);
     alt_irq_register(CORE_2_1_RX_IRQ, NULL, rx_1_2_irq_handler);
 }

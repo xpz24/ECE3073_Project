@@ -8,22 +8,45 @@
 
 #include "vga_text.h"
 
-//  Forward declaration - already in vga.c
+// Forward declaration - already in vga.c
 extern void write_pixel(unsigned int addr, uint16_t color);
 
-//  Low-level: fill a rectangular region
+// SCROLL STATE
+// tilt_scroll_offset > 0  : user is browsing history via bottom strip
+// tilt_scroll_offset == 0 : live mode, no highlight
+static int tilt_scroll_offset = 0;
+
+// tracks whether the main area window has shifted since last full redraw
+// used to decide between full redraw and single char append
+static int last_main_start = 0;
+
+// LAYOUT
+// Main area  (top): large yellow chars, left-to-right fill, scrolls when full
+// Bottom strip    : small dimmed chars, full history, highlight on tilt only
+//
+// MAIN_SCALE  : scale for main area chars
+// MAIN_SLOT_W : pixel width of one char slot in main area
+// HIST_SCALE  : scale for history strip chars
+// HIST_SLOT_W : pixel width of one char slot in history strip
+
+#define MAIN_SCALE   3
+#define MAIN_SLOT_W  (FONT_W * MAIN_SCALE + 2)
+#define MAIN_MAX     (PANEL_SPLIT / MAIN_SLOT_W)   // max chars visible in main area
+
+#define HIST_SCALE   1
+#define HIST_SLOT_W  (FONT_W * HIST_SCALE + 2)
+#define HIST_MAX     (FB_WIDTH / HIST_SLOT_W)      // max chars visible in history strip
+
+// Low-level primitives
+
 static void fill_rect(int x, int y, int w, int h, uint16_t color) {
     int px, py;
-    for (py = y; py < y + h; py++) {
-        for (px = x; px < x + w; px++) {
+    for (py = y; py < y + h; py++)
+        for (px = x; px < x + w; px++)
             if (px >= 0 && px < FB_WIDTH && py >= 0 && py < FB_HEIGHT)
                 write_pixel(py * FB_WIDTH + px, color);
-        }
-    }
 }
 
-//  Draw a single character at (x,y) with scale
-//  scale=1 -> 8x12px,  scale=4 -> 32x48px
 static void draw_char(char c, int x, int y, int scale, uint16_t fg, uint16_t bg) {
     int idx = font_index(c);
     int row, col;
@@ -36,134 +59,163 @@ static void draw_char(char c, int x, int y, int scale, uint16_t fg, uint16_t bg)
     }
 }
 
-//  Draw a null-terminated string at (x,y)
 static void draw_string(const char *s, int x, int y, int scale, uint16_t fg, uint16_t bg) {
     int cx = x;
     while (*s) {
         draw_char(*s, cx, y, scale, fg, bg);
-        cx += FONT_W * scale + scale; // 1px gap between chars
+        cx += FONT_W * scale + scale;
         s++;
     }
 }
 
-static int tilt_scroll_offset = 0;
+// draw_main_area()
+// Full redraw of the main area. Only called on init, window shift, or tilt reset.
 
-//  Draw the large current-character panel (left)
-//  Shows label "DETECTED:" and the big character
-static void draw_main_char(char c) {
-    // clear left panel
+static void draw_main_area(void) {
     fill_rect(0, 0, PANEL_SPLIT, MAIN_AREA_H, COL_BG);
 
-    // label "DETECTED:" at top-left, scale 1
     draw_string("DETECTED:", 8, 8, 1, COL_LABEL, COL_BG);
-
-    // big character - scale 4 = 32x48px, centred in left panel
-    int big_x = (PANEL_SPLIT - FONT_W * 3) / 2;
-    int big_y = (MAIN_AREA_H - FONT_H * 3) / 2 - 10;
-    draw_char(c, big_x, big_y, 3, COL_ACCENT, COL_BG);
-
-    // thin horizontal divider below label
     fill_rect(8, 20, PANEL_SPLIT - 16, 1, COL_DIVIDER);
-}
 
-//  Draw the bottom ticker strip
-//  Renders all history chars left-to-right,
-//  newest character highlighted in accent color.
-static void draw_ticker(void) {
-    // clear ticker bg
-    fill_rect(0, MAIN_AREA_H, FB_WIDTH, TICKER_HEIGHT, COL_TICKER_BG);
-    // top border line
-    fill_rect(0, MAIN_AREA_H, FB_WIDTH, 1, COL_DIVIDER);
+    if (ticker.count == 0) return;
 
-    // each char slot = FONT_W + 2 spacing = 10px wide at scale 1
-    int slot_w = FONT_W * 2 + 3;
-    int max_visible = FB_WIDTH / slot_w;  // ~32 chars visible
-
-    // show the last max_visible chars from history
-    int start = ticker.count > max_visible ? ticker.count - max_visible : 0;
+    int cy    = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    int start = ticker.count > MAIN_MAX ? ticker.count - MAIN_MAX : 0;
     int i;
-    int cx = 2;
-    int cy = MAIN_AREA_H + (TICKER_HEIGHT - FONT_H * 2) / 2;
+    int cx = 4;
 
     for (i = start; i < ticker.count; i++) {
         char c = ticker_get(i);
-        int viewed_idx = (ticker.count - 1) - tilt_scroll_offset;
-        int is_newest = (i == viewed_idx);
-        uint16_t fg = is_newest ? COL_ACCENT  : COL_TICKER_FG;
-        uint16_t bg = is_newest ? COL_DIVIDER : COL_TICKER_BG;
+        draw_char(c, cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
+        cx += MAIN_SLOT_W;
+    }
 
-        // highlight box behind newest char
-        if (is_newest)
-            fill_rect(cx - 1, cy - 4, FONT_W * 2 + 2, FONT_H * 2 + 4, COL_DIVIDER);
+    last_main_start = start;
+}
 
-        draw_char(c, cx, cy, 2, fg, bg);
-        cx += slot_w;
+// draw_main_append()
+// Dirty redraw: only draws the single newest character.
+// If the window has shifted (oldest char scrolled off), falls back to full redraw.
+
+static void draw_main_append(char c) {
+    int start = ticker.count > MAIN_MAX ? ticker.count - MAIN_MAX : 0;
+
+    if (start != last_main_start) {
+        // window shifted, full redraw needed
+        draw_main_area();
+        return;
+    }
+
+    // just draw the new char in its slot, no clearing needed
+    int slot = ticker.count - 1 - start;
+    int cx   = 4 + slot * MAIN_SLOT_W;
+    int cy   = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    draw_char(c, cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
+}
+
+// draw_history_strip()
+// Bottom strip: shows full history at HIST_SCALE, dimmed.
+// No highlight when tilt_scroll_offset == 0 (live mode).
+// Highlight box appears on the viewed char only when tilting.
+
+static void draw_history_strip(void) {
+    fill_rect(0, MAIN_AREA_H, FB_WIDTH, TICKER_HEIGHT, COL_TICKER_BG);
+    fill_rect(0, MAIN_AREA_H, FB_WIDTH, 1, COL_DIVIDER);
+
+    if (ticker.count == 0) return;
+
+    int cy     = MAIN_AREA_H + (TICKER_HEIGHT - FONT_H * HIST_SCALE) / 2;
+    int start  = ticker.count > HIST_MAX ? ticker.count - HIST_MAX : 0;
+    int viewed = (ticker.count - 1) - tilt_scroll_offset;
+    int i;
+    int cx = 2;
+
+    for (i = start; i < ticker.count; i++) {
+        char c        = ticker_get(i);
+        int is_viewed = (tilt_scroll_offset > 0) && (i == viewed);
+        uint16_t fg   = is_viewed ? COL_ACCENT  : COL_LABEL;
+        uint16_t bg   = is_viewed ? COL_DIVIDER : COL_TICKER_BG;
+
+        if (is_viewed)
+            fill_rect(cx - 1, cy - 3, FONT_W * HIST_SCALE + 2, FONT_H * HIST_SCALE + 4, COL_DIVIDER);
+
+        draw_char(c, cx, cy, HIST_SCALE, fg, bg);
+        cx += HIST_SLOT_W;
+    }
+
+    if (tilt_scroll_offset > 0) {
+        char ones = '0' + (tilt_scroll_offset % 10);
+        char tens = '0' + (tilt_scroll_offset / 10);
+        int ind_x = FB_WIDTH - FONT_W * 2 - 4;
+        int ind_y = MAIN_AREA_H + (TICKER_HEIGHT - FONT_H) / 2;
+        if (tilt_scroll_offset >= 10)
+            draw_char(tens, ind_x,             ind_y, 1, COL_ACCENT, COL_TICKER_BG);
+        draw_char(ones, ind_x + FONT_W + 1, ind_y, 1, COL_ACCENT, COL_TICKER_BG);
     }
 }
 
-//  Full layout init - call once on startup
+// draw_history_append()
+// Dirty redraw for history strip: only draws the single newest char at the end.
+// Falls back to full redraw if the window shifted.
+
+static void draw_history_append(char c) {
+    int start = ticker.count > HIST_MAX ? ticker.count - HIST_MAX : 0;
+    int viewed = (ticker.count - 1) - tilt_scroll_offset;
+
+    // if window shifted or we are in tilt mode, full redraw
+    if (ticker.count > HIST_MAX && (ticker.count - 1 - HIST_MAX) != (start - 1))
+        goto full;
+    if (tilt_scroll_offset > 0)
+        goto full;
+
+    {
+        int slot = ticker.count - 1 - start;
+        int cx   = 2 + slot * HIST_SLOT_W;
+        int cy   = MAIN_AREA_H + (TICKER_HEIGHT - FONT_H * HIST_SCALE) / 2;
+        draw_char(c, cx, cy, HIST_SCALE, COL_LABEL, COL_TICKER_BG);
+        return;
+    }
+
+full:
+    draw_history_strip();
+}
+
+// Public API
+
+// Call once on KEY1 / startup
 static void vga_text_init(void) {
     ticker_init();
+    tilt_scroll_offset = 0;
+    last_main_start    = 0;
     fill_rect(0, 0, FB_WIDTH, FB_HEIGHT, COL_BG);
-    draw_main_char(' ');
-    draw_ticker();
+    draw_main_area();
+    draw_history_strip();
 }
 
-//  Main update call - call this every time a
-//  new character is received from Grove AI.
-//  Pushes to history, redraws both panels.
+// Call every time Grove AI sends a new character.
+// Uses dirty redraw: only redraws the new char slot, not the full panel.
 static void vga_text_update(char new_char) {
     ticker_push(new_char);
-    draw_main_char(new_char);
-    draw_ticker();
-    // Note: live panel is NOT redrawn here —
-    // your live stream task writes that region independently.
+    draw_main_append(new_char);
+    draw_history_append(new_char);
 }
 
-//  Tilt history scroll (optional)
-//  Call with offset = -1 (tilt left, older)
-//                   or +1 (tilt right, newer)
-//  Shows a viewport into the ticker history on
-//  the main char panel instead of newest char.
-
+// Tilt scroll : +1 go back in history, -1 go forward/newer
 static void vga_tilt_scroll(int direction) {
-    tilt_scroll_offset -= direction; // -1 goes back in history
-    if (tilt_scroll_offset < 0) tilt_scroll_offset = 0;
-    if (tilt_scroll_offset >= ticker.count) tilt_scroll_offset = ticker.count - 1;
+    int new_offset = tilt_scroll_offset + direction;
+    if (new_offset < 0)                   new_offset = 0;
+    if (new_offset >= ticker.count)       new_offset = ticker.count - 1;
+    if (new_offset == tilt_scroll_offset) return;
 
-    int view_idx = (ticker.count - 1) - tilt_scroll_offset;
-    if (view_idx < 0) view_idx = 0;
-    char viewed = ticker_get(view_idx);
-
-    // clear and redraw main panel with viewed char + scroll indicator
-    fill_rect(0, 0, PANEL_SPLIT, MAIN_AREA_H, COL_BG);
-    draw_string("HISTORY:", 8, 8, 1, COL_LABEL, COL_BG);
-    fill_rect(8, 20, PANEL_SPLIT - 16, 1, COL_DIVIDER);
-
-    int big_x = (PANEL_SPLIT - FONT_W * 4) / 2;
-    int big_y = (MAIN_AREA_H - FONT_H * 4) / 2 - 10;
-    draw_char(viewed, big_x, big_y, 4, COL_TICKER_FG, COL_BG);
-
-    // scroll position indicator e.g. "-3"
-    char indicator[8];
-    if (tilt_scroll_offset == 0) {
-        draw_string("LATEST", 8, MAIN_AREA_H - 20, 1, COL_LABEL, COL_BG);
-    } else {
-        // simple negative offset display using available chars
-        draw_string("BACK:", 8, MAIN_AREA_H - 20, 1, COL_LABEL, COL_BG);
-        // draw offset digit (works for 0-9; extend if needed)
-        char d = '0' + (tilt_scroll_offset % 10);
-        draw_char(d, 48, MAIN_AREA_H - 20, 1, COL_ACCENT, COL_BG);
-    }
+    tilt_scroll_offset = new_offset;
+    draw_history_strip();
 }
 
-// Reset scroll (call when tilt returns to level)
+// Hard reset - snap back to live mode (KEY0 clear)
 static void vga_tilt_reset(void) {
     tilt_scroll_offset = 0;
-    if (ticker.count > 0)
-        draw_main_char(ticker_get(ticker.count - 1));
-    else
-        draw_main_char(' ');
+    draw_main_area();
+    draw_history_strip();
 }
 
 #endif // VGA_TEXT_RENDER_H

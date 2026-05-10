@@ -56,6 +56,7 @@
 
 // DEFINITIONS
 #define DISPLAY_WIDTH 6
+#define SCROLL_SPEED  100
 
 #define HEX_PRIORITY    3
 #define HEX_STACKSIZE   2048
@@ -189,8 +190,6 @@ void emergency_msg(void) {
 
 // HEX TASK
 void hex_task(void* pdata) {
-    // adjust to change scroll speed
-    int scroll_speed   = 40;
     int scroll_pos     = 0;
     int scroll_counter = 0;
     int speaker        = 0;
@@ -213,7 +212,7 @@ void hex_task(void* pdata) {
 				if (sw & 512) {
 					emergency_clear = 1;
 				}
-				OSTimeDly(5);
+				OSTimeDly(4);
 			}
 			emergency_clear = 0;
 		}
@@ -264,7 +263,7 @@ void hex_task(void* pdata) {
             	if (cpuFlag);
             	else {
             		scroll_counter++;
-					if (scroll_counter >= scroll_speed) {
+					if (scroll_counter >= SCROLL_SPEED) {
 						scroll_counter = 0;
 						scroll_pos++;
 						// wrap around
@@ -290,7 +289,7 @@ void hex_task(void* pdata) {
         }
 
         // small delay to prevent cpu hogging
-        OSTimeDly(10);
+        OSTimeDly(3);
     }
 }
 

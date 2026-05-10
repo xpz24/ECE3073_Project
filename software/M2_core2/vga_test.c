@@ -17,15 +17,15 @@
 // frame buffer dimensions
 #define FB_WIDTH  320
 #define FB_HEIGHT 240
-#define FB_SIZE   (FB_WIDTH * FB_HEIGHT)  // 76800 pixels
+#define FB_SIZE   (FB_WIDTH * FB_HEIGHT)
 
 // sdram buffer address for emergency stop
 #define EMERGENCY_FB_ADDR  0x3DA000
 static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
 
-// scrolling text
+// scroll timer for tilt
 int scroll_timer = 0;
-#define SCROLL_SPEED 50
+#define SCROLL_SPEED 100   // lowered from 30 since OSTimeDly is now 2
 
 // task config
 #define VGA_STACKSIZE 4096
@@ -46,99 +46,99 @@ void write_pixel(unsigned int addr, uint16_t color) {
 // write_emergency()
 static void write_emergency(void) {
     unsigned int i;
-    for (i = 0; i < FB_SIZE; i++) {
+    for (i = 0; i < FB_SIZE; i++)
         write_pixel(i, emergency_fb[i]);
-    }
 }
 
 // clear_framebuffer()
 static void clear_framebuffer(void) {
     unsigned int i;
-    for (i = 0; i < FB_SIZE; i++) {
+    for (i = 0; i < FB_SIZE; i++)
         write_pixel(i, 0x0);
-    }
 }
 
 // vga_task()
 void vga_task(void *pdata) {
-	printf("[VGA] Start task\n");
+    printf("[VGA] Start task\n");
 
-	memcpy(emergency_fb, emergency_image_data, IMG_BYTES);
-	printf("[VGA] Emergency image ready in SDRAM (%d bytes).\n", IMG_BYTES);
+    memcpy(emergency_fb, emergency_image_data, IMG_BYTES);
+    printf("[VGA] Emergency image ready in SDRAM (%d bytes).\n", IMG_BYTES);
 
-	clear_framebuffer();
+    clear_framebuffer();
 
-	int display_active = 0;
-	uint8_t last_tilt = TILT_NORMAL;
+    int display_active = 0;
+    int last_tilt = TILT_NORMAL;
 
-	printf("[VGA] Ready.\n");
+    printf("[VGA] Ready.\n");
 
-	static const char test_chars[] = "HELLO123WORLD";
-	int test_idx = 0;
-	int test_timer = 0;
+    static const char test_chars[] = "HELLO123WORLD";
+    int test_idx   = 0;
+    int test_timer = 0;
 
-	// main loop
-	while (1) {
-		// emergency
-		if (emergency_flag) {
-			printf("\n[VGA] EMERGENCY STOP\n");
-			write_emergency();
-			while (emergency_flag) OSTimeDly(5);
-			key_flags = 0;
-			ai_detected_char = 0x00;
-			//restore previous mode
-			if (display_active) vga_text_init();
-			else clear_framebuffer();
-			printf("[VGA] EMERGENCY CLEARED\n\n");
-		}
-		// KEY0 clears screen
-		if (key_flags & (1 << 0)) {
-			key_flags &= ~(1 << 0);
-			display_active = 0;
-			last_tilt = TILT_NORMAL;
-			printf("[VGA] Cleared\n");
-			clear_framebuffer();
-		}
-		// key1 ai text display
-		if (key_flags & (1 << 1)) {
-			key_flags &= ~(1 << 1);
-			display_active = 1;
-			last_tilt = TILT_NORMAL;
-			printf("[VGA] Text mode on\n");
-			vga_text_init();
-		}
-		// ai text updates + tilt scroll
-		if (display_active) {
-			test_timer++;
-			if (test_timer >= 50 && test_idx < (int)(sizeof(test_chars) - 1)) {
-				test_timer = 0;
-				ai_detected_char = test_chars[test_idx];
-				test_idx++;
-			}
-			// new character from grove ai
-			char c = ai_detected_char;
-			if (c != 0x00) {
-				ai_detected_char = 0x00;
-				printf("[VGA] Char: %c\n",c);
-				vga_text_update(c);
-			}
-			// tilt: scroll history
-			uint8_t tilt = tilt_flag;
-			if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
-			    scroll_timer++;
-			    if (scroll_timer >= SCROLL_SPEED) {
-			        scroll_timer = 0;
-			        vga_tilt_scroll(tilt == TILT_LEFT ? -1 : +1);
-			    }
-			}
-			else {
-			    scroll_timer = 0;  // reset timer when not tilting
-			    if (tilt != last_tilt && tilt == TILT_NORMAL)
-			        vga_tilt_reset();
-			}
-			last_tilt = tilt;
-		}
-		OSTimeDly(10);
+    while (1) {
+        // emergency
+        if (emergency_flag) {
+            printf("\n[VGA] EMERGENCY STOP\n");
+            write_emergency();
+            while (emergency_flag) OSTimeDly(5);
+            key_flags = 0;
+            ai_detected_char = 0x00;
+            if (display_active) vga_text_init();
+            else clear_framebuffer();
+            printf("[VGA] EMERGENCY CLEARED\n\n");
+        }
+
+        // KEY0 clears screen
+        if (key_flags & (1 << 0)) {
+            key_flags &= ~(1 << 0);
+            display_active = 0;
+            last_tilt = TILT_NORMAL;
+            printf("[VGA] Cleared\n");
+            clear_framebuffer();
+        }
+
+        // KEY1 activates text display
+        if (key_flags & (1 << 1)) {
+            key_flags &= ~(1 << 1);
+            display_active = 1;
+            last_tilt = TILT_NORMAL;
+            printf("[VGA] Text mode on\n");
+            vga_text_init();
+            test_idx = 0;
+        }
+
+        if (display_active) {
+            // test char injection
+            test_timer++;
+            if (test_timer >= 50 && test_idx < (int)(sizeof(test_chars) - 1)) {
+                test_timer = 0;
+                ai_detected_char = test_chars[test_idx];
+                test_idx++;
+            }
+
+            // new character from Grove AI
+            char c = ai_detected_char;
+            if (c != 0x00) {
+                ai_detected_char = 0x00;
+                printf("[VGA] Char: %c\n", c);
+                vga_text_update(c);  // dirty redraw, fast
+            }
+
+            // tilt scroll
+            int tilt = tilt_flag;
+            if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
+                scroll_timer++;
+                if (scroll_timer >= SCROLL_SPEED) {
+                    scroll_timer = 0;
+                    vga_tilt_scroll(tilt == TILT_LEFT ? +1 : -1);
+                }
+            } else {
+                scroll_timer = 0;
+            }
+            last_tilt = tilt;
+        }
+
+        OSTimeDly(2);  // was 10, reduced for smoother updates
     }
 }
 
