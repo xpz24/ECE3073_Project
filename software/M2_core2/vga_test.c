@@ -23,9 +23,11 @@
 #define EMERGENCY_FB_ADDR  0x3DA000
 static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
 
-// scroll timer for tilt
+// timer for tilt
+int tilt_timer = 0;
+#define TILT_TIMER 50
 int scroll_timer = 0;
-#define SCROLL_SPEED 100   // lowered from 30 since OSTimeDly is now 2
+#define SCROLL_SPEED 10
 
 // task config
 #define VGA_STACKSIZE 4096
@@ -71,7 +73,7 @@ void vga_task(void *pdata) {
 
     printf("[VGA] Ready.\n");
 
-    static const char test_chars[] = "HELLO123WORLD";
+    static const char test_chars[] = "PLAY MINECRAFT";
     int test_idx   = 0;
     int test_timer = 0;
 
@@ -124,16 +126,23 @@ void vga_task(void *pdata) {
                 vga_text_update(c);  // dirty redraw, fast
             }
 
+            // scroll timer
+            scroll_timer++;
+            if (scroll_timer >= SCROLL_SPEED) {
+            	scroll_timer = 0;
+            	draw_marquee_tick();
+            }
+
             // tilt scroll
             int tilt = tilt_flag;
             if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
-                scroll_timer++;
-                if (scroll_timer >= SCROLL_SPEED) {
-                    scroll_timer = 0;
+                tilt_timer++;
+                if (tilt_timer >= TILT_TIMER) {
+                    tilt_timer = 0;
                     vga_tilt_scroll(tilt == TILT_LEFT ? +1 : -1);
                 }
             } else {
-                scroll_timer = 0;
+                tilt_timer = 0;
             }
             last_tilt = tilt;
         }

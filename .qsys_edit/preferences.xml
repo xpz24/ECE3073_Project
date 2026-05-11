@@ -7,6 +7,7 @@
    <irq preferredWidth="63" />
   </columns>
  </systemtable>
- <library expandedCategories="Library,Project" />
+ <library
+   expandedCategories="Library/Interface Protocols/PCI Express/QSYS Example Designs,Library/University Program/Audio &amp; Video,Library/Basic Functions,Library/Basic Functions/DMA,Library,Library/University Program/Audio &amp; Video/Video,Library/Basic Functions/DMA/mSGDMA Sub-core,Project,Library/University Program,Library/Interface Protocols/PCI Express,Library/Interface Protocols" />
  <window width="1938" height="1218" x="-9" y="-9" />
 </preferences>
