@@ -25,7 +25,7 @@ static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
 
 // timer for tilt
 int tilt_timer = 0;
-#define TILT_TIMER 50
+#define TILT_TIMER 10
 int scroll_timer = 0;
 #define SCROLL_SPEED 10
 
@@ -39,10 +39,10 @@ volatile char ai_detected_char = 0x00;
 
 // write_pixel()
 void write_pixel(unsigned int addr, uint16_t color) {
-    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
-    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xFFF);
-    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
-    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
+	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
+	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xFFF);
+	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
+	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
 }
 
 // write_emergency()
@@ -59,6 +59,25 @@ static void clear_framebuffer(void) {
         write_pixel(i, 0x0);
 }
 
+// FPS tracking
+static uint32_t last_fps_time = 0;
+static int      frame_count   = 0;
+
+static uint32_t get_time_ms(void) {
+    // us_counter counts in microseconds, divide by 1000 for ms
+    return IORD_ALTERA_AVALON_PIO_DATA(US_COUNTER_BASE) / 1000;
+}
+
+void fps_tick(void) {
+    frame_count++;
+    uint32_t now = get_time_ms();
+    if (now - last_fps_time >= 1000) {
+        printf("[VGA] FPS: %d\n", frame_count);
+        frame_count   = 0;
+        last_fps_time = now;
+    }
+}
+
 // vga_task()
 void vga_task(void *pdata) {
     printf("[VGA] Start task\n");
@@ -73,7 +92,7 @@ void vga_task(void *pdata) {
 
     printf("[VGA] Ready.\n");
 
-    static const char test_chars[] = "PLAY MINECRAFT";
+    static const char test_chars[] = "PLAY MARIO";
     int test_idx   = 0;
     int test_timer = 0;
 
@@ -112,7 +131,7 @@ void vga_task(void *pdata) {
         if (display_active) {
             // test char injection
             test_timer++;
-            if (test_timer >= 50 && test_idx < (int)(sizeof(test_chars) - 1)) {
+            if (test_timer >= 20 && test_idx < (int)(sizeof(test_chars) - 1)) {
                 test_timer = 0;
                 ai_detected_char = test_chars[test_idx];
                 test_idx++;
@@ -122,16 +141,16 @@ void vga_task(void *pdata) {
             char c = ai_detected_char;
             if (c != 0x00) {
                 ai_detected_char = 0x00;
-                printf("[VGA] Char: %c\n", c);
                 vga_text_update(c);  // dirty redraw, fast
             }
 
             // scroll timer
-            scroll_timer++;
-            if (scroll_timer >= SCROLL_SPEED) {
-            	scroll_timer = 0;
-            	draw_marquee_tick();
-            }
+//            scroll_timer++;
+//            if (scroll_timer >= SCROLL_SPEED) {
+//            	scroll_timer = 0;
+//            	draw_marquee_tick();
+//            }
+            draw_marquee_tick();
 
             // tilt scroll
             int tilt = tilt_flag;
@@ -147,7 +166,7 @@ void vga_task(void *pdata) {
             last_tilt = tilt;
         }
 
-        OSTimeDly(2);  // was 10, reduced for smoother updates
+        OSTimeDly(1);  // was 10, reduced for smoother updates
     }
 }
 

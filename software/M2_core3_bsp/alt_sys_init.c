@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_3' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Wed May 06 17:05:19 SGT 2026
+ * Generated: Mon May 11 16:54:07 SGT 2026
  */
 
 /*

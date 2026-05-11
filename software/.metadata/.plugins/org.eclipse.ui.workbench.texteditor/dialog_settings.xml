@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="" key="selection"/>
+		<item value="avalon_slave_pixel" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="AVALON_SLAVE_PIXEL"/>
+			<item value="avalon_slave"/>
 			<item value="CORE_2_VGA_FRAMEBUFFER_BASE"/>
 			<item value="ALTERA_AVALON_DMA_"/>
 			<item value="marquee_pixel_offset"/>
 			<item value="panel"/>
 			<item value="draw_main"/>
 			<item value="core_1_"/>
-			<item value="CORE_1_ACCELEROMETER_NAME "/>
-			<item value=".stack"/>
 		</list>
 		<list key="replacehistory">
 		</list>

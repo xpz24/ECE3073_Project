@@ -37,7 +37,7 @@
    {
       datum _sortIndex
       {
-         value = "18";
+         value = "15";
          type = "int";
       }
    }
@@ -53,7 +53,7 @@
    {
       datum _sortIndex
       {
-         value = "17";
+         value = "14";
          type = "int";
       }
    }
@@ -69,7 +69,7 @@
    {
       datum _sortIndex
       {
-         value = "32";
+         value = "29";
          type = "int";
       }
    }
@@ -85,7 +85,7 @@
    {
       datum _sortIndex
       {
-         value = "31";
+         value = "28";
          type = "int";
       }
    }
@@ -101,7 +101,7 @@
    {
       datum _sortIndex
       {
-         value = "14";
+         value = "11";
          type = "int";
       }
    }
@@ -191,7 +191,7 @@
    {
       datum _sortIndex
       {
-         value = "37";
+         value = "34";
          type = "int";
       }
    }
@@ -207,7 +207,7 @@
    {
       datum _sortIndex
       {
-         value = "12";
+         value = "9";
          type = "int";
       }
    }
@@ -247,7 +247,7 @@
    {
       datum _sortIndex
       {
-         value = "15";
+         value = "12";
          type = "int";
       }
    }
@@ -263,7 +263,7 @@
    {
       datum _sortIndex
       {
-         value = "16";
+         value = "13";
          type = "int";
       }
    }
@@ -287,7 +287,7 @@
    {
       datum _sortIndex
       {
-         value = "21";
+         value = "18";
          type = "int";
       }
    }
@@ -303,7 +303,7 @@
    {
       datum _sortIndex
       {
-         value = "20";
+         value = "17";
          type = "int";
       }
    }
@@ -311,7 +311,7 @@
    {
       datum baseAddress
       {
-         value = "67121408";
+         value = "67121488";
          type = "String";
       }
    }
@@ -319,7 +319,7 @@
    {
       datum _sortIndex
       {
-         value = "19";
+         value = "16";
          type = "int";
       }
    }
@@ -327,7 +327,7 @@
    {
       datum baseAddress
       {
-         value = "67121440";
+         value = "67121504";
          type = "String";
       }
    }
@@ -335,7 +335,7 @@
    {
       datum _sortIndex
       {
-         value = "36";
+         value = "33";
          type = "int";
       }
    }
@@ -343,7 +343,7 @@
    {
       datum baseAddress
       {
-         value = "67121328";
+         value = "67121456";
          type = "String";
       }
    }
@@ -351,7 +351,7 @@
    {
       datum _sortIndex
       {
-         value = "35";
+         value = "32";
          type = "int";
       }
    }
@@ -359,7 +359,23 @@
    {
       datum baseAddress
       {
-         value = "67121344";
+         value = "67121472";
+         type = "String";
+      }
+   }
+   element core_2_hsync
+   {
+      datum _sortIndex
+      {
+         value = "41";
+         type = "int";
+      }
+   }
+   element core_2_hsync.s1
+   {
+      datum baseAddress
+      {
+         value = "67121360";
          type = "String";
       }
    }
@@ -367,7 +383,7 @@
    {
       datum _sortIndex
       {
-         value = "22";
+         value = "19";
          type = "int";
       }
    }
@@ -375,7 +391,7 @@
    {
       datum baseAddress
       {
-         value = "67121464";
+         value = "67121528";
          type = "String";
       }
    }
@@ -383,7 +399,7 @@
    {
       datum _sortIndex
       {
-         value = "38";
+         value = "35";
          type = "int";
       }
    }
@@ -399,7 +415,7 @@
    {
       datum _sortIndex
       {
-         value = "9";
+         value = "39";
          type = "int";
       }
    }
@@ -407,7 +423,7 @@
    {
       datum baseAddress
       {
-         value = "67121360";
+         value = "67121392";
          type = "String";
       }
    }
@@ -415,7 +431,7 @@
    {
       datum _sortIndex
       {
-         value = "10";
+         value = "38";
          type = "int";
       }
    }
@@ -423,7 +439,7 @@
    {
       datum baseAddress
       {
-         value = "67121376";
+         value = "67121408";
          type = "String";
       }
    }
@@ -431,7 +447,7 @@
    {
       datum _sortIndex
       {
-         value = "11";
+         value = "40";
          type = "int";
       }
    }
@@ -439,7 +455,7 @@
    {
       datum baseAddress
       {
-         value = "67121392";
+         value = "67121376";
          type = "String";
       }
    }
@@ -447,7 +463,7 @@
    {
       datum _sortIndex
       {
-         value = "23";
+         value = "20";
          type = "int";
       }
    }
@@ -459,11 +475,27 @@
          type = "String";
       }
    }
+   element core_2_vsync
+   {
+      datum _sortIndex
+      {
+         value = "37";
+         type = "int";
+      }
+   }
+   element core_2_vsync.s1
+   {
+      datum baseAddress
+      {
+         value = "67121440";
+         type = "String";
+      }
+   }
    element core_3
    {
       datum _sortIndex
       {
-         value = "26";
+         value = "23";
          type = "int";
       }
    }
@@ -479,7 +511,7 @@
    {
       datum _sortIndex
       {
-         value = "30";
+         value = "27";
          type = "int";
       }
    }
@@ -495,7 +527,7 @@
    {
       datum _sortIndex
       {
-         value = "29";
+         value = "26";
          type = "int";
       }
    }
@@ -511,7 +543,7 @@
    {
       datum _sortIndex
       {
-         value = "34";
+         value = "31";
          type = "int";
       }
    }
@@ -527,7 +559,7 @@
    {
       datum _sortIndex
       {
-         value = "33";
+         value = "30";
          type = "int";
       }
    }
@@ -543,7 +575,7 @@
    {
       datum _sortIndex
       {
-         value = "27";
+         value = "24";
          type = "int";
       }
    }
@@ -583,7 +615,7 @@
    {
       datum _sortIndex
       {
-         value = "39";
+         value = "36";
          type = "int";
       }
    }
@@ -599,7 +631,7 @@
    {
       datum _sortIndex
       {
-         value = "13";
+         value = "10";
          type = "int";
       }
    }
@@ -628,7 +660,7 @@
    {
       datum _sortIndex
       {
-         value = "28";
+         value = "25";
          type = "int";
       }
    }
@@ -644,7 +676,7 @@
    {
       datum _sortIndex
       {
-         value = "25";
+         value = "22";
          type = "int";
       }
    }
@@ -681,7 +713,7 @@
    {
       datum _sortIndex
       {
-         value = "24";
+         value = "21";
          type = "int";
       }
    }
@@ -720,6 +752,16 @@
    type="conduit"
    dir="end" />
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
+ <interface
+   name="core_2_hsync"
+   internal="core_2_hsync.external_connection"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="core_2_vsync"
+   internal="core_2_vsync.external_connection"
+   type="conduit"
+   dir="end" />
  <interface
    name="hex_hi"
    internal="core_1_hex_hi.external_connection"
@@ -1232,7 +1274,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='core_2_memory.s1' start='0x4001000' end='0x4002000' type='altera_avalon_onchip_memory2.s1' /><slave name='core_2.debug_mem_slave' start='0x4002800' end='0x4003000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='core_2_timer.s1' start='0x4003020' end='0x4003040' type='altera_avalon_timer.s1' /><slave name='core_2_3_rx.s1' start='0x40030B0' end='0x40030C0' type='altera_avalon_pio.s1' /><slave name='core_2_3_tx.s1' start='0x40030C0' end='0x40030D0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_addr.s1' start='0x40030D0' end='0x40030E0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_data.s1' start='0x40030E0' end='0x40030F0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_wren.s1' start='0x40030F0' end='0x4003100' type='altera_avalon_pio.s1' /><slave name='core_2_1_rx.s1' start='0x4003100' end='0x4003110' type='altera_avalon_pio.s1' /><slave name='us_counter.s1' start='0x4003110' end='0x4003120' type='altera_avalon_pio.s1' /><slave name='core_2_1_tx.s1' start='0x4003120' end='0x4003130' type='altera_avalon_pio.s1' /><slave name='core_2_jtag.avalon_jtag_slave' start='0x4003138' end='0x4003140' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='mutex_0.s1' start='0x40031B0' end='0x40031B8' type='altera_avalon_mutex.s1' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='core_2_memory.s1' start='0x4001000' end='0x4002000' type='altera_avalon_onchip_memory2.s1' /><slave name='core_2.debug_mem_slave' start='0x4002800' end='0x4003000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='core_2_timer.s1' start='0x4003020' end='0x4003040' type='altera_avalon_timer.s1' /><slave name='core_2_hsync.s1' start='0x40030D0' end='0x40030E0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_wren.s1' start='0x40030E0' end='0x40030F0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_addr.s1' start='0x40030F0' end='0x4003100' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_data.s1' start='0x4003100' end='0x4003110' type='altera_avalon_pio.s1' /><slave name='us_counter.s1' start='0x4003110' end='0x4003120' type='altera_avalon_pio.s1' /><slave name='core_2_vsync.s1' start='0x4003120' end='0x4003130' type='altera_avalon_pio.s1' /><slave name='core_2_3_rx.s1' start='0x4003130' end='0x4003140' type='altera_avalon_pio.s1' /><slave name='core_2_3_tx.s1' start='0x4003140' end='0x4003150' type='altera_avalon_pio.s1' /><slave name='core_2_1_rx.s1' start='0x4003150' end='0x4003160' type='altera_avalon_pio.s1' /><slave name='core_2_1_tx.s1' start='0x4003160' end='0x4003170' type='altera_avalon_pio.s1' /><slave name='core_2_jtag.avalon_jtag_slave' start='0x4003178' end='0x4003180' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='mutex_0.s1' start='0x40031B0' end='0x40031B8' type='altera_avalon_mutex.s1' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -1271,7 +1313,7 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Fast" />
   <parameter name="instAddrWidth" value="27" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='core_2_memory.s1' start='0x4001000' end='0x4002000' type='altera_avalon_onchip_memory2.s1' /><slave name='core_2.debug_mem_slave' start='0x4002800' end='0x4003000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='core_2_timer.s1' start='0x4003020' end='0x4003040' type='altera_avalon_timer.s1' /><slave name='core_2_3_rx.s1' start='0x40030B0' end='0x40030C0' type='altera_avalon_pio.s1' /><slave name='core_2_3_tx.s1' start='0x40030C0' end='0x40030D0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_addr.s1' start='0x40030D0' end='0x40030E0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_data.s1' start='0x40030E0' end='0x40030F0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_wren.s1' start='0x40030F0' end='0x4003100' type='altera_avalon_pio.s1' /><slave name='core_2_1_rx.s1' start='0x4003100' end='0x4003110' type='altera_avalon_pio.s1' /><slave name='us_counter.s1' start='0x4003110' end='0x4003120' type='altera_avalon_pio.s1' /><slave name='core_2_1_tx.s1' start='0x4003120' end='0x4003130' type='altera_avalon_pio.s1' /><slave name='core_2_jtag.avalon_jtag_slave' start='0x4003138' end='0x4003140' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='mutex_0.s1' start='0x40031B0' end='0x40031B8' type='altera_avalon_mutex.s1' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='shared_sdram.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='core_2_memory.s1' start='0x4001000' end='0x4002000' type='altera_avalon_onchip_memory2.s1' /><slave name='core_2.debug_mem_slave' start='0x4002800' end='0x4003000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='core_2_timer.s1' start='0x4003020' end='0x4003040' type='altera_avalon_timer.s1' /><slave name='core_2_hsync.s1' start='0x40030D0' end='0x40030E0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_wren.s1' start='0x40030E0' end='0x40030F0' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_addr.s1' start='0x40030F0' end='0x4003100' type='altera_avalon_pio.s1' /><slave name='core_2_pixel_data.s1' start='0x4003100' end='0x4003110' type='altera_avalon_pio.s1' /><slave name='us_counter.s1' start='0x4003110' end='0x4003120' type='altera_avalon_pio.s1' /><slave name='core_2_vsync.s1' start='0x4003120' end='0x4003130' type='altera_avalon_pio.s1' /><slave name='core_2_3_rx.s1' start='0x4003130' end='0x4003140' type='altera_avalon_pio.s1' /><slave name='core_2_3_tx.s1' start='0x4003140' end='0x4003150' type='altera_avalon_pio.s1' /><slave name='core_2_1_rx.s1' start='0x4003150' end='0x4003160' type='altera_avalon_pio.s1' /><slave name='core_2_1_tx.s1' start='0x4003160' end='0x4003170' type='altera_avalon_pio.s1' /><slave name='core_2_jtag.avalon_jtag_slave' start='0x4003178' end='0x4003180' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='mutex_0.s1' start='0x40031B0' end='0x40031B8' type='altera_avalon_mutex.s1' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
@@ -1463,6 +1505,24 @@
   <parameter name="width" value="3" />
  </module>
  <module
+   name="core_2_hsync"
+   kind="altera_avalon_pio"
+   version="18.1"
+   enabled="1">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="false" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="direction" value="Input" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="1" />
+ </module>
+ <module
    name="core_2_jtag"
    kind="altera_avalon_jtag_uart"
    version="18.1"
@@ -1582,6 +1642,24 @@
   <parameter name="systemFrequency" value="50000000" />
   <parameter name="timeoutPulseOutput" value="false" />
   <parameter name="watchdogPulse" value="2" />
+ </module>
+ <module
+   name="core_2_vsync"
+   kind="altera_avalon_pio"
+   version="18.1"
+   enabled="1">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="false" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="direction" value="Input" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="1" />
  </module>
  <module name="core_3" kind="altera_nios2_gen2" version="18.1" enabled="1">
   <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="1" />
@@ -2001,7 +2079,7 @@
    start="core_2.data_master"
    end="core_2_jtag.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04003138" />
+  <parameter name="baseAddress" value="0x04003178" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2136,7 +2214,7 @@
    start="core_2.data_master"
    end="core_2_1_tx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04003120" />
+  <parameter name="baseAddress" value="0x04003160" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2145,34 +2223,7 @@
    start="core_2.data_master"
    end="core_2_1_rx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04003100" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="core_2.data_master"
-   end="core_2_pixel_wren.s1">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030f0" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="core_2.data_master"
-   end="core_2_pixel_data.s1">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030e0" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="core_2.data_master"
-   end="core_2_pixel_addr.s1">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030d0" />
+  <parameter name="baseAddress" value="0x04003150" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2316,7 +2367,7 @@
    start="core_2.data_master"
    end="core_2_3_tx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030c0" />
+  <parameter name="baseAddress" value="0x04003140" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2325,7 +2376,7 @@
    start="core_2.data_master"
    end="core_2_3_rx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030b0" />
+  <parameter name="baseAddress" value="0x04003130" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2362,6 +2413,51 @@
    end="core_3_memory.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x04001000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.data_master"
+   end="core_2_vsync.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x04003120" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.data_master"
+   end="core_2_pixel_data.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x04003100" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.data_master"
+   end="core_2_pixel_addr.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x040030f0" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.data_master"
+   end="core_2_pixel_wren.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x040030e0" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.data_master"
+   end="core_2_hsync.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x040030d0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2397,7 +2493,7 @@
    start="core_2.instruction_master"
    end="core_2_jtag.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04003138" />
+  <parameter name="baseAddress" value="0x04003178" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2469,7 +2565,7 @@
    start="core_2.instruction_master"
    end="core_2_1_tx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04003120" />
+  <parameter name="baseAddress" value="0x04003160" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2478,34 +2574,7 @@
    start="core_2.instruction_master"
    end="core_2_1_rx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04003100" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="core_2.instruction_master"
-   end="core_2_pixel_wren.s1">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030f0" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="core_2.instruction_master"
-   end="core_2_pixel_data.s1">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030e0" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="core_2.instruction_master"
-   end="core_2_pixel_addr.s1">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030d0" />
+  <parameter name="baseAddress" value="0x04003150" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2649,7 +2718,7 @@
    start="core_2.instruction_master"
    end="core_2_3_tx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030c0" />
+  <parameter name="baseAddress" value="0x04003140" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2658,7 +2727,7 @@
    start="core_2.instruction_master"
    end="core_2_3_rx.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040030b0" />
+  <parameter name="baseAddress" value="0x04003130" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -2763,6 +2832,51 @@
  <connection
    kind="avalon"
    version="18.1"
+   start="core_2.instruction_master"
+   end="core_2_vsync.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x04003120" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.instruction_master"
+   end="core_2_pixel_data.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x04003100" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.instruction_master"
+   end="core_2_pixel_addr.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x040030f0" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.instruction_master"
+   end="core_2_pixel_wren.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x040030e0" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="core_2.instruction_master"
+   end="core_2_hsync.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x040030d0" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
    start="core_3.instruction_master"
    end="core_3_spi.spi_control_port">
   <parameter name="arbitrationPriority" value="1" />
@@ -2777,21 +2891,6 @@
  <connection kind="clock" version="18.1" start="clk_0.clk" end="core_1_ledr.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="core_1_hex_lo.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="core_1_hex_hi.clk" />
- <connection
-   kind="clock"
-   version="18.1"
-   start="clk_0.clk"
-   end="core_2_pixel_addr.clk" />
- <connection
-   kind="clock"
-   version="18.1"
-   start="clk_0.clk"
-   end="core_2_pixel_data.clk" />
- <connection
-   kind="clock"
-   version="18.1"
-   start="clk_0.clk"
-   end="core_2_pixel_wren.clk" />
  <connection
    kind="clock"
    version="18.1"
@@ -2829,6 +2928,23 @@
  <connection kind="clock" version="18.1" start="clk_0.clk" end="core_3_2_rx.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="core_2_3_tx.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="core_2_3_rx.clk" />
+ <connection kind="clock" version="18.1" start="clk_0.clk" end="core_2_vsync.clk" />
+ <connection
+   kind="clock"
+   version="18.1"
+   start="clk_0.clk"
+   end="core_2_pixel_data.clk" />
+ <connection
+   kind="clock"
+   version="18.1"
+   start="clk_0.clk"
+   end="core_2_pixel_addr.clk" />
+ <connection
+   kind="clock"
+   version="18.1"
+   start="clk_0.clk"
+   end="core_2_pixel_wren.clk" />
+ <connection kind="clock" version="18.1" start="clk_0.clk" end="core_2_hsync.clk" />
  <connection
    kind="clock"
    version="18.1"
@@ -3066,21 +3182,6 @@
    kind="reset"
    version="18.1"
    start="clk_0.clk_reset"
-   end="core_2_pixel_addr.reset" />
- <connection
-   kind="reset"
-   version="18.1"
-   start="clk_0.clk_reset"
-   end="core_2_pixel_data.reset" />
- <connection
-   kind="reset"
-   version="18.1"
-   start="clk_0.clk_reset"
-   end="core_2_pixel_wren.reset" />
- <connection
-   kind="reset"
-   version="18.1"
-   start="clk_0.clk_reset"
    end="core_1_speaker.reset" />
  <connection
    kind="reset"
@@ -3206,6 +3307,31 @@
    kind="reset"
    version="18.1"
    start="clk_0.clk_reset"
+   end="core_2_vsync.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
+   end="core_2_pixel_data.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
+   end="core_2_pixel_addr.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
+   end="core_2_pixel_wren.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
+   end="core_2_hsync.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
    end="core_1_memory.reset1" />
  <connection
    kind="reset"
@@ -3301,21 +3427,6 @@
    kind="reset"
    version="18.1"
    start="core_2.debug_reset_request"
-   end="core_2_pixel_addr.reset" />
- <connection
-   kind="reset"
-   version="18.1"
-   start="core_2.debug_reset_request"
-   end="core_2_pixel_data.reset" />
- <connection
-   kind="reset"
-   version="18.1"
-   start="core_2.debug_reset_request"
-   end="core_2_pixel_wren.reset" />
- <connection
-   kind="reset"
-   version="18.1"
-   start="core_2.debug_reset_request"
    end="core_2_jtag.reset" />
  <connection
    kind="reset"
@@ -3387,6 +3498,31 @@
    version="18.1"
    start="core_3.debug_reset_request"
    end="core_3_key.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="core_2.debug_reset_request"
+   end="core_2_pixel_data.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="core_2.debug_reset_request"
+   end="core_2_pixel_addr.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="core_2.debug_reset_request"
+   end="core_2_vsync.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="core_2.debug_reset_request"
+   end="core_2_pixel_wren.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="core_2.debug_reset_request"
+   end="core_2_hsync.reset" />
  <connection
    kind="reset"
    version="18.1"

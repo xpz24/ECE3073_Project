@@ -6,6 +6,7 @@
 #include "../M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
 #include "../M2_core1_bsp/HAL/inc/includes.h"
 #include "../M2_core1_bsp/drivers/inc/altera_avalon_mutex.h"
+#include "sys/alt_alarm.h"
 #include "interrupts.h"
 
 // BASE ADDRESSES
@@ -58,9 +59,48 @@
 #define DISPLAY_WIDTH 6
 #define SCROLL_SPEED  100
 
+// buzzer
+#define NOTE_C4  262
+#define NOTE_D4  294
+#define NOTE_E4  330
+#define NOTE_F4  349
+#define NOTE_G4  392
+
+int melody[] = {
+    NOTE_E4,
+    NOTE_E4,
+    0,
+    NOTE_E4,
+    0,
+    NOTE_C4,
+    NOTE_E4,
+    0,
+    NOTE_G4,
+    0,
+    0,
+    0,
+    NOTE_G4
+};
+
+int durations[] = {
+    300,
+    300,
+    150,
+    300,
+    150,
+    300,
+    300,
+    150,
+    600,
+    300,
+    300,
+    300,
+    600
+};
+
+// task config
 #define HEX_PRIORITY    3
 #define HEX_STACKSIZE   2048
-
 OS_STK hex_stk[HEX_STACKSIZE];
 
 volatile int emergency_clear = 0;
@@ -188,6 +228,38 @@ void emergency_msg(void) {
 	write_hex(dash, s, t, o, p, dash);
 }
 
+// play buzzer
+void play_tone(int frequency, int duration_ms) {
+    if (frequency == 0) {
+        // If the note is 0, just wait (Silence/Rest)
+        alt_busy_sleep(duration_ms * 1000);
+    } else {
+        // TURN ON the active buzzer's internal oscillator
+        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 1);
+
+        // Let it beep at its own natural frequency for the duration of the note
+        alt_busy_sleep(duration_ms * 1000);
+
+        // TURN OFF
+        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
+    }
+}
+
+void play_mario_theme(void) {
+    int length = sizeof(melody) / sizeof(int);
+
+    for (int i = 0; i < length; i++) {
+        // Play the internal tone for the duration specified in your array
+        play_tone(melody[i], durations[i]);
+
+        // IMPORTANT: The "Staccato" gap.
+        // Mario sounds like Mario because the notes are detached.
+        alt_busy_sleep(30000); // 30ms gap between notes
+    }
+
+    IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
+}
+
 // HEX TASK
 void hex_task(void* pdata) {
     int scroll_pos     = 0;
@@ -254,14 +326,11 @@ void hex_task(void* pdata) {
         }
         // SW0 on - scroll/pause message
         else {
-        	// cpu usage
-        	cpuFlag = (sw & 0x4) ? 1 : 0;
-            // always display current position
-            scroll_step(scroll_pos, cpuFlag, 1);
+        	scroll_step(scroll_pos, cpuFlag, 1); // always display current position
             // SW0 + SW1 - scroll message
             if (sw & 0x2) {
-            	if (cpuFlag);
-            	else {
+				cpuFlag = (sw & 0x4) ? 1 : 0; // cpu usage
+            	if (!cpuFlag) {
             		scroll_counter++;
 					if (scroll_counter >= SCROLL_SPEED) {
 						scroll_counter = 0;
@@ -270,26 +339,32 @@ void hex_task(void* pdata) {
 						if (scroll_pos >= (total)) scroll_pos = 0;
 
 						// SW0 + SW1 + SW3 - speaker + traffic led
-						if (sw & 0x8) {
-							traffic_led++;
-							if (traffic_led > 7) traffic_led = 0;
-							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
-							speaker = !speaker;
-							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
-						}
-						else {
-							traffic_led = 0;
-							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
-							speaker = 0;
-							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
-						}
+//						if (sw & 0x8) {
+//							traffic_led++;
+//							if (traffic_led > 7) traffic_led = 0;
+//							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+//							speaker = !speaker;
+//							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
+//						} else {
+//							traffic_led = 0;
+//							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
+//							speaker = 0;
+//							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
+//						}
 					}
             	}
-            }
+            } else cpuFlag = 0;
+        }
+
+        if (sw & 0x8) {
+        	play_mario_theme();
+        	while (IORD_ALTERA_AVALON_PIO_DATA(SW_BASE) & 0x8) {
+				OSTimeDly(2);
+			}
         }
 
         // small delay to prevent cpu hogging
-        OSTimeDly(3);
+        OSTimeDly(4);
     }
 }
 

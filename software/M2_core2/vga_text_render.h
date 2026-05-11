@@ -10,6 +10,7 @@
 
 // Forward declaration - already in vga.c
 extern void write_pixel(unsigned int addr, uint16_t color);
+extern void fps_tick(void);
 
 // SCROLL STATE
 // tilt_scroll_offset > 0  : user is browsing history via bottom strip
@@ -41,6 +42,8 @@ static int last_main_start = 0;
 static int marquee_pixel_offset = -(PANEL_SPLIT);  // start off-screen right
 // MARQUEE_STEP: pixels to shift per vga_task tick (tune to taste)
 #define MARQUEE_STEP 2
+#define VSYNC_BASE CORE_2_VSYNC_BASE
+#define HSYNC_BASE CORE_2_HSYNC_BASE
 
 // Low-level primitives
 
@@ -115,7 +118,7 @@ static void draw_main_append(char c) {
 // Draws a single x column of the marquee band.
 // Extracted so both the delta updater and full redraw can share it.
 static void draw_one_marquee_column(int x, int cy, int char_h, int total_width) {
-    int string_x = x + marquee_pixel_offset - 4;
+    int string_x  = x + marquee_pixel_offset - 4;
     int base_addr = cy * FB_WIDTH + x;
 
     if (string_x >= 0 && string_x < total_width) {
@@ -123,22 +126,36 @@ static void draw_one_marquee_column(int x, int cy, int char_h, int total_width) 
         int char_x = string_x % MAIN_SLOT_W;
 
         if (slot < ticker.count && char_x < FONT_W * MAIN_SCALE) {
-            int font_col = char_x / MAIN_SCALE;
-            int mask     = (0x80 >> font_col);
-            int idx      = font_index(ticker_get(slot));
-            int y;
-            for (y = 0; y < char_h; y++) {
-                uint8_t bits = font8x12[idx][y / MAIN_SCALE];
-                write_pixel(base_addr + y * FB_WIDTH,
-                            (bits & mask) ? COL_TICKER_FG : COL_BG);
+            int mask = (0x80 >> (char_x / MAIN_SCALE));
+            int idx  = font_index(ticker_get(slot));
+            int r, s;
+            int addr = base_addr;
+
+            for (r = 0; r < FONT_H; r++) {
+                uint16_t color = (font8x12[idx][r] & mask)
+                                 ? COL_TICKER_FG : COL_BG;
+                // Write MAIN_SCALE identical pixels — unrolled for scale=3
+                write_pixel(addr,                color);
+                write_pixel(addr +     FB_WIDTH, color);
+                write_pixel(addr + 2 * FB_WIDTH, color);
+                addr += 3 * FB_WIDTH;  // MAIN_SCALE * FB_WIDTH
             }
             return;
         }
     }
 
+    // Background: tight loop
     int y;
     for (y = 0; y < char_h; y++)
         write_pixel(base_addr + y * FB_WIDTH, COL_BG);
+}
+
+// wait for blinking
+static void wait_for_blanking(void) {
+    // Wait for vsync to go low (sync pulse starts)
+    while (IORD_ALTERA_AVALON_PIO_DATA(VSYNC_BASE) != 0);
+    // Wait for vsync to go high (back porch starts — safe to write)
+    while (IORD_ALTERA_AVALON_PIO_DATA(VSYNC_BASE) == 0);
 }
 
 // Call this every tick when display_active.
@@ -153,14 +170,16 @@ static void draw_marquee_tick(void) {
     int char_h      = FONT_H * MAIN_SCALE;
 
     marquee_pixel_offset += MARQUEE_STEP;
-
     if (marquee_pixel_offset >= total_width + 4)
         marquee_pixel_offset = -(PANEL_SPLIT);
 
-    // Full column scan every tick — write-only FB means no pixel shifting possible
+    wait_for_blanking();
+
     int x;
     for (x = 0; x < PANEL_SPLIT; x++)
         draw_one_marquee_column(x, cy, char_h, total_width);
+
+    fps_tick();
 }
 
 // draw_history_strip()
@@ -247,7 +266,7 @@ static void vga_text_init(void) {
 // Uses dirty redraw: only redraws the new char slot, not the full panel.
 static void vga_text_update(char new_char) {
     ticker_push(new_char);
-    draw_main_append(new_char);
+//    marquee_pixel_offset = -(PANEL_SPLIT);
     draw_history_append(new_char);
 }
 
