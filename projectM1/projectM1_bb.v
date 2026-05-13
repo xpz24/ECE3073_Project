@@ -5,6 +5,7 @@ module projectM1 (
 	accel_G_SENSOR_CS_N,
 	accel_G_SENSOR_INT,
 	clk_clk,
+	core_2_hsync_export,
 	core_2_vsync_export,
 	hex_hi_export,
 	hex_lo_export,
@@ -29,14 +30,14 @@ module projectM1 (
 	spi_SS_n,
 	sw_export,
 	traffic_led_export,
-	us_counter_export,
-	core_2_hsync_export);	
+	us_counter_export);	
 
 	inout		accel_I2C_SDAT;
 	output		accel_I2C_SCLK;
 	output		accel_G_SENSOR_CS_N;
 	input		accel_G_SENSOR_INT;
 	input		clk_clk;
+	input		core_2_hsync_export;
 	input		core_2_vsync_export;
 	output	[23:0]	hex_hi_export;
 	output	[23:0]	hex_lo_export;
@@ -62,5 +63,4 @@ module projectM1 (
 	input	[9:0]	sw_export;
 	output	[2:0]	traffic_led_export;
 	input	[31:0]	us_counter_export;
-	input		core_2_hsync_export;
 endmodule

@@ -1,83 +1,85 @@
 # # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
 # 
-preplace inst projectM1.core_3_jtag -pg 1 -lvl 5 -y 670
-preplace inst projectM1.core_2_pixel_addr -pg 1 -lvl 4 -y 410
-preplace inst projectM1.core_2_3_tx -pg 1 -lvl 4 -y 290
+preplace inst projectM1.core_3_jtag -pg 1 -lvl 5 -y 680
+preplace inst projectM1.core_2_pixel_addr -pg 1 -lvl 4 -y 500
+preplace inst projectM1.core_2_3_tx -pg 1 -lvl 4 -y 400
 preplace inst projectM1.core_2.reset_bridge -pg 1
-preplace inst projectM1.core_1_accelerometer -pg 1 -lvl 4 -y 1400
-preplace inst projectM1.core_3_key -pg 1 -lvl 5 -y 30
-preplace inst projectM1.core_3_1_tx -pg 1 -lvl 4 -y 1950
+preplace inst projectM1.core_1_accelerometer -pg 1 -lvl 4 -y 1460
+preplace inst projectM1.core_3_key -pg 1 -lvl 5 -y 40
+preplace inst projectM1.core_3_1_tx -pg 1 -lvl 4 -y 1960
 preplace inst projectM1.core_3.clock_bridge -pg 1
 preplace inst projectM1.core_2_vsync -pg 1 -lvl 4 -y 50
-preplace inst projectM1.core_1_traffic_led -pg 1 -lvl 4 -y 2790
-preplace inst projectM1.core_1_jtag -pg 1 -lvl 4 -y 4010
-preplace inst projectM1.core_3_2_tx -pg 1 -lvl 4 -y 2390
-preplace inst projectM1.core_2_memory -pg 1 -lvl 4 -y 3090
-preplace inst projectM1.core_2_jtag -pg 1 -lvl 4 -y 2890
-preplace inst projectM1.core_1_sw -pg 1 -lvl 4 -y 2590
-preplace inst projectM1.core_1_memory -pg 1 -lvl 4 -y 2710
-preplace inst projectM1.core_1_hex_lo -pg 1 -lvl 4 -y 980
-preplace inst projectM1.us_counter -pg 1 -lvl 4 -y 1200
-preplace inst projectM1.core_1_3_tx -pg 1 -lvl 4 -y 190
-preplace inst projectM1.core_3_1_rx -pg 1 -lvl 5 -y 150
-preplace inst projectM1.core_1_hex_hi -pg 1 -lvl 4 -y 880
-preplace inst projectM1.core_1_2_rx -pg 1 -lvl 4 -y 1520
-preplace inst projectM1.core_2_3_rx -pg 1 -lvl 4 -y 2270
+preplace inst projectM1.core_1_traffic_led -pg 1 -lvl 4 -y 2800
+preplace inst projectM1.core_1_jtag -pg 1 -lvl 4 -y 4020
+preplace inst projectM1.core_3_2_tx -pg 1 -lvl 4 -y 2400
+preplace inst projectM1.core_2_memory -pg 1 -lvl 4 -y 3100
+preplace inst projectM1.core_2_jtag -pg 1 -lvl 4 -y 2900
+preplace inst projectM1.core_1_sw -pg 1 -lvl 4 -y 2600
+preplace inst projectM1.core_1_memory -pg 1 -lvl 4 -y 2720
+preplace inst projectM1.core_1_hex_lo -pg 1 -lvl 4 -y 1140
+preplace inst projectM1.us_counter -pg 1 -lvl 4 -y 1260
+preplace inst projectM1.core_1_3_tx -pg 1 -lvl 4 -y 200
+preplace inst projectM1.core_3_1_rx -pg 1 -lvl 5 -y 160
+preplace inst projectM1.core_1_hex_hi -pg 1 -lvl 4 -y 1040
+preplace inst projectM1.core_1_2_rx -pg 1 -lvl 4 -y 1580
+preplace inst projectM1.core_2_3_rx -pg 1 -lvl 4 -y 2280
 preplace inst projectM1.core_2.cpu -pg 1
-preplace inst projectM1.core_1_2_tx -pg 1 -lvl 4 -y 2050
+preplace inst projectM1.core_1_2_tx -pg 1 -lvl 4 -y 2060
 preplace inst projectM1.core_1.clock_bridge -pg 1
-preplace inst projectM1.core_3_2_rx -pg 1 -lvl 5 -y 270
-preplace inst projectM1.core_2_pixel_data -pg 1 -lvl 4 -y 510
-preplace inst projectM1.core_2_1_rx -pg 1 -lvl 4 -y 2150
-preplace inst projectM1.core_1_timer -pg 1 -lvl 4 -y 4110
-preplace inst projectM1.mutex_0 -pg 1 -lvl 4 -y 3250
-preplace inst projectM1.core_2_1_tx -pg 1 -lvl 4 -y 1730
+preplace inst projectM1.core_3_2_rx -pg 1 -lvl 5 -y 280
+preplace inst projectM1.core_2_pixel_data -pg 1 -lvl 4 -y 600
+preplace inst projectM1.core_2_1_rx -pg 1 -lvl 4 -y 2160
+preplace inst projectM1.core_1_timer -pg 1 -lvl 4 -y 4120
+preplace inst projectM1.mutex_0 -pg 1 -lvl 4 -y 3260
+preplace inst projectM1.core_2_1_tx -pg 1 -lvl 4 -y 1740
 preplace inst projectM1.core_1.cpu -pg 1
 preplace inst projectM1 -pg 1 -lvl 1 -y 40 -regy -20
-preplace inst projectM1.core_3_timer -pg 1 -lvl 5 -y 770
-preplace inst projectM1.core_3_memory -pg 1 -lvl 4 -y 3170
+preplace inst projectM1.core_3_timer -pg 1 -lvl 5 -y 780
+preplace inst projectM1.core_3_memory -pg 1 -lvl 4 -y 3180
 preplace inst projectM1.core_3.cpu -pg 1
-preplace inst projectM1.core_2_pixel_wren -pg 1 -lvl 4 -y 610
+preplace inst projectM1.core_2_pixel_wren -pg 1 -lvl 4 -y 720
 preplace inst projectM1.core_1.reset_bridge -pg 1
-preplace inst projectM1.clk_0 -pg 1 -lvl 2 -y 2230
-preplace inst projectM1.core_2_timer -pg 1 -lvl 4 -y 2990
-preplace inst projectM1.core_1 -pg 1 -lvl 3 -y 2380
-preplace inst projectM1.shared_sdram -pg 1 -lvl 4 -y 3390
-preplace inst projectM1.core_3_spi -pg 1 -lvl 5 -y 880
+preplace inst projectM1.clk_0 -pg 1 -lvl 2 -y 2240
+preplace inst projectM1.core_2_timer -pg 1 -lvl 4 -y 3000
+preplace inst projectM1.core_2_hsync -pg 1 -lvl 4 -y 300
+preplace inst projectM1.core_1 -pg 1 -lvl 3 -y 2390
+preplace inst projectM1.shared_sdram -pg 1 -lvl 4 -y 3400
+preplace inst projectM1.core_3_spi -pg 1 -lvl 5 -y 890
 preplace inst projectM1.core_3.reset_bridge -pg 1
 preplace inst projectM1.core_2.clock_bridge -pg 1
-preplace inst projectM1.core_2 -pg 1 -lvl 3 -y 2160
-preplace inst projectM1.core_1_speaker -pg 1 -lvl 4 -y 2490
-preplace inst projectM1.core_1_3_rx -pg 1 -lvl 4 -y 1830
-preplace inst projectM1.core_3 -pg 1 -lvl 4 -y 740
-preplace inst projectM1.core_1_ledr -pg 1 -lvl 4 -y 1300
-preplace netloc INTERCONNECT<net_container>projectM1</net_container>(SLAVE)core_1_traffic_led.reset,(SLAVE)core_3.reset,(SLAVE)core_1_memory.reset1,(SLAVE)core_1_3_rx.reset,(SLAVE)core_3_memory.reset1,(SLAVE)core_1_jtag.reset,(MASTER)core_1.debug_reset_request,(MASTER)core_3.debug_reset_request,(SLAVE)core_3_1_tx.reset,(SLAVE)core_2_3_tx.reset,(SLAVE)core_2_timer.reset,(SLAVE)core_1_2_tx.reset,(SLAVE)core_1_sw.reset,(SLAVE)core_2_3_rx.reset,(SLAVE)core_2_memory.reset1,(SLAVE)us_counter.reset,(SLAVE)core_1_speaker.reset,(SLAVE)core_1_hex_hi.reset,(SLAVE)core_3_spi.reset,(SLAVE)core_3_2_rx.reset,(SLAVE)core_3_2_tx.reset,(MASTER)core_2.debug_reset_request,(SLAVE)core_3_1_rx.reset,(SLAVE)core_1.reset,(SLAVE)core_1_ledr.reset,(SLAVE)core_3_jtag.reset,(SLAVE)core_2_pixel_addr.reset,(SLAVE)core_2_vsync.reset,(SLAVE)mutex_0.reset,(SLAVE)clk_0.clk_in_reset,(MASTER)clk_0.clk_reset,(SLAVE)core_1_hex_lo.reset,(SLAVE)core_2_pixel_wren.reset,(SLAVE)core_3_timer.reset,(SLAVE)core_1_accelerometer.reset,(SLAVE)core_2_pixel_data.reset,(SLAVE)core_2_1_tx.reset,(SLAVE)core_3_key.reset,(SLAVE)core_2_1_rx.reset,(SLAVE)core_2.reset,(SLAVE)core_1_timer.reset,(SLAVE)core_2_jtag.reset,(SLAVE)core_1_3_tx.reset,(SLAVE)shared_sdram.reset,(SLAVE)core_1_2_rx.reset) 1 1 4 140 2220 780 2320 1220 1130 1830
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)us_counter.external_connection,(SLAVE)projectM1.us_counter) 1 0 4 NJ 1230 NJ 1230 NJ 1230 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.traffic_led,(SLAVE)core_1_traffic_led.external_connection) 1 0 4 NJ 2820 NJ 2820 NJ 2820 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.speaker,(SLAVE)core_1_speaker.external_connection) 1 0 4 NJ 2520 NJ 2520 NJ 2520 NJ
+preplace inst projectM1.core_2 -pg 1 -lvl 3 -y 2170
+preplace inst projectM1.core_1_speaker -pg 1 -lvl 4 -y 2500
+preplace inst projectM1.core_1_3_rx -pg 1 -lvl 4 -y 1840
+preplace inst projectM1.core_3 -pg 1 -lvl 4 -y 850
+preplace inst projectM1.core_1_ledr -pg 1 -lvl 4 -y 1360
+preplace netloc FAN_OUT<net_container>projectM1</net_container>(SLAVE)core_2_timer.irq,(SLAVE)core_2_3_rx.irq,(SLAVE)core_2_jtag.irq,(MASTER)core_2.irq,(SLAVE)core_2_1_rx.irq) 1 3 1 1280
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)us_counter.external_connection,(SLAVE)projectM1.us_counter) 1 0 4 NJ 1290 NJ 1290 NJ 1290 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.speaker,(SLAVE)core_1_speaker.external_connection) 1 0 4 NJ 2530 NJ 2530 NJ 2530 NJ
 preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_3_key.external_connection,(SLAVE)projectM1.key) 1 0 5 NJ 40 NJ 40 NJ 40 NJ 40 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.core_2_vsync,(SLAVE)core_2_vsync.external_connection) 1 0 4 NJ 80 NJ 80 NJ 80 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)clk_0.clk_in,(SLAVE)projectM1.clk) 1 0 2 NJ 2240 NJ
-preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_2_3_tx.external_connection,(SLAVE)core_3_2_rx.external_connection) 1 3 2 1280 400 1870
-preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_3_1_rx.external_connection,(SLAVE)core_1_3_tx.external_connection) 1 3 2 1280 180 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_accelerometer.external_interface,(SLAVE)projectM1.accel) 1 0 4 NJ 1450 NJ 1450 NJ 1450 NJ
-preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_1_3_rx.external_connection,(SLAVE)core_3_1_tx.external_connection) 1 3 1 1280
-preplace netloc INTERCONNECT<net_container>projectM1</net_container>(SLAVE)core_2_jtag.avalon_jtag_slave,(SLAVE)core_1_jtag.avalon_jtag_slave,(SLAVE)core_1_sw.s1,(SLAVE)core_3_1_rx.s1,(SLAVE)core_3_timer.s1,(SLAVE)core_2_3_rx.s1,(MASTER)core_1.instruction_master,(SLAVE)core_2.debug_mem_slave,(SLAVE)core_3.debug_mem_slave,(MASTER)core_3.data_master,(SLAVE)core_2_pixel_addr.s1,(SLAVE)core_2_pixel_wren.s1,(SLAVE)core_1_timer.s1,(SLAVE)core_1_3_tx.s1,(SLAVE)core_2_vsync.s1,(SLAVE)core_3_memory.s1,(SLAVE)core_2_1_rx.s1,(SLAVE)core_1_2_tx.s1,(SLAVE)core_2_timer.s1,(SLAVE)core_1_accelerometer.avalon_accelerometer_spi_mode_slave,(SLAVE)core_1_hex_lo.s1,(MASTER)core_2.instruction_master,(SLAVE)core_2_memory.s1,(MASTER)core_3.instruction_master,(SLAVE)us_counter.s1,(MASTER)core_1.data_master,(SLAVE)core_2_pixel_data.s1,(SLAVE)core_2_1_tx.s1,(SLAVE)core_1.debug_mem_slave,(SLAVE)core_1_traffic_led.s1,(SLAVE)core_3_1_tx.s1,(SLAVE)core_1_ledr.s1,(SLAVE)core_3_2_tx.s1,(SLAVE)core_2_3_tx.s1,(SLAVE)core_3_spi.spi_control_port,(SLAVE)core_3_key.s1,(SLAVE)core_3_2_rx.s1,(SLAVE)core_1_2_rx.s1,(SLAVE)core_1_speaker.s1,(SLAVE)core_1_3_rx.s1,(SLAVE)shared_sdram.s1,(SLAVE)core_3_jtag.avalon_jtag_slave,(SLAVE)core_1_memory.s1,(MASTER)core_2.data_master,(SLAVE)core_1_hex_hi.s1,(SLAVE)mutex_0.s1) 1 2 3 800 2340 1200 1150 1810
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.pixel_wren,(SLAVE)core_2_pixel_wren.external_connection) 1 0 4 NJ 640 NJ 640 NJ 640 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.pixel_data,(SLAVE)core_2_pixel_data.external_connection) 1 0 4 NJ 540 NJ 540 NJ 540 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.sdram,(SLAVE)shared_sdram.wire) 1 0 4 NJ 3460 NJ 3460 NJ 3460 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.ledr,(SLAVE)core_1_ledr.external_connection) 1 0 4 NJ 1330 NJ 1330 NJ 1330 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_sw.external_connection,(SLAVE)projectM1.sw) 1 0 4 NJ 2620 NJ 2620 NJ 2620 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.spi,(SLAVE)core_3_spi.external) 1 0 5 NJ 1030 NJ 1030 NJ 1030 NJ 1110 NJ
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_hex_lo.external_connection,(SLAVE)projectM1.hex_lo) 1 0 4 NJ 1010 NJ 1010 NJ 1010 NJ
-preplace netloc FAN_OUT<net_container>projectM1</net_container>(MASTER)core_3.irq,(SLAVE)core_3_2_rx.irq,(SLAVE)core_3_key.irq,(SLAVE)core_3_spi.irq,(SLAVE)core_3_1_rx.irq,(SLAVE)core_3_timer.irq,(SLAVE)core_3_jtag.irq) 1 4 1 1890
-preplace netloc FAN_OUT<net_container>projectM1</net_container>(MASTER)core_2.irq,(SLAVE)core_2_jtag.irq,(SLAVE)core_2_3_rx.irq,(SLAVE)core_2_1_rx.irq,(SLAVE)core_2_timer.irq) 1 3 1 1260
-preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_2_1_rx.external_connection,(SLAVE)core_1_2_tx.external_connection) 1 3 1 1280
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_2_pixel_addr.external_connection,(SLAVE)projectM1.pixel_addr) 1 0 4 NJ 440 NJ 440 NJ 440 NJ
-preplace netloc FAN_OUT<net_container>projectM1</net_container>(MASTER)core_1.irq,(SLAVE)core_1_jtag.irq,(SLAVE)core_1_accelerometer.interrupt,(SLAVE)core_1_sw.irq,(SLAVE)core_1_2_rx.irq,(SLAVE)core_1_3_rx.irq,(SLAVE)core_1_timer.irq) 1 3 1 1180
-preplace netloc FAN_OUT<net_container>projectM1</net_container>(SLAVE)core_1_ledr.clk,(SLAVE)core_1.clk,(SLAVE)shared_sdram.clk,(SLAVE)core_3_jtag.clk,(SLAVE)core_1_3_tx.clk,(SLAVE)core_2_3_tx.clk,(SLAVE)core_1_sw.clk,(SLAVE)core_1_timer.clk,(SLAVE)core_3_timer.clk,(SLAVE)core_1_accelerometer.clk,(SLAVE)core_3_1_rx.clk,(SLAVE)core_2_pixel_data.clk,(SLAVE)core_3_spi.clk,(SLAVE)core_1_hex_hi.clk,(SLAVE)core_3_2_rx.clk,(SLAVE)core_1_speaker.clk,(SLAVE)core_1_memory.clk1,(SLAVE)core_2_memory.clk1,(SLAVE)core_3_2_tx.clk,(SLAVE)core_1_3_rx.clk,(SLAVE)core_2_vsync.clk,(SLAVE)core_2.clk,(SLAVE)core_2_jtag.clk,(SLAVE)core_2_pixel_addr.clk,(SLAVE)core_1_2_rx.clk,(SLAVE)core_3.clk,(SLAVE)core_3_1_tx.clk,(SLAVE)core_1_traffic_led.clk,(SLAVE)core_1_2_tx.clk,(SLAVE)core_1_hex_lo.clk,(MASTER)clk_0.clk,(SLAVE)core_3_memory.clk1,(SLAVE)core_2_1_tx.clk,(SLAVE)core_2_pixel_wren.clk,(SLAVE)core_2_3_rx.clk,(SLAVE)mutex_0.clk,(SLAVE)core_2_1_rx.clk,(SLAVE)core_2_timer.clk,(SLAVE)core_3_key.clk,(SLAVE)core_1_jtag.clk,(SLAVE)us_counter.clk) 1 2 3 760 2300 1240 1090 1850
-preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_hex_hi.external_connection,(SLAVE)projectM1.hex_hi) 1 0 4 NJ 910 NJ 910 NJ 910 NJ
-preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_1_2_rx.external_connection,(SLAVE)core_2_1_tx.external_connection) 1 3 1 1280
-preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_3_2_tx.external_connection,(SLAVE)core_2_3_rx.external_connection) 1 3 1 1280
+preplace netloc FAN_OUT<net_container>projectM1</net_container>(SLAVE)core_1_sw.irq,(SLAVE)core_1_2_rx.irq,(SLAVE)core_1_3_rx.irq,(SLAVE)core_1_timer.irq,(SLAVE)core_1_accelerometer.interrupt,(SLAVE)core_1_jtag.irq,(MASTER)core_1.irq) 1 3 1 1200
+preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_3_1_rx.external_connection,(SLAVE)core_1_3_tx.external_connection) 1 3 2 1300 190 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_2_pixel_data.external_connection,(SLAVE)projectM1.pixel_data) 1 0 4 NJ 630 NJ 630 NJ 630 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.clk,(SLAVE)clk_0.clk_in) 1 0 2 NJ 2250 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_accelerometer.external_interface,(SLAVE)projectM1.accel) 1 0 4 NJ 1510 NJ 1510 NJ 1510 NJ
+preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_1_3_rx.external_connection,(SLAVE)core_3_1_tx.external_connection) 1 3 1 1300
+preplace netloc INTERCONNECT<net_container>projectM1</net_container>(SLAVE)core_2_vsync.s1,(SLAVE)core_2_pixel_addr.s1,(SLAVE)core_3_memory.s1,(SLAVE)core_2_hsync.s1,(SLAVE)core_2_3_rx.s1,(MASTER)core_2.data_master,(MASTER)core_1.data_master,(SLAVE)core_1_2_tx.s1,(SLAVE)core_2.debug_mem_slave,(SLAVE)mutex_0.s1,(SLAVE)core_2_pixel_data.s1,(MASTER)core_2.instruction_master,(SLAVE)core_3_1_tx.s1,(SLAVE)core_3_jtag.avalon_jtag_slave,(SLAVE)core_3_spi.spi_control_port,(SLAVE)core_1_3_rx.s1,(SLAVE)core_1_traffic_led.s1,(MASTER)core_3.data_master,(SLAVE)core_3_key.s1,(SLAVE)core_1_memory.s1,(SLAVE)core_2_memory.s1,(SLAVE)core_1_hex_hi.s1,(SLAVE)core_3.debug_mem_slave,(SLAVE)core_2_pixel_wren.s1,(SLAVE)core_1_3_tx.s1,(SLAVE)core_2_1_rx.s1,(SLAVE)core_2_jtag.avalon_jtag_slave,(SLAVE)core_1_ledr.s1,(SLAVE)core_1_sw.s1,(SLAVE)us_counter.s1,(SLAVE)core_1_hex_lo.s1,(SLAVE)core_1_accelerometer.avalon_accelerometer_spi_mode_slave,(SLAVE)core_3_timer.s1,(SLAVE)core_1_2_rx.s1,(SLAVE)core_3_2_rx.s1,(SLAVE)core_2_1_tx.s1,(MASTER)core_3.instruction_master,(SLAVE)shared_sdram.s1,(SLAVE)core_2_timer.s1,(SLAVE)core_3_1_rx.s1,(SLAVE)core_3_2_tx.s1,(SLAVE)core_2_3_tx.s1,(SLAVE)core_1_speaker.s1,(SLAVE)core_1.debug_mem_slave,(SLAVE)core_1_timer.s1,(MASTER)core_1.instruction_master,(SLAVE)core_1_jtag.avalon_jtag_slave) 1 2 3 800 2350 1220 1030 1890
+preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_1_2_tx.external_connection,(SLAVE)core_2_1_rx.external_connection) 1 3 1 1300
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_2_vsync.external_connection,(SLAVE)projectM1.core_2_vsync) 1 0 4 NJ 80 NJ 80 NJ 80 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.sdram,(SLAVE)shared_sdram.wire) 1 0 4 NJ 3470 NJ 3470 NJ 3470 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.ledr,(SLAVE)core_1_ledr.external_connection) 1 0 4 NJ 1390 NJ 1390 NJ 1390 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_traffic_led.external_connection,(SLAVE)projectM1.traffic_led) 1 0 4 NJ 2830 NJ 2830 NJ 2830 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_sw.external_connection,(SLAVE)projectM1.sw) 1 0 4 NJ 2630 NJ 2630 NJ 2630 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.spi,(SLAVE)core_3_spi.external) 1 0 5 NJ 1110 NJ 1110 NJ 1110 NJ 1250 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.hex_lo,(SLAVE)core_1_hex_lo.external_connection) 1 0 4 NJ 1090 NJ 1090 NJ 1090 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.core_2_hsync,(SLAVE)core_2_hsync.external_connection) 1 0 4 NJ 330 NJ 330 NJ 330 NJ
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)projectM1.pixel_addr,(SLAVE)core_2_pixel_addr.external_connection) 1 0 4 NJ 530 NJ 530 NJ 530 NJ
+preplace netloc FAN_OUT<net_container>projectM1</net_container>(MASTER)core_3.irq,(SLAVE)core_3_spi.irq,(SLAVE)core_3_jtag.irq,(SLAVE)core_3_timer.irq,(SLAVE)core_3_1_rx.irq,(SLAVE)core_3_2_rx.irq,(SLAVE)core_3_key.irq) 1 4 1 1870
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_2_pixel_wren.external_connection,(SLAVE)projectM1.pixel_wren) 1 0 4 NJ 750 NJ 750 NJ 750 NJ
+preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_3_2_rx.external_connection,(SLAVE)core_2_3_tx.external_connection) 1 3 2 1300 710 1830
+preplace netloc EXPORT<net_container>projectM1</net_container>(SLAVE)core_1_hex_hi.external_connection,(SLAVE)projectM1.hex_hi) 1 0 4 NJ 1070 NJ 1070 NJ 1070 NJ
+preplace netloc INTERCONNECT<net_container>projectM1</net_container>(SLAVE)core_1_traffic_led.reset,(MASTER)clk_0.clk_reset,(SLAVE)core_2_pixel_wren.reset,(MASTER)core_2.debug_reset_request,(SLAVE)core_2_3_rx.reset,(SLAVE)core_3_spi.reset,(SLAVE)core_3_key.reset,(SLAVE)core_1.reset,(SLAVE)core_2.reset,(SLAVE)core_1_2_rx.reset,(SLAVE)core_2_memory.reset1,(SLAVE)core_2_1_tx.reset,(SLAVE)core_2_1_rx.reset,(SLAVE)core_3_1_rx.reset,(SLAVE)core_1_2_tx.reset,(SLAVE)core_1_3_tx.reset,(SLAVE)clk_0.clk_in_reset,(SLAVE)us_counter.reset,(SLAVE)core_3_2_tx.reset,(SLAVE)core_2_pixel_addr.reset,(SLAVE)core_1_speaker.reset,(SLAVE)core_1_sw.reset,(SLAVE)core_2_3_tx.reset,(SLAVE)core_2_timer.reset,(SLAVE)core_3_timer.reset,(SLAVE)core_1_hex_hi.reset,(SLAVE)core_3_2_rx.reset,(SLAVE)core_2_jtag.reset,(SLAVE)core_1_jtag.reset,(SLAVE)core_3_jtag.reset,(MASTER)core_3.debug_reset_request,(SLAVE)core_1_timer.reset,(SLAVE)core_3.reset,(SLAVE)core_1_3_rx.reset,(SLAVE)core_2_vsync.reset,(MASTER)core_1.debug_reset_request,(SLAVE)core_1_accelerometer.reset,(SLAVE)core_2_hsync.reset,(SLAVE)core_1_memory.reset1,(SLAVE)core_3_1_tx.reset,(SLAVE)core_3_memory.reset1,(SLAVE)shared_sdram.reset,(SLAVE)core_1_ledr.reset,(SLAVE)mutex_0.reset,(SLAVE)core_2_pixel_data.reset,(SLAVE)core_1_hex_lo.reset) 1 1 4 140 2230 780 2330 1240 1010 1810
+preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_2_1_tx.external_connection,(SLAVE)core_1_2_rx.external_connection) 1 3 1 1300
+preplace netloc POINT_TO_POINT<net_container>projectM1</net_container>(SLAVE)core_3_2_tx.external_connection,(SLAVE)core_2_3_rx.external_connection) 1 3 1 1300
+preplace netloc FAN_OUT<net_container>projectM1</net_container>(SLAVE)core_1_memory.clk1,(SLAVE)core_2_1_tx.clk,(SLAVE)us_counter.clk,(SLAVE)core_3_1_tx.clk,(SLAVE)core_1.clk,(SLAVE)core_1_2_tx.clk,(SLAVE)core_3_1_rx.clk,(SLAVE)core_1_sw.clk,(SLAVE)core_2_pixel_addr.clk,(SLAVE)core_1_ledr.clk,(SLAVE)core_2_jtag.clk,(SLAVE)core_2_memory.clk1,(SLAVE)core_1_hex_hi.clk,(SLAVE)core_1_traffic_led.clk,(SLAVE)core_2_pixel_wren.clk,(SLAVE)core_1_accelerometer.clk,(SLAVE)core_1_2_rx.clk,(SLAVE)core_3_spi.clk,(SLAVE)core_2_timer.clk,(SLAVE)core_3_2_rx.clk,(SLAVE)mutex_0.clk,(SLAVE)shared_sdram.clk,(SLAVE)core_3_2_tx.clk,(SLAVE)core_2_1_rx.clk,(SLAVE)core_2.clk,(SLAVE)core_2_3_tx.clk,(SLAVE)core_1_speaker.clk,(MASTER)clk_0.clk,(SLAVE)core_3.clk,(SLAVE)core_3_timer.clk,(SLAVE)core_1_3_tx.clk,(SLAVE)core_2_vsync.clk,(SLAVE)core_3_key.clk,(SLAVE)core_3_memory.clk1,(SLAVE)core_2_pixel_data.clk,(SLAVE)core_1_timer.clk,(SLAVE)core_1_jtag.clk,(SLAVE)core_1_3_rx.clk,(SLAVE)core_1_hex_lo.clk,(SLAVE)core_2_3_rx.clk,(SLAVE)core_2_hsync.clk,(SLAVE)core_3_jtag.clk) 1 2 3 760 2310 1260 990 1850
 levelinfo -pg 1 0 90 2110
 levelinfo -hier projectM1 100 120 590 940 1560 1950 2100

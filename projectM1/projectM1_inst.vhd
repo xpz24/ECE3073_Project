@@ -5,6 +5,7 @@
 			accel_G_SENSOR_CS_N : out   std_logic;                                        -- G_SENSOR_CS_N
 			accel_G_SENSOR_INT  : in    std_logic                     := 'X';             -- G_SENSOR_INT
 			clk_clk             : in    std_logic                     := 'X';             -- clk
+			core_2_hsync_export : in    std_logic                     := 'X';             -- export
 			core_2_vsync_export : in    std_logic                     := 'X';             -- export
 			hex_hi_export       : out   std_logic_vector(23 downto 0);                    -- export
 			hex_lo_export       : out   std_logic_vector(23 downto 0);                    -- export
@@ -29,8 +30,7 @@
 			spi_SS_n            : out   std_logic;                                        -- SS_n
 			sw_export           : in    std_logic_vector(9 downto 0)  := (others => 'X'); -- export
 			traffic_led_export  : out   std_logic_vector(2 downto 0);                     -- export
-			us_counter_export   : in    std_logic_vector(31 downto 0) := (others => 'X'); -- export
-			core_2_hsync_export : in    std_logic                     := 'X'              -- export
+			us_counter_export   : in    std_logic_vector(31 downto 0) := (others => 'X')  -- export
 		);
 	end component projectM1;
 
@@ -41,6 +41,7 @@
 			accel_G_SENSOR_CS_N => CONNECTED_TO_accel_G_SENSOR_CS_N, --             .G_SENSOR_CS_N
 			accel_G_SENSOR_INT  => CONNECTED_TO_accel_G_SENSOR_INT,  --             .G_SENSOR_INT
 			clk_clk             => CONNECTED_TO_clk_clk,             --          clk.clk
+			core_2_hsync_export => CONNECTED_TO_core_2_hsync_export, -- core_2_hsync.export
 			core_2_vsync_export => CONNECTED_TO_core_2_vsync_export, -- core_2_vsync.export
 			hex_hi_export       => CONNECTED_TO_hex_hi_export,       --       hex_hi.export
 			hex_lo_export       => CONNECTED_TO_hex_lo_export,       --       hex_lo.export
@@ -65,7 +66,6 @@
 			spi_SS_n            => CONNECTED_TO_spi_SS_n,            --             .SS_n
 			sw_export           => CONNECTED_TO_sw_export,           --           sw.export
 			traffic_led_export  => CONNECTED_TO_traffic_led_export,  --  traffic_led.export
-			us_counter_export   => CONNECTED_TO_us_counter_export,   --   us_counter.export
-			core_2_hsync_export => CONNECTED_TO_core_2_hsync_export  -- core_2_hsync.export
+			us_counter_export   => CONNECTED_TO_us_counter_export    --   us_counter.export
 		);
 

@@ -8,11 +8,24 @@
 #include "interrupts.h"
 #include "image_data.h"
 #include "vga_text_render.h"
+#include "game_render.h"
 
 // base addresses
 #define PIXEL_ADDR_BASE CORE_2_PIXEL_ADDR_BASE
 #define PIXEL_DATA_BASE CORE_2_PIXEL_DATA_BASE
 #define PIXEL_WREN_BASE CORE_2_PIXEL_WREN_BASE
+#define SDRAM_BASE SHARED_SDRAM_BASE
+
+// CPU usages
+#define CPU_USAGE_CORE1_OFFSET  0x100
+#define CPU_USAGE_CORE2_OFFSET  0x104
+#define CPU_USAGE_CORE3_OFFSET  0x108
+
+#define CPU_USAGE_CORE1  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE1_OFFSET))
+#define CPU_USAGE_CORE2  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE2_OFFSET))
+#define CPU_USAGE_CORE3  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE3_OFFSET))
+
+#define CPU_USAGE_SPEED 300
 
 // frame buffer dimensions
 #define FB_WIDTH  320
@@ -80,6 +93,8 @@ void fps_tick(void) {
 
 // vga_task()
 void vga_task(void *pdata) {
+	int cpu_timer = 0;
+
     printf("[VGA] Start task\n");
 
     memcpy(emergency_fb, emergency_image_data, IMG_BYTES);
@@ -128,6 +143,7 @@ void vga_task(void *pdata) {
             test_idx = 0;
         }
 
+        // dispaly is active
         if (display_active) {
             // test char injection
             test_timer++;
@@ -157,6 +173,7 @@ void vga_task(void *pdata) {
             if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
                 tilt_timer++;
                 if (tilt_timer >= TILT_TIMER) {
+                	printf("%c\n",tilt);
                     tilt_timer = 0;
                     vga_tilt_scroll(tilt == TILT_LEFT ? +1 : -1);
                 }
@@ -164,6 +181,13 @@ void vga_task(void *pdata) {
                 tilt_timer = 0;
             }
             last_tilt = tilt;
+        }
+
+        // write cpu usage into sdram
+        cpu_timer++;
+        if (cpu_timer >= CPU_USAGE_SPEED){
+        	cpu_timer = 0;
+        	CPU_USAGE_CORE2 = (int)OSCPUUsage;
         }
 
         OSTimeDly(1);  // was 10, reduced for smoother updates

@@ -4,6 +4,7 @@
 		.accel_G_SENSOR_CS_N (<connected-to-accel_G_SENSOR_CS_N>), //             .G_SENSOR_CS_N
 		.accel_G_SENSOR_INT  (<connected-to-accel_G_SENSOR_INT>),  //             .G_SENSOR_INT
 		.clk_clk             (<connected-to-clk_clk>),             //          clk.clk
+		.core_2_hsync_export (<connected-to-core_2_hsync_export>), // core_2_hsync.export
 		.core_2_vsync_export (<connected-to-core_2_vsync_export>), // core_2_vsync.export
 		.hex_hi_export       (<connected-to-hex_hi_export>),       //       hex_hi.export
 		.hex_lo_export       (<connected-to-hex_lo_export>),       //       hex_lo.export
@@ -28,7 +29,6 @@
 		.spi_SS_n            (<connected-to-spi_SS_n>),            //             .SS_n
 		.sw_export           (<connected-to-sw_export>),           //           sw.export
 		.traffic_led_export  (<connected-to-traffic_led_export>),  //  traffic_led.export
-		.us_counter_export   (<connected-to-us_counter_export>),   //   us_counter.export
-		.core_2_hsync_export (<connected-to-core_2_hsync_export>)  // core_2_hsync.export
+		.us_counter_export   (<connected-to-us_counter_export>)    //   us_counter.export
 	);
 

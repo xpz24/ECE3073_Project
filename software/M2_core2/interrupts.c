@@ -45,20 +45,24 @@ void init_rx_3_2_irq(void)
 // rx_1_2_irq_handler
 static void rx_1_2_irq_handler(void *context, alt_u32 id)
 {
-	int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE) & 0x1F;
+	int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE) & 0xFF;
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
 	// emergency flags
 	if (val & EMERGENCY_START) emergency_flag = 1;
 	if (val & EMERGENCY_CLEAR) emergency_flag = 0;
 	// tilt flags
-	if      (val == TILT_NORMAL) tilt_flag = TILT_NORMAL;
-	else if (val == TILT_LEFT)   tilt_flag = TILT_LEFT;
-	else if (val == TILT_RIGHT)  tilt_flag = TILT_RIGHT;
+	if      (val == TILT_NORMAL)   tilt_flag = TILT_NORMAL;
+	else if (val == TILT_LEFT)     tilt_flag = TILT_LEFT;
+	else if (val == TILT_RIGHT)    tilt_flag = TILT_RIGHT;
+	else if (val == TILT_FORWARD)  tilt_flag = TILT_FORWARD;
+	else if (val == TILT_BACKWARD) tilt_flag = TILT_BACKWARD;
+
+	printf("0x0%X\n",val);
 }
 
 void init_rx_1_2_irq(void)
 {
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
-    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_1_BASE, 0x1F);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_1_BASE, 0xFF);
     alt_irq_register(CORE_2_1_RX_IRQ, NULL, rx_1_2_irq_handler);
 }

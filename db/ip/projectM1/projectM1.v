@@ -37,12 +37,12 @@ module projectM1 (
 		input  wire [31:0] us_counter_export    //   us_counter.export
 	);
 
-	wire   [2:0] core_2_1_tx_external_connection_export;                                                 // core_2_1_tx:out_port -> core_1_2_rx:in_port
-	wire   [5:0] core_1_2_tx_external_connection_export;                                                 // core_1_2_tx:out_port -> core_2_1_rx:in_port
-	wire   [2:0] core_3_1_tx_external_connection_export;                                                 // core_3_1_tx:out_port -> core_1_3_rx:in_port
-	wire   [2:0] core_1_3_tx_external_connection_export;                                                 // core_1_3_tx:out_port -> core_3_1_rx:in_port
-	wire   [2:0] core_3_2_tx_external_connection_export;                                                 // core_3_2_tx:out_port -> core_2_3_rx:in_port
-	wire   [2:0] core_2_3_tx_external_connection_export;                                                 // core_2_3_tx:out_port -> core_3_2_rx:in_port
+	wire   [3:0] core_2_1_tx_external_connection_export;                                                 // core_2_1_tx:out_port -> core_1_2_rx:in_port
+	wire   [7:0] core_1_2_tx_external_connection_export;                                                 // core_1_2_tx:out_port -> core_2_1_rx:in_port
+	wire   [3:0] core_3_1_tx_external_connection_export;                                                 // core_3_1_tx:out_port -> core_1_3_rx:in_port
+	wire   [3:0] core_1_3_tx_external_connection_export;                                                 // core_1_3_tx:out_port -> core_3_1_rx:in_port
+	wire   [3:0] core_3_2_tx_external_connection_export;                                                 // core_3_2_tx:out_port -> core_2_3_rx:in_port
+	wire   [3:0] core_2_3_tx_external_connection_export;                                                 // core_2_3_tx:out_port -> core_3_2_rx:in_port
 	wire         core_1_debug_reset_request_reset;                                                       // core_1:debug_reset_request -> [rst_controller:reset_in0, rst_controller:reset_in1, rst_controller_001:reset_in0, rst_controller_002:reset_in0, rst_controller_003:reset_in0, rst_controller_004:reset_in0, rst_controller_004:reset_in1]
 	wire  [31:0] core_1_data_master_readdata;                                                            // mm_interconnect_0:core_1_data_master_readdata -> core_1:d_readdata
 	wire         core_1_data_master_waitrequest;                                                         // mm_interconnect_0:core_1_data_master_waitrequest -> core_1:d_waitrequest
@@ -526,7 +526,7 @@ module projectM1 (
 		.irq        (irq_mapper_receiver3_irq)                      //   irq.irq
 	);
 
-	projectM1_core_1_3_tx core_1_traffic_led (
+	projectM1_core_1_traffic_led core_1_traffic_led (
 		.clk        (clk_clk),                                            //                 clk.clk
 		.reset_n    (~rst_controller_reset_out_reset),                    //               reset.reset_n
 		.address    (mm_interconnect_0_core_1_traffic_led_s1_address),    //                  s1.address
