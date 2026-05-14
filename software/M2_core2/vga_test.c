@@ -36,12 +36,6 @@
 #define EMERGENCY_FB_ADDR  0x3DA000
 static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
 
-// timer for tilt
-int tilt_timer = 0;
-#define TILT_TIMER 10
-int scroll_timer = 0;
-#define SCROLL_SPEED 10
-
 // task config
 #define VGA_STACKSIZE 4096
 #define VGA_PRIORITY  2
@@ -52,10 +46,10 @@ volatile char ai_detected_char = 0x00;
 
 // write_pixel()
 void write_pixel(unsigned int addr, uint16_t color) {
-	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
-	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xFFF);
-	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
-	IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xFFF);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
 }
 
 // write_emergency()
@@ -77,7 +71,6 @@ static uint32_t last_fps_time = 0;
 static int      frame_count   = 0;
 
 static uint32_t get_time_ms(void) {
-    // us_counter counts in microseconds, divide by 1000 for ms
     return IORD_ALTERA_AVALON_PIO_DATA(US_COUNTER_BASE) / 1000;
 }
 
@@ -93,7 +86,7 @@ void fps_tick(void) {
 
 // vga_task()
 void vga_task(void *pdata) {
-	int cpu_timer = 0;
+    int cpu_timer = 0;
 
     printf("[VGA] Start task\n");
 
@@ -102,49 +95,93 @@ void vga_task(void *pdata) {
 
     clear_framebuffer();
 
+    // mode flags — mutually exclusive
+    // display_active = 1 : text marquee mode (KEY1)
+    // game_active    = 1 : dungeon game mode (KEY0 while display off, or dedicated trigger)
     int display_active = 0;
-    int last_tilt = TILT_NORMAL;
+    int game_active    = 0;
 
-    printf("[VGA] Ready.\n");
+    // text mode locals
+    int tilt_timer = 0;
+    #define TILT_TIMER 10
 
+    // text mode test injection
     static const char test_chars[] = "PLAY MARIO";
     int test_idx   = 0;
     int test_timer = 0;
 
+    printf("[VGA] Ready.\n");
+
     while (1) {
-        // emergency
+
         if (emergency_flag) {
             printf("\n[VGA] EMERGENCY STOP\n");
             write_emergency();
             while (emergency_flag) OSTimeDly(5);
-            key_flags = 0;
+            key_flags        = 0;
             ai_detected_char = 0x00;
-            if (display_active) vga_text_init();
-            else clear_framebuffer();
+            // restore previous mode display
+            if (game_active) {
+                game_draw_map();
+                game_draw_status();
+            } else if (display_active) {
+                vga_text_init();
+            } else {
+                clear_framebuffer();
+            }
             printf("[VGA] EMERGENCY CLEARED\n\n");
         }
 
-        // KEY0 clears screen
+        // KEY0:
+        //   - in game mode  - restart game
+        //   - in text mode  - clear screen
+        //   - idle          - start game
         if (key_flags & (1 << 0)) {
             key_flags &= ~(1 << 0);
-            display_active = 0;
-            last_tilt = TILT_NORMAL;
-            printf("[VGA] Cleared\n");
-            clear_framebuffer();
+            if (game_active) {
+                // restart game
+                printf("[VGA] Game restart\n");
+                game_init();
+                game_draw_map();
+                game_draw_status();
+            } else if (display_active) {
+                // leave text mode, clear screen
+                display_active = 0;
+                printf("[VGA] Text mode cleared\n");
+                clear_framebuffer();
+            } else {
+                // start game
+                game_active = 1;
+                printf("[VGA] Game started\n");
+                game_init();
+                game_draw_map();
+                game_draw_status();
+            }
         }
 
-        // KEY1 activates text display
+        // KEY1: toggle text marquee mode (only when game is not active)
         if (key_flags & (1 << 1)) {
             key_flags &= ~(1 << 1);
-            display_active = 1;
-            last_tilt = TILT_NORMAL;
-            printf("[VGA] Text mode on\n");
-            vga_text_init();
-            test_idx = 0;
+            if (!game_active) {
+                display_active = 1;
+                tilt_timer     = 0;
+                printf("[VGA] Text mode on\n");
+                vga_text_init();
+                test_idx   = 0;
+                test_timer = 0;
+            }
         }
 
-        // dispaly is active
-        if (display_active) {
+        if (game_active) {
+            // game_tick handles tilt via its own game_tilt_timer
+            // and camera input via ai_detected_char — no conflict with text mode
+            game_tick();
+
+            // exit game on GAME_OVER or GAME_WIN after a long press of KEY0
+            // (handled above in KEY0 block — restart resets state)
+        }
+
+        else if (display_active) {
             // test char injection
             test_timer++;
             if (test_timer >= 20 && test_idx < (int)(sizeof(test_chars) - 1)) {
@@ -157,40 +194,32 @@ void vga_task(void *pdata) {
             char c = ai_detected_char;
             if (c != 0x00) {
                 ai_detected_char = 0x00;
-                vga_text_update(c);  // dirty redraw, fast
+                vga_text_update(c);
             }
 
-            // scroll timer
-//            scroll_timer++;
-//            if (scroll_timer >= SCROLL_SPEED) {
-//            	scroll_timer = 0;
-//            	draw_marquee_tick();
-//            }
+            // marquee scroll
             draw_marquee_tick();
 
-            // tilt scroll
+            // tilt scrolls history strip — only active in text mode
             int tilt = tilt_flag;
             if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
                 tilt_timer++;
                 if (tilt_timer >= TILT_TIMER) {
-                	printf("%c\n",tilt);
                     tilt_timer = 0;
                     vga_tilt_scroll(tilt == TILT_LEFT ? +1 : -1);
                 }
             } else {
                 tilt_timer = 0;
             }
-            last_tilt = tilt;
         }
 
-        // write cpu usage into sdram
         cpu_timer++;
-        if (cpu_timer >= CPU_USAGE_SPEED){
-        	cpu_timer = 0;
-        	CPU_USAGE_CORE2 = (int)OSCPUUsage;
+        if (cpu_timer >= CPU_USAGE_SPEED) {
+            cpu_timer = 0;
+            CPU_USAGE_CORE2 = (int)OSCPUUsage;
         }
 
-        OSTimeDly(1);  // was 10, reduced for smoother updates
+        OSTimeDly(1);
     }
 }
 

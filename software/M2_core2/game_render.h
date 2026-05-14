@@ -7,12 +7,12 @@
 
 #include "game.h"
 
-// TILE PIXEL ORIGINS
+extern volatile char ai_detected_char;
+
 // Top-left pixel of tile (col, row)
 #define TILE_X(col) ((col) * TILE_W)
 #define TILE_Y(row) ((row) * TILE_H)
 
-// DRAW SINGLE TILE
 // Fills the tile area with a base colour then draws a simple icon on top.
 
 static void draw_tile(int col, int row) {
@@ -24,7 +24,6 @@ static void draw_tile(int col, int row) {
     uint16_t base;
     switch (tile) {
         case TILE_WALL:   base = COL_WALL;   break;
-        case TILE_FLOOR:
         case TILE_EMPTY:  base = COL_FLOOR;  break;
         case TILE_DOOR:   base = COL_DOOR;   break;
         case TILE_CHEST:  base = COL_CHEST;  break;
@@ -119,7 +118,6 @@ static void draw_tile(int col, int row) {
     }
 }
 
-// DRAW PLAYER
 // Simple cyan filled circle-ish shape with a direction indicator.
 
 static void draw_player(void) {
@@ -139,7 +137,6 @@ static void erase_player(void) {
     draw_tile(player.col, player.row);
 }
 
-// FULL MAP REDRAW
 // Call once on floor load or after emergency clear.
 // Draws every tile then draws the player on top.
 
@@ -151,7 +148,6 @@ static void game_draw_map(void) {
     draw_player();
 }
 
-// STATUS BAR
 // 48px strip below the play area.
 // Shows: HP bar | FLOOR number | KEY count | SCORE
 
@@ -162,14 +158,13 @@ static void game_draw_status(void) {
     fill_rect(0, sy, FB_WIDTH, sh, COL_UI_BG);
     fill_rect(0, sy, FB_WIDTH, 1,  COL_DIVIDER); // top divider line
 
-    // HP bar
     // Label "HP"
     draw_char('H', 4,  sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char('P', 12, sy + 6, 1, COL_UI_FG, COL_UI_BG);
 
     // bar background
     fill_rect(22, sy + 7, 60, 10, 0x333);
-    // bar fill - colour depends on HP level
+    // bar fill — colour depends on HP level
     int hp_w = (player.hp * 60) / player.hp_max;
     uint16_t hp_col = (player.hp <= player.hp_max / 3) ? COL_UI_HP_LO : COL_UI_HP;
     if (hp_w > 0)
@@ -179,19 +174,16 @@ static void game_draw_status(void) {
     draw_char('/',                 94, sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char('0' + player.hp_max, 102,sy + 6, 1, COL_UI_FG, COL_UI_BG);
 
-    // FLOOR
     draw_char('F', 120, sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char('L', 128, sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char('R', 136, sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char(':', 144, sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char('1' + player.floor,  152, sy + 6, 1, 0x0FF, COL_UI_BG);
 
-    // KEY count
     draw_char('K', 168, sy + 6, 1, COL_KEY,   COL_UI_BG);
     draw_char(':', 176, sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char('0' + player.keys,   184, sy + 6, 1, COL_KEY, COL_UI_BG);
 
-    // SCORE
     // up to 999
     int sc = player.score;
     if (sc > 999) sc = 999;
@@ -202,7 +194,6 @@ static void game_draw_status(void) {
     draw_char('0' + (sc/10)%10,  232, sy + 6, 1, COL_UI_FG, COL_UI_BG);
     draw_char('0' + sc%10,       240, sy + 6, 1, COL_UI_FG, COL_UI_BG);
 
-    // PROMPT (bottom row of status bar)
     int py = sy + 24;
     fill_rect(0, py, FB_WIDTH, 1, 0x222); // inner divider
 
@@ -231,7 +222,6 @@ static void game_draw_status(void) {
     }
 }
 
-// GAME TICK
 // Call from vga_task every loop iteration when game_active == 1.
 // Handles tilt movement, camera input, state transitions.
 // tilt_flag and ai_detected_char are read from interrupts.h globals.
@@ -243,13 +233,13 @@ static int  game_chest_timer  = 0;
 
 static void game_tick(void) {
 
-    // camera input (any state)
+    // camera input (any state) — only redraw map if a door was actually opened
     char cam = ai_detected_char;
     if (cam != 0x00) {
         ai_detected_char = 0x00;
-        game_handle_camera(cam);
+        int door_opened = game_handle_camera(cam);
         game_draw_status();
-        if (game_state == GAME_PLAYING) game_draw_map(); // redraw if door opened
+        if (door_opened) game_draw_map();
     }
 
     // per-state logic
@@ -257,7 +247,6 @@ static void game_tick(void) {
 
         case GAME_PLAYING: {
             int tilt = tilt_flag;
-            int moved = 0;
 
             if (tilt == TILT_LEFT || tilt == TILT_RIGHT ||
                 tilt == TILT_FORWARD || tilt == TILT_BACKWARD) {
@@ -270,10 +259,9 @@ static void game_tick(void) {
                     else if (tilt == TILT_FORWARD)   dr = -1;
                     else if (tilt == TILT_BACKWARD)  dr = +1;
 
-                    erase_player();             // wipe old position
-                    moved = game_move(dc, dr);
-                    draw_tile(player.col - dc, player.row - dr); // restore old tile
-                    draw_player();              // draw at new position
+                    erase_player();     // redraw tile at old position
+                    game_move(dc, dr);  // update player.col/row
+                    draw_player();      // draw at new position
                     game_draw_status();
                 }
             } else {
@@ -306,7 +294,7 @@ static void game_tick(void) {
         case GAME_WAIT_CAMERA:
         case GAME_OVER:
         case GAME_WIN:
-            // no tick logic - wait for KEY0 or camera
+            // no tick logic — wait for KEY0 or camera
             break;
 
         default:

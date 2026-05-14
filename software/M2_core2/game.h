@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-// TILE TYPES
 #define TILE_EMPTY    0   // walkable floor
 #define TILE_WALL     1   // impassable wall
 #define TILE_DOOR     2   // locked — requires camera letter to open
@@ -16,7 +15,6 @@
 #define TILE_ENEMY    6   // static enemy, requires gesture to defeat
 #define TILE_KEY      7   // key item — unlocks TILE_DOOR on same floor
 
-// TILE COLOURS (12-bit RGB444)
 #define COL_WALL      0x555   // dark grey
 #define COL_FLOOR     0x222   // very dark — subtle grid feel
 #define COL_DOOR      0xA50   // amber
@@ -33,7 +31,6 @@
 #define COL_UI_HP_LO  0xF20   // HP bar red (low health)
 #define COL_DIVIDER   0x444
 
-// MAP DIMENSIONS
 // Play area: 320 wide, 200 tall (top 200px), leaving 40px for status bar below.
 #define MAP_COLS      20      // number of tile columns
 #define MAP_ROWS      12      // number of tile rows  (fit in 200px play area)
@@ -44,7 +41,6 @@
 #define STATUS_BAR_Y  PLAY_AREA_H           // 192 — status bar starts here
 #define STATUS_BAR_H  (240 - PLAY_AREA_H)   // 48px status bar
 
-// DOOR UNLOCK CHARACTERS
 // Each door tile has a required camera character stored in door_keys[].
 // Up to 4 doors per floor.
 #define MAX_DOORS     4
@@ -55,7 +51,6 @@ typedef struct {
     int  open;      // 1 = already opened
 } DoorInfo;
 
-// FLOOR MAPS
 // 'P' marks player start — converted to TILE_EMPTY at runtime.
 // Format: MAP_ROWS rows × MAP_COLS cols, stored as flat array.
 
@@ -77,6 +72,45 @@ static const uint8_t floor1_map[MAP_ROWS][MAP_COLS] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1},
 };
 
+// Floor 2 — longer corridors, two doors
+static const uint8_t floor2_map[MAP_ROWS][MAP_COLS] = {
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1},
+    {1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1},
+    {1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,1},
+    {1,0,1,1,1,2,1,0,1,1,1,1,0,0,1,1,0,1,0,1},
+    {1,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1},
+    {1,1,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,0,1},
+    {1,0,0,0,1,0,0,0,0,0,1,0,0,2,0,1,0,0,0,1},
+    {1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,3,1},
+    {1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1},
+    {1,7,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1},
+};
+
+// Floor 3 — tight maze, one door, more traps
+static const uint8_t floor3_map[MAP_ROWS][MAP_COLS] = {
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,1},
+    {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1},
+    {1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,5,0,1},
+    {1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,1,0,1},
+    {1,0,0,0,1,0,0,0,1,2,0,0,1,0,0,0,0,1,0,1},
+    {1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1},
+    {1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1,0,1},
+    {1,0,1,1,1,0,1,0,1,1,1,1,0,1,1,0,1,1,0,1},
+    {1,5,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,3,1},
+    {1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1},
+};
+
+// pointer table indexed by floor number
+static const uint8_t* floor_maps[NUM_FLOORS] = {
+    &floor1_map[0][0],
+    &floor2_map[0][0],
+    &floor3_map[0][0],
+};
+
 // Player start positions per floor
 static const int floor_start_col[NUM_FLOORS] = { 1, 1, 2 };
 static const int floor_start_row[NUM_FLOORS] = { 1, 2, 1 };
@@ -91,7 +125,6 @@ static const DoorInfo floor_doors[NUM_FLOORS][MAX_DOORS] = {
     { {9, 5, 'I', 0}, {-1,-1,0,0}, {-1,-1,0,0}, {-1,-1,0,0} },
 };
 
-// GAME STATE MACHINE
 typedef enum {
     GAME_TITLE,         // title screen
     GAME_PLAYING,       // normal gameplay
@@ -102,7 +135,6 @@ typedef enum {
     GAME_WIN            // all floors cleared
 } GameState;
 
-// PLAYER
 typedef struct {
     int col;            // current tile column
     int row;            // current tile row
@@ -113,7 +145,6 @@ typedef struct {
     int floor;          // current floor index (0-based)
 } Player;
 
-// LIVE GAME DATA
 // Runtime copy of current floor map (mutable — doors open, items collected)
 static uint8_t  cur_map[MAP_ROWS][MAP_COLS];
 static DoorInfo cur_doors[MAX_DOORS];
@@ -123,13 +154,12 @@ static GameState game_state = GAME_TITLE;
 // which door index the player is currently trying to unlock (-1 = none)
 static int pending_door = -1;
 
-// GAME INIT
 static void game_load_floor(int floor_idx) {
     int r, c, d;
-    // copy floor map into mutable buffer
+    const uint8_t (*src)[MAP_COLS] = (const uint8_t (*)[MAP_COLS])floor_maps[floor_idx];
     for (r = 0; r < MAP_ROWS; r++)
         for (c = 0; c < MAP_COLS; c++)
-            cur_map[r][c] = floor1_map[r][c]; // extend for multi-floor later
+            cur_map[r][c] = src[r][c];
 
     // copy door info
     for (d = 0; d < MAX_DOORS; d++)
@@ -152,18 +182,22 @@ static void game_init(void) {
     game_load_floor(0);
 }
 
-// TILE QUERY
-static int tile_is_passable(int col, int row) {
-    if (col < 0 || col >= MAP_COLS || row < 0 || row >= MAP_ROWS) return 0;
-    uint8_t t = cur_map[row][col];
-    return (t == TILE_EMPTY   ||
-            t == TILE_CHEST   ||
-            t == TILE_EXIT    ||
-            t == TILE_TRAP    ||
-            t == TILE_KEY);
-    // TILE_DOOR and TILE_WALL and TILE_ENEMY are impassable until resolved
+// CAMERA INPUT HANDLER
+// Returns 1 if a door was opened (caller should redraw map), 0 otherwise.
+static int game_handle_camera(char c) {
+    if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
+        if (c == cur_doors[pending_door].req) {
+            cur_map[cur_doors[pending_door].row][cur_doors[pending_door].col] = TILE_EMPTY;
+            cur_doors[pending_door].open = 1;
+            player.score += 20;
+            pending_door = -1;
+            game_state   = GAME_PLAYING;
+            return 1; // door opened — caller redraws map
+        }
+        // wrong character: stay in GAME_WAIT_CAMERA, prompt again
+    }
+    return 0;
 }
-
 // PLAYER MOVEMENT
 // Returns 1 if move was accepted (or triggered an event), 0 if blocked.
 static int game_move(int dcol, int drow) {
@@ -181,37 +215,38 @@ static int game_move(int dcol, int drow) {
 
     // --- door: check for key or camera input
     if (tile == TILE_DOOR) {
-        // find which door this is
-        int d;
+        int d, door_open = 0;
         for (d = 0; d < MAX_DOORS; d++) {
             if (cur_doors[d].col == nc && cur_doors[d].row == nr) {
-                if (cur_doors[d].open) break; // already open, fall through
-                // try key item first
+                if (cur_doors[d].open) { door_open = 1; break; }
                 if (player.keys > 0) {
                     player.keys--;
                     cur_doors[d].open = 1;
                     cur_map[nr][nc]   = TILE_EMPTY;
+                    door_open = 1;
                     break;
                 }
-                // otherwise need camera
+                // need camera input
                 pending_door = d;
                 game_state   = GAME_WAIT_CAMERA;
-                return 1; // consumed the move, waiting for camera
+                return 1;
             }
         }
-        // if door is open, passable - fall through to move below
-        if (tile == TILE_DOOR) return 0; // still closed and no key
+        if (!door_open) return 0; // still locked
     }
 
     // --- enemy: blocked until gesture (not yet implemented)
     if (tile == TILE_ENEMY) return 0;
+
+    // snapshot tile before moving so landing events read correct value
+    uint8_t landing_tile = cur_map[nr][nc];
 
     // --- move accepted
     player.col = nc;
     player.row = nr;
 
     // --- landing events
-    switch (cur_map[nr][nc]) {
+    switch (landing_tile) {
         case TILE_CHEST:
             player.score += 50;
             cur_map[nr][nc] = TILE_EMPTY;
@@ -236,22 +271,6 @@ static int game_move(int dcol, int drow) {
     }
 
     return 1;
-}
-
-// CAMERA INPUT HANDLER
-// Call this whenever ai_detected_char is non-zero.
-static void game_handle_camera(char c) {
-    if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
-        if (c == cur_doors[pending_door].req) {
-            // correct character — unlock door
-            cur_map[cur_doors[pending_door].row][cur_doors[pending_door].col] = TILE_EMPTY;
-            cur_doors[pending_door].open = 1;
-            player.score += 20;
-            pending_door = -1;
-            game_state   = GAME_PLAYING;
-        }
-        // wrong character: stay in GAME_WAIT_CAMERA, prompt again
-    }
 }
 
 #endif // GAME_H

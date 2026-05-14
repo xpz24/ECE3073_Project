@@ -1,39 +1,9 @@
-19:09:45 **** Incremental Build of configuration Nios II for project M2_core2 ****
+11:13:23 **** Incremental Build of configuration Nios II for project M2_core2 ****
 make all 
 Info: Building ../M2_core2_bsp/
 C:/intelFPGA_lite/18.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/make --no-print-directory -C ../M2_core2_bsp/
 [BSP build complete]
-Info: Compiling vga_test.c to obj/default/vga_test.o
-nios2-elf-gcc -xc -MP -MMD -c -I../M2_core2_bsp//UCOSII/inc -I../M2_core2_bsp//HAL/inc -I../M2_core2_bsp/ -I../M2_core2_bsp//drivers/inc  -pipe -D__hal__ -DALT_NO_INSTRUCTION_EMULATION -D__ucosii__ -DALTERA_AVALON_JTAG_UART_IGNORE_FIFO_FULL_ERROR    -O0 -g -Wall   -mno-hw-div -mhw-mul -mno-hw-mulx -mgpopt=global  -o obj/default/vga_test.o vga_test.c
-In file included from vga_test.c:10:0:
-vga_text_render.h: In function 'draw_one_marquee_column':
-vga_text_render.h:131:20: warning: unused variable 's' [-Wunused-variable]
-             int r, s;
-                    ^
-vga_text_render.h: In function 'draw_history_append':
-vga_text_render.h:232:9: warning: unused variable 'viewed' [-Wunused-variable]
-     int viewed = (ticker.count - 1) - tilt_scroll_offset;
-         ^
-vga_test.c: In function 'vga_task':
-vga_test.c:105:9: warning: variable 'last_tilt' set but not used [-Wunused-but-set-variable]
-     int last_tilt = TILT_NORMAL;
-         ^
-In file included from vga_test.c:10:0:
-vga_test.c: At top level:
-vga_text_render.h:107:13: warning: 'draw_main_append' defined but not used [-Wunused-function]
- static void draw_main_append(char c) {
-             ^
-vga_text_render.h:285:13: warning: 'vga_tilt_reset' defined but not used [-Wunused-function]
- static void vga_tilt_reset(void) {
-             ^
-Info: Linking M2_core2.elf
-nios2-elf-g++  -T'../M2_core2_bsp//linker.x' -msys-crt0='../M2_core2_bsp//obj/HAL/src/crt0.o' -msys-lib=ucosii_bsp -L../M2_core2_bsp/   -Wl,-Map=M2_core2.map   -O0 -g -Wall   -mno-hw-div -mhw-mul -mno-hw-mulx -mgpopt=global  -o M2_core2.elf obj/default/interrupts.o obj/default/main.o obj/default/vga_test.o -lm -msys-lib=m
-nios2-elf-insert M2_core2.elf --thread_model ucosii --cpu_name core_2 --qsys true --simulation_enabled false --stderr_dev core_2_jtag --stdin_dev core_2_jtag --stdout_dev core_2_jtag --sopc_system_name projectM1 --quartus_project_dir "C:/Users/cklie/OneDrive/Documents/Academic/Monash/Y3/ECE3073/Quartus/Project" --jdi ../..//output_files/Project.jdi --sopcinfo C:/Users/cklie/OneDrive/Documents/Academic/Monash/Y3/ECE3073/Quartus/Project/software/M2_core2_bsp/../../projectM1.sopcinfo
-Info: (M2_core2.elf) 296 KBytes program size (code + initialized data).
-Info:                3793 KBytes free for stack + heap.
-Info: Creating M2_core2.objdump
-nios2-elf-objdump --disassemble --syms --all-header --source M2_core2.elf >M2_core2.objdump
 [M2_core2 build complete]
 
-19:09:47 Build Finished (took 1s.655ms)
+11:13:23 Build Finished (took 538ms)
 
