@@ -15,7 +15,8 @@ OS_STK start_stk[START_STACKSIZE];
 void start_task(void* pdata) {
     printf("Hello from CPU3\n");
 
-    OSTimeDly(2);
+    OSTimeDly(20);
+	OSStatInit();
 
     init_key_irq();
     init_rx_irq();

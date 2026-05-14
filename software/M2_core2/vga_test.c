@@ -7,12 +7,95 @@
 #include "../M2_core2_bsp/HAL/inc/io.h"
 #include "interrupts.h"
 #include "image_data.h"
-#include "vga_text_render.h"
+#include "vga_gfx.h"
+#include "game_render.h"
 
 // base addresses
 #define PIXEL_ADDR_BASE CORE_2_PIXEL_ADDR_BASE
 #define PIXEL_DATA_BASE CORE_2_PIXEL_DATA_BASE
 #define PIXEL_WREN_BASE CORE_2_PIXEL_WREN_BASE
+#define SDRAM_BASE SHARED_SDRAM_BASE
+
+// CPU usages
+#define CPU_USAGE_CORE1_OFFSET  0x100
+#define CPU_USAGE_CORE2_OFFSET  0x104
+#define CPU_USAGE_CORE3_OFFSET  0x108
+
+#define CPU_USAGE_CORE1  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE1_OFFSET))
+#define CPU_USAGE_CORE2  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE2_OFFSET))
+#define CPU_USAGE_CORE3  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE3_OFFSET))
+
+#define CPU_USAGE_SPEED 300
+
+// buzzer
+#define BUZZER_BASE  CORE_2_BUZZER_BASE
+
+#define NOTE_REST  0
+#define NOTE_C4    1
+#define NOTE_D4    2
+#define NOTE_E4    3
+#define NOTE_F4    4
+#define NOTE_G4    5
+#define NOTE_A4    6
+#define NOTE_B4    7
+#define NOTE_C5    8
+#define NOTE_D5    9
+#define NOTE_E5    10
+#define NOTE_F5    11
+#define NOTE_G5    12
+#define NOTE_A5    13
+#define NOTE_B5    14
+#define NOTE_C6    15
+
+void mario_theme()
+{
+    int notes[] = {
+        NOTE_E5, NOTE_E5, NOTE_REST, NOTE_E5,
+        NOTE_REST, NOTE_C5, NOTE_E5, NOTE_G5,
+        NOTE_REST, NOTE_G4,
+
+        NOTE_C5, NOTE_G4, NOTE_E4,
+        NOTE_A4, NOTE_B4,
+        NOTE_A4, NOTE_G4,
+
+        NOTE_E5, NOTE_G5, NOTE_A5,
+        NOTE_F5, NOTE_G5,
+
+        NOTE_REST,
+        NOTE_E5, NOTE_C5,
+        NOTE_D5, NOTE_B4
+    };
+
+    int durations[] = {
+        150, 150, 150, 150,
+        150, 150, 150, 300,
+        300, 300,
+
+        300, 300, 300,
+        150, 150,
+        150, 150,
+
+        150, 150, 300,
+        150, 150,
+
+        150,
+        150, 150,
+        150, 300
+    };
+
+    int length = sizeof(notes) / sizeof(notes[0]);
+
+    for(int i = 0; i < length; i++)
+    {
+        IOWR(BUZZER_BASE, 0, notes[i]);
+
+        usleep(durations[i] * 1000);
+
+        // brief separation
+        IOWR(BUZZER_BASE, 0, NOTE_REST);
+        usleep(20000);
+    }
+}
 
 // frame buffer dimensions
 #define FB_WIDTH  320
@@ -22,10 +105,6 @@
 // sdram buffer address for emergency stop
 #define EMERGENCY_FB_ADDR  0x3DA000
 static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
-
-// scroll timer for tilt
-int scroll_timer = 0;
-#define SCROLL_SPEED 100   // lowered from 30 since OSTimeDly is now 2
 
 // task config
 #define VGA_STACKSIZE 4096
@@ -57,8 +136,28 @@ static void clear_framebuffer(void) {
         write_pixel(i, 0x0);
 }
 
+// FPS tracking
+static uint32_t last_fps_time = 0;
+static int      frame_count   = 0;
+
+static uint32_t get_time_ms(void) {
+    return IORD_ALTERA_AVALON_PIO_DATA(US_COUNTER_BASE) / 1000;
+}
+
+void fps_tick(void) {
+    frame_count++;
+    uint32_t now = get_time_ms();
+    if (now - last_fps_time >= 1000) {
+        printf("[VGA] FPS: %d\n", frame_count);
+        frame_count   = 0;
+        last_fps_time = now;
+    }
+}
+
 // vga_task()
 void vga_task(void *pdata) {
+    int cpu_timer = 0;
+
     printf("[VGA] Start task\n");
 
     memcpy(emergency_fb, emergency_image_data, IMG_BYTES);
@@ -66,79 +165,106 @@ void vga_task(void *pdata) {
 
     clear_framebuffer();
 
-    int display_active = 0;
-    int last_tilt = TILT_NORMAL;
+    // mode flags — mutually exclusive
+    // game_active    = 1 : dungeon game mode (KEY0 while display off, or dedicated trigger)
+    int game_active    = 0;
+
+    // text mode test injection
+    static const char test_chars[] = "PLAY MARIO";
+    int test_timer = 0;
+    int test_idx = 0;
+#define TILT_TIMER 10
 
     printf("[VGA] Ready.\n");
 
-    static const char test_chars[] = "HELLO123WORLD";
-    int test_idx   = 0;
-    int test_timer = 0;
-
     while (1) {
-        // emergency
+
         if (emergency_flag) {
             printf("\n[VGA] EMERGENCY STOP\n");
             write_emergency();
             while (emergency_flag) OSTimeDly(5);
-            key_flags = 0;
+            key_flags        = 0;
             ai_detected_char = 0x00;
-            if (display_active) vga_text_init();
-            else clear_framebuffer();
+            // restore previous mode display
+            if (game_active) {
+                game_draw_map();
+                game_draw_status();
+            } else {
+                clear_framebuffer();
+            }
             printf("[VGA] EMERGENCY CLEARED\n\n");
         }
 
-        // KEY0 clears screen
+        // KEY0:
+        //   - in game mode  - restart game
+        //   - idle          - start game
         if (key_flags & (1 << 0)) {
             key_flags &= ~(1 << 0);
-            display_active = 0;
-            last_tilt = TILT_NORMAL;
-            printf("[VGA] Cleared\n");
-            clear_framebuffer();
+            if (game_active) {
+                // restart game
+                printf("[VGA] Game restart\n");
+                game_init();
+                game_draw_map();
+                game_draw_status();
+            } else {
+                // start game
+                game_active = 1;
+                marquee_pixel_offset = -(FB_WIDTH);
+                printf("[VGA] Game started\n");
+                game_init();
+                game_draw_map();
+                game_draw_status();
+            }
         }
 
-        // KEY1 activates text display
+        // KEY1: toggle text marquee mode (only when game is not active)
         if (key_flags & (1 << 1)) {
             key_flags &= ~(1 << 1);
-            display_active = 1;
-            last_tilt = TILT_NORMAL;
-            printf("[VGA] Text mode on\n");
-            vga_text_init();
-            test_idx = 0;
+			clear_framebuffer();
+			mario_theme();
         }
 
-        if (display_active) {
-            // test char injection
-            test_timer++;
-            if (test_timer >= 50 && test_idx < (int)(sizeof(test_chars) - 1)) {
-                test_timer = 0;
-                ai_detected_char = test_chars[test_idx];
-                test_idx++;
-            }
+        // always feed camera ai character first
+        // test char injection
+		test_timer++;
+		if (test_timer >= 20 && test_idx < (int)(sizeof(test_chars) - 1)) {
+			test_timer = 0;
+			ai_detected_char = test_chars[test_idx];
+			test_idx++;
+		}
 
-            // new character from Grove AI
-            char c = ai_detected_char;
-            if (c != 0x00) {
-                ai_detected_char = 0x00;
-                printf("[VGA] Char: %c\n", c);
-                vga_text_update(c);  // dirty redraw, fast
-            }
+		// new character from Grove AI
+		char c = ai_detected_char;
+		if (c != 0x00) {
+			ai_detected_char = 0x00;
+			ticker_push(c);
+			if (game_active) {
+				// also try to unlock a door with this character
+				int door_opened = game_handle_camera(c);
+				if (status_is_dirty()) {
+					game_draw_status();
+					status_snapshot();
+				}
+				if (door_opened) game_draw_map();
+			}
+		}
 
-            // tilt scroll
-            int tilt = tilt_flag;
-            if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
-                scroll_timer++;
-                if (scroll_timer >= SCROLL_SPEED) {
-                    scroll_timer = 0;
-                    vga_tilt_scroll(tilt == TILT_LEFT ? +1 : -1);
-                }
-            } else {
-                scroll_timer = 0;
-            }
-            last_tilt = tilt;
+        if (game_active) {
+            // game_tick handles tilt via its own game_tilt_timer
+            // and camera input via ai_detected_char — no conflict with text mode
+            game_tick();
+
+            // exit game on GAME_OVER or GAME_WIN after a long press of KEY0
+            // (handled above in KEY0 block — restart resets state)
         }
 
-        OSTimeDly(2);  // was 10, reduced for smoother updates
+        cpu_timer++;
+        if (cpu_timer >= CPU_USAGE_SPEED) {
+            cpu_timer = 0;
+            CPU_USAGE_CORE2 = (int)OSCPUUsage;
+        }
+
+        OSTimeDly(5);
     }
 }
 

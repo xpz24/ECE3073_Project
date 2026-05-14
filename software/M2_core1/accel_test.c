@@ -13,8 +13,8 @@
 #define ACCEL_STACKSIZE   4096
 OS_STK accel_stk[ACCEL_STACKSIZE];
 
-#define UPSIDE_DOWN_THRESH  (-200)
-#define UPRIGHT_THRESH      ( 200)
+#define UPSIDE_DOWN_THRESH  (-240)
+#define UPRIGHT_THRESH      ( 240)
 #define STABLE_COUNT        3
 
 int stable = 0;
@@ -28,12 +28,14 @@ int stable = 0;
 
 volatile int emergency_active;
 
-// tilting for scrolling text
+// tilting for game control
 #define TILT_THRESHOLD    60
-#define NORMAL_THRESHOLD  1
-#define TILT_NORMAL       0x4
-#define TILT_LEFT         0x8
-#define TILT_RIGHT        0xC
+#define NORMAL_THRESHOLD  5
+#define TILT_NORMAL       0x04
+#define TILT_LEFT         0x08
+#define TILT_RIGHT        0x0C
+#define TILT_FORWARD      0x10
+#define TILT_BACKWARD     0x20
 #define TILT_STABLE_COUNT 3
 
 // read current microsecond count
@@ -94,7 +96,11 @@ void accel_task(void* pdata) {
 			alt_u32 tilt_dir;
 			if      (x >  TILT_THRESHOLD) tilt_dir = TILT_LEFT;
 			else if (x < -TILT_THRESHOLD) tilt_dir = TILT_RIGHT;
-			else if (x >= -NORMAL_THRESHOLD || x <= NORMAL_THRESHOLD) tilt_dir = TILT_NORMAL;
+			else if (y >  TILT_THRESHOLD) tilt_dir = TILT_BACKWARD;
+			else if (y < -TILT_THRESHOLD) tilt_dir = TILT_FORWARD;
+			else if ((x >= -NORMAL_THRESHOLD || x <= NORMAL_THRESHOLD) && (y >= -NORMAL_THRESHOLD || y <= NORMAL_THRESHOLD)) {
+				tilt_dir = TILT_NORMAL;
+			}
 			// accumulate stability
 			if (tilt_dir == candidate_tilt) tilt_stable++;
 			else {

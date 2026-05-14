@@ -18,7 +18,8 @@ OS_STK start_stk[START_STACKSIZE];
 void start_task(void* pdata) {
     printf("Hello from CPU2\n");
 
-    OSTimeDly(2);
+    OSTimeDly(20);
+	OSStatInit();
 
     init_rx_3_2_irq();
 	init_rx_1_2_irq();

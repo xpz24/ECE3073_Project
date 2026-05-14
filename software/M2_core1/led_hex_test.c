@@ -6,6 +6,7 @@
 #include "../M2_core1_bsp/drivers/inc/altera_avalon_pio_regs.h"
 #include "../M2_core1_bsp/HAL/inc/includes.h"
 #include "../M2_core1_bsp/drivers/inc/altera_avalon_mutex.h"
+#include "sys/alt_alarm.h"
 #include "interrupts.h"
 
 // BASE ADDRESSES
@@ -13,11 +14,12 @@
 #define LEDR_BASE CORE_1_LEDR_BASE
 #define HEX_LO_BASE CORE_1_HEX_LO_BASE
 #define HEX_HI_BASE CORE_1_HEX_HI_BASE
-#define SPEAKER_BASE CORE_1_SPEAKER_BASE
+#define BUZZER_EN_BASE CORE_1_BUZZER_ENABLE_BASE
 #define TRAFFIC_LED_BASE CORE_1_TRAFFIC_LED_BASE
 #define TX_BASE CORE_1_3_TX_BASE
 #define RX_BASE CORE_1_3_RX_BASE
 #define TX_1_2_BASE CORE_1_2_TX_BASE
+#define SDRAM_BASE SHARED_SDRAM_BASE
 
 // 7-SEGMENT DICTIONARY
 #define SEG_0     0x40
@@ -55,12 +57,21 @@
 #define SEG_DOT   0xBF
 
 // DEFINITIONS
-#define DISPLAY_WIDTH 6
-#define SCROLL_SPEED  100
+#define DISPLAY_WIDTH           6
+#define SCROLL_SPEED            100
+#define CPU_USAGE_SPEED         100
+#define CPU_CYCLE_SPEED         500
+#define CPU_USAGE_CORE1_OFFSET  0x100
+#define CPU_USAGE_CORE2_OFFSET  0x104
+#define CPU_USAGE_CORE3_OFFSET  0x108
 
+#define CPU_USAGE_CORE1  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE1_OFFSET))
+#define CPU_USAGE_CORE2  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE2_OFFSET))
+#define CPU_USAGE_CORE3  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE3_OFFSET))
+
+// task config
 #define HEX_PRIORITY    3
 #define HEX_STACKSIZE   2048
-
 OS_STK hex_stk[HEX_STACKSIZE];
 
 volatile int emergency_clear = 0;
@@ -125,30 +136,14 @@ void process_string(const char *text) {
 }
 
 // SCROLL STRING FUNCTION
-void scroll_step(int pos, int cpuFlag, int num) {
+void scroll_step(int pos, int cpuFlag, int cpu_core, int cpu) {
     int len = processed_len;
     unsigned char display[6];
     // cpu usage
     if (cpuFlag) {
-    	int cpu = (int)OSCPUUsage;
     	if (cpu > 99) cpu = 99;
-
-		switch (cpu) {
-			case 1:
-				num = SEG_1 | 0x80;
-				break;
-			case 2:
-				num = SEG_2 | 0x80;
-				break;
-			case 3:
-				num = SEG_3 | 0x80;
-				break;
-			default:
-				num = SEG_1 | 0x80;
-				break;
-		}
 		display[0] = SEG_C | 0x80;
-		display[1] = num;
+		display[1] = seg_char('0' + cpu_core, 0);
 		display[2] = SEG_DASH | 0x80;
 		display[3] = SEG_DASH | 0x80;
 		display[4] = seg_char('0' + (cpu / 10), 0);
@@ -188,13 +183,19 @@ void emergency_msg(void) {
 	write_hex(dash, s, t, o, p, dash);
 }
 
+
 // HEX TASK
 void hex_task(void* pdata) {
     int scroll_pos     = 0;
     int scroll_counter = 0;
-    int speaker        = 0;
     int traffic_led    = 0;
     const char* last_message = NULL;
+    int cpu_usage      = (int)OSCPUUsage; // initialise cpu usage once
+    int cpu_timer      = 0;
+    int cpu_core       = 1;
+    int cpu_cycle      = 0; // auto cycle between cores
+
+    CPU_USAGE_CORE1    = (int)OSCPUUsage;
 
     process_string(current_message);
     int total = processed_len + DISPLAY_WIDTH;
@@ -216,7 +217,7 @@ void hex_task(void* pdata) {
 			}
 			emergency_clear = 0;
 		}
-    	// Check for new key press and update message
+    	// check for new key press and update message
 		const char* new_msg = NULL;
 
 		if (key_flags & (1 << 0)) {
@@ -240,7 +241,7 @@ void hex_task(void* pdata) {
 		int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
         IOWR_ALTERA_AVALON_PIO_DATA(LEDR_BASE, sw); // Mirror switches to LEDs to see what's active
 
-        // SW0 off — everything off
+        // SW0 off - everything off
         if (!(sw & 0x1)) {
             clear_hex();
             set_hex_message("----");
@@ -249,47 +250,58 @@ void hex_task(void* pdata) {
             scroll_counter = 0;
             traffic_led = 0;
             IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
-            speaker = 0;
-			IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
         }
         // SW0 on - scroll/pause message
         else {
-        	// cpu usage
-        	cpuFlag = (sw & 0x4) ? 1 : 0;
-            // always display current position
-            scroll_step(scroll_pos, cpuFlag, 1);
+        	scroll_step(scroll_pos, cpuFlag, cpu_core, cpu_usage); // always display current position
             // SW0 + SW1 - scroll message
             if (sw & 0x2) {
-            	if (cpuFlag);
-            	else {
-            		scroll_counter++;
+				cpuFlag = (sw & 0x4) ? 1 : 0; // cpu usage
+            	if (cpuFlag) { // display cpu usage
+            		// read all cores
+            		int usage[4];
+            		usage[1] = CPU_USAGE_CORE1;
+            		usage[2] = CPU_USAGE_CORE2;
+					usage[3] = CPU_USAGE_CORE3;
+            		// update cpu usage
+            		cpu_timer++;
+            		if (cpu_timer >= CPU_USAGE_SPEED) {
+            			cpu_timer = 0;
+            			CPU_USAGE_CORE1 = (int)OSCPUUsage;
+            			usage[1] = CPU_USAGE_CORE1;
+            		}
+            		// cycle through cores
+            		cpu_cycle++;
+            		if (cpu_cycle >= CPU_CYCLE_SPEED ) {
+            			cpu_cycle = 0;
+            			cpu_core++;
+            			if (cpu_core > 3) cpu_core = 1;
+            		}
+
+            		cpu_usage = usage[cpu_core];
+            	}
+            	else { // scroll message
+					cpu_timer = 0;
+					scroll_counter++;
 					if (scroll_counter >= SCROLL_SPEED) {
 						scroll_counter = 0;
 						scroll_pos++;
-						// wrap around
-						if (scroll_pos >= (total)) scroll_pos = 0;
-
-						// SW0 + SW1 + SW3 - speaker + traffic led
-						if (sw & 0x8) {
-							traffic_led++;
-							if (traffic_led > 7) traffic_led = 0;
-							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
-							speaker = !speaker;
-							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, speaker);
-						}
-						else {
-							traffic_led = 0;
-							IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
-							speaker = 0;
-							IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
-						}
+						if (scroll_pos >= (total)) scroll_pos = 0; // wrap around
 					}
             	}
             }
+            else {
+            	cpuFlag = 0; // disable cpu usage if SW1 off
+            	cpu_timer = 0;
+            }
         }
+        // SW3 - enable buzzer
+        if (sw & 0x8) {
+        	IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 1);
+        } else IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 0);
 
         // small delay to prevent cpu hogging
-        OSTimeDly(3);
+        OSTimeDly(4);
     }
 }
 

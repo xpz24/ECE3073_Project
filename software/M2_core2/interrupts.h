@@ -12,6 +12,8 @@ extern volatile int tilt_flag;
 #define TILT_NORMAL    0x4
 #define TILT_LEFT      0x8
 #define TILT_RIGHT     0xC
+#define TILT_FORWARD   0x10
+#define TILT_BACKWARD  0x20
 
 // init functions
 void init_rx_3_2_irq(void);

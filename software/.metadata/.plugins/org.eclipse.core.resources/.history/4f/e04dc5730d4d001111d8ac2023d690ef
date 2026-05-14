@@ -1,0 +1,295 @@
+// vga_text_render.h
+// Rendering functions for VGA text display.
+// Depends on vga_text.h (font, layout constants, ticker buffer)
+// and your existing write_pixel() function.
+
+#ifndef VGA_TEXT_RENDER_H
+#define VGA_TEXT_RENDER_H
+
+#include "vga_text.h"
+
+// Forward declaration - already in vga.c
+extern void write_pixel(unsigned int addr, uint16_t color);
+
+// SCROLL STATE
+// tilt_scroll_offset > 0  : user is browsing history via bottom strip
+// tilt_scroll_offset == 0 : live mode, no highlight
+static int tilt_scroll_offset = 0;
+
+// tracks whether the main area window has shifted since last full redraw
+// used to decide between full redraw and single char append
+static int last_main_start = 0;
+
+// LAYOUT
+// Main area  (top): large yellow chars, left-to-right fill, scrolls when full
+// Bottom strip    : small dimmed chars, full history, highlight on tilt only
+//
+// MAIN_SCALE  : scale for main area chars
+// MAIN_SLOT_W : pixel width of one char slot in main area
+// HIST_SCALE  : scale for history strip chars
+// HIST_SLOT_W : pixel width of one char slot in history strip
+
+#define MAIN_SCALE   3
+#define MAIN_SLOT_W  (FONT_W * MAIN_SCALE + 2)
+#define MAIN_MAX     (PANEL_SPLIT / MAIN_SLOT_W)   // max chars visible in main area
+
+#define HIST_SCALE   1
+#define HIST_SLOT_W  (FONT_W * HIST_SCALE + 2)
+#define HIST_MAX     (FB_WIDTH / HIST_SLOT_W)      // max chars visible in history strip
+
+// Marquee scroll state for main area
+static int marquee_pixel_offset = -(PANEL_SPLIT);  // start off-screen right
+// MARQUEE_STEP: pixels to shift per vga_task tick (tune to taste)
+#define MARQUEE_STEP 2
+
+// Low-level primitives
+
+static void fill_rect(int x, int y, int w, int h, uint16_t color) {
+    int px, py;
+    for (py = y; py < y + h; py++)
+        for (px = x; px < x + w; px++)
+            if (px >= 0 && px < FB_WIDTH && py >= 0 && py < FB_HEIGHT)
+                write_pixel(py * FB_WIDTH + px, color);
+}
+
+static void draw_char(char c, int x, int y, int scale, uint16_t fg, uint16_t bg) {
+    int idx = font_index(c);
+    int row, col;
+    for (row = 0; row < FONT_H; row++) {
+        uint8_t bits = font8x12[idx][row];
+        for (col = 0; col < FONT_W; col++) {
+            uint16_t color = (bits & (0x80 >> col)) ? fg : bg;
+            fill_rect(x + col * scale, y + row * scale, scale, scale, color);
+        }
+    }
+}
+
+static void draw_string(const char *s, int x, int y, int scale, uint16_t fg, uint16_t bg) {
+    int cx = x;
+    while (*s) {
+        draw_char(*s, cx, y, scale, fg, bg);
+        cx += FONT_W * scale + scale;
+        s++;
+    }
+}
+
+// draw_main_area()
+// Full redraw of the main area. Only called on init, window shift, or tilt reset.
+
+static void draw_main_area(void) {
+    // Clear the whole main area (label + divider + char band)
+    fill_rect(0, 0, PANEL_SPLIT, MAIN_AREA_H, COL_BG);
+    draw_string("DETECTED:", 8, 8, 1, COL_LABEL, COL_BG);
+    fill_rect(8, 20, PANEL_SPLIT - 16, 1, COL_DIVIDER);
+
+    if (ticker.count == 0) return;
+
+    int cy = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    int i, cx;
+    for (i = 0; i < ticker.count; i++) {
+        cx = 4 + i * MAIN_SLOT_W - marquee_pixel_offset;
+        // Only draw if the char is within the main area panel
+        if (cx + FONT_W * MAIN_SCALE < 0) continue;
+        if (cx >= PANEL_SPLIT)            break;
+        draw_char(ticker_get(i), cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
+    }
+
+    last_main_start = 0; // marquee mode doesn't use window start
+}
+
+// draw_main_append()
+// Dirty redraw: only draws the single newest character.
+// If the window has shifted (oldest char scrolled off), falls back to full redraw.
+
+static void draw_main_append(char c) {
+    int cy   = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    int slot = ticker.count - 1;
+    int cx   = 4 + slot * MAIN_SLOT_W - marquee_pixel_offset;
+
+    if (cx >= 0 && cx < PANEL_SPLIT)
+        draw_char(c, cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
+    // else: char is off-screen right or left, draw_marquee_tick will handle it
+}
+
+// Call this every tick when display_active.
+// Shifts the marquee left by MARQUEE_STEP pixels and redraws only the char band.
+// When the full string has scrolled off, resets to loop.
+
+static void draw_marquee_tick(void) {
+    if (ticker.count == 0) return;
+
+    int total_width = ticker.count * MAIN_SLOT_W;
+    int cy          = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    int char_h      = FONT_H * MAIN_SCALE;
+    int prev_offset = marquee_pixel_offset;
+
+    marquee_pixel_offset += MARQUEE_STEP;
+
+    if (marquee_pixel_offset >= total_width + 4) {
+        marquee_pixel_offset = -(PANEL_SPLIT);
+        // Full reset: offset jumped non-linearly, must redraw entire band
+        int x;
+        for (x = 0; x < PANEL_SPLIT; x++)
+            draw_one_marquee_column(x, cy, char_h, total_width);
+        return;
+    }
+
+    // Delta update: only the MARQUEE_STEP columns that changed.
+    //
+    // The string moved left by MARQUEE_STEP, which means:
+    // - Columns [0 .. MARQUEE_STEP-1] are NEW (slid in from left, or bg revealed)
+    //   Wait — actually the RIGHT side gains new content, LEFT side loses it.
+    //
+    // Think of it this way: offset increased, so string_x = x + offset - 4
+    // increases for all x. The rightmost MARQUEE_STEP columns now map to
+    // string_x values that were just off-screen right before — draw those.
+    // The leftmost MARQUEE_STEP columns may now be background — draw those too.
+
+    int i;
+    // Left edge: these columns may have just become background
+    for (i = 0; i < MARQUEE_STEP; i++)
+        draw_one_marquee_column(i, cy, char_h, total_width);
+
+    // Right edge: these columns just came into view
+    for (i = 0; i < MARQUEE_STEP; i++)
+        draw_one_marquee_column(PANEL_SPLIT - 1 - i, cy, char_h, total_width);
+}
+
+// draw_one_marquee_column()
+// Draws a single x column of the marquee band.
+// Extracted so both the delta updater and full redraw can share it.
+static void draw_one_marquee_column(int x, int cy, int char_h, int total_width) {
+    int string_x = x + marquee_pixel_offset - 4;
+
+    if (string_x >= 0 && string_x < total_width) {
+        int slot   = string_x / MAIN_SLOT_W;
+        int char_x = string_x % MAIN_SLOT_W;
+
+        if (slot < ticker.count && char_x < FONT_W * MAIN_SCALE) {
+            int font_col = char_x / MAIN_SCALE;
+            int idx      = font_index(ticker_get(slot));
+            int y;
+            for (y = 0; y < char_h; y++) {
+                int font_row = y / MAIN_SCALE;
+                uint8_t bits = font8x12[idx][font_row];
+                uint16_t pixel_color = (bits & (0x80 >> font_col))
+                                       ? COL_TICKER_FG : COL_BG;
+                write_pixel((cy + y) * FB_WIDTH + x, pixel_color);
+            }
+            return;
+        }
+    }
+
+    // background column
+    int y;
+    for (y = 0; y < char_h; y++)
+        write_pixel((cy + y) * FB_WIDTH + x, COL_BG);
+}
+
+// draw_history_strip()
+// Bottom strip: shows full history at HIST_SCALE, dimmed.
+// No highlight when tilt_scroll_offset == 0 (live mode).
+// Highlight box appears on the viewed char only when tilting.
+
+static void draw_history_strip(void) {
+    fill_rect(0, MAIN_AREA_H, FB_WIDTH, TICKER_HEIGHT, COL_TICKER_BG);
+    fill_rect(0, MAIN_AREA_H, FB_WIDTH, 1, COL_DIVIDER);
+
+    if (ticker.count == 0) return;
+
+    int cy     = MAIN_AREA_H + (TICKER_HEIGHT - FONT_H * HIST_SCALE) / 2;
+    int start  = ticker.count > HIST_MAX ? ticker.count - HIST_MAX : 0;
+    int viewed = (ticker.count - 1) - tilt_scroll_offset;
+    int i;
+    int cx = 2;
+
+    for (i = start; i < ticker.count; i++) {
+        char c        = ticker_get(i);
+        int is_viewed = (tilt_scroll_offset > 0) && (i == viewed);
+        uint16_t fg   = is_viewed ? COL_ACCENT  : COL_LABEL;
+        uint16_t bg   = is_viewed ? COL_DIVIDER : COL_TICKER_BG;
+
+        if (is_viewed)
+            fill_rect(cx - 1, cy - 3, FONT_W * HIST_SCALE + 2, FONT_H * HIST_SCALE + 4, COL_DIVIDER);
+
+        draw_char(c, cx, cy, HIST_SCALE, fg, bg);
+        cx += HIST_SLOT_W;
+    }
+
+    if (tilt_scroll_offset > 0) {
+        char ones = '0' + (tilt_scroll_offset % 10);
+        char tens = '0' + (tilt_scroll_offset / 10);
+        int ind_x = FB_WIDTH - FONT_W * 2 - 4;
+        int ind_y = MAIN_AREA_H + (TICKER_HEIGHT - FONT_H) / 2;
+        if (tilt_scroll_offset >= 10)
+            draw_char(tens, ind_x,             ind_y, 1, COL_ACCENT, COL_TICKER_BG);
+        draw_char(ones, ind_x + FONT_W + 1, ind_y, 1, COL_ACCENT, COL_TICKER_BG);
+    }
+}
+
+// draw_history_append()
+// Dirty redraw for history strip: only draws the single newest char at the end.
+// Falls back to full redraw if the window shifted.
+
+static void draw_history_append(char c) {
+    int start = ticker.count > HIST_MAX ? ticker.count - HIST_MAX : 0;
+    int viewed = (ticker.count - 1) - tilt_scroll_offset;
+
+    // if window shifted or we are in tilt mode, full redraw
+    if (ticker.count > HIST_MAX && (ticker.count - 1 - HIST_MAX) != (start - 1))
+        goto full;
+    if (tilt_scroll_offset > 0)
+        goto full;
+
+    {
+        int slot = ticker.count - 1 - start;
+        int cx   = 2 + slot * HIST_SLOT_W;
+        int cy   = MAIN_AREA_H + (TICKER_HEIGHT - FONT_H * HIST_SCALE) / 2;
+        draw_char(c, cx, cy, HIST_SCALE, COL_LABEL, COL_TICKER_BG);
+        return;
+    }
+
+full:
+    draw_history_strip();
+}
+
+// Public API
+
+// Call once on KEY1 / startup
+static void vga_text_init(void) {
+    ticker_init();
+    tilt_scroll_offset = 0;
+    last_main_start    = 0;
+    marquee_pixel_offset = -(PANEL_SPLIT);
+    fill_rect(0, 0, FB_WIDTH, FB_HEIGHT, COL_BG);
+    draw_main_area();
+    draw_history_strip();
+}
+
+// Call every time Grove AI sends a new character.
+// Uses dirty redraw: only redraws the new char slot, not the full panel.
+static void vga_text_update(char new_char) {
+    ticker_push(new_char);
+    draw_main_append(new_char);
+    draw_history_append(new_char);
+}
+
+// Tilt scroll : +1 go back in history, -1 go forward/newer
+static void vga_tilt_scroll(int direction) {
+    int new_offset = tilt_scroll_offset + direction;
+    if (new_offset < 0)                   new_offset = 0;
+    if (new_offset >= ticker.count)       new_offset = ticker.count - 1;
+    if (new_offset == tilt_scroll_offset) return;
+
+    tilt_scroll_offset = new_offset;
+    draw_history_strip();
+}
+
+// Hard reset - snap back to live mode (KEY0 clear)
+static void vga_tilt_reset(void) {
+    tilt_scroll_offset = 0;
+    draw_main_area();
+    draw_history_strip();
+}
+
+#endif // VGA_TEXT_RENDER_H

@@ -22,26 +22,18 @@ OS_STK spi_task_stk[SPI_TASK_STACKSIZE];
 #define TX_3_1_BASE      CORE_3_1_TX_BASE
 #define TX_3_2_BASE      CORE_3_2_TX_BASE
 
+// CPU usages
+#define CPU_USAGE_CORE1_OFFSET  0x100
+#define CPU_USAGE_CORE2_OFFSET  0x104
+#define CPU_USAGE_CORE3_OFFSET  0x108
+#define CPU_USAGE_CORE1  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE1_OFFSET))
+#define CPU_USAGE_CORE2  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE2_OFFSET))
+#define CPU_USAGE_CORE3  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE3_OFFSET))
+#define CPU_USAGE_SPEED 300
+
 // TX flag definitions
 #define TX_KEY0     0x1   /* bit 0: key 0, start capturing    */
 #define TX_KEY1     0x2   /* bit 1: key 1, start displaying   */
-
-// Protocol constants (must match ESP32)
-#define CMD_TRIGGER_CAPTURE  0xA0
-#define CMD_REQUEST_DATA     0xA1
-#define CMD_ACK              0xAC
-#define CMD_END              0xFF
-
-// SPI word / payload sizing
-// One SPI transaction = one 8-bit byte.
-// We use 8-bit SPI mode (Avalon SPI configured for 8 bits).
-#define CAPTURE_BUFFER_SIZE  256
-
-// SDRAM pointer
-volatile uint8_t* sdram = (volatile uint8_t*) SDRAM_BASE;
-
-// Static receive buffer
-static uint8_t capture_buffer[CAPTURE_BUFFER_SIZE];
 
 // read current microsecond count
 static inline alt_u32 get_us(void) {
@@ -49,17 +41,8 @@ static inline alt_u32 get_us(void) {
 }
 
 //  RTOS task
-void spi_task(void* pdata)
-{
-	// Prime the SPI core — clear stale TX/RX state
-	IOWR_ALTERA_AVALON_SPI_SLAVE_SEL(SPI_BASE, 0x1);
-	IOWR_ALTERA_AVALON_SPI_TXDATA(SPI_BASE, 0x00);
-	while (!(IORD_ALTERA_AVALON_SPI_STATUS(SPI_BASE) & 0x80));
-	IORD_ALTERA_AVALON_SPI_RXDATA(SPI_BASE);  // clear RX
-	IOWR_ALTERA_AVALON_SPI_SLAVE_SEL(SPI_BASE, 0x0);
-    printf("ESP32 SPI COMMUNICATION TEST\n");
-    printf("KEY0 - Test communication\n");
-    printf("KEY1 - Request capture data\n");
+void spi_task(void* pdata) {
+	int cpu_timer = 0;
 
     alt_u32 start = 0;
     alt_u32 end = 0;
@@ -101,7 +84,13 @@ void spi_task(void* pdata)
 			// notify core 2 key1 pressed
 			tx_pulse(TX_3_2_BASE, TX_KEY1);
 		}
-    	OSTimeDly(5);
+		// write cpu usage into sdram
+		cpu_timer++;
+		if (cpu_timer >= CPU_USAGE_SPEED){
+			cpu_timer = 0;
+			CPU_USAGE_CORE3 = (int)OSCPUUsage;
+		}
+    	OSTimeDly(3);
     }
 
 }

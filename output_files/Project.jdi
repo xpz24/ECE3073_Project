@@ -1,6 +1,6 @@
 <sld_project_info>
   <project>
-    <hash md5_digest_80b="68b3949fea616f958dec"/>
+    <hash md5_digest_80b="cc8514e5b114f15f9a12"/>
   </project>
   <file_info>
     <file device="10M50DAF484C7G" path="Project_time_limited.sof" usercode="0xFFFFFFFF"/>
@@ -396,8 +396,8 @@
   <sld_infos>
     <sld_info hpath="projectM1:inst" name="inst">
       <assignment_values>
-        <assignment_value text="QSYS_NAME projectM1 HAS_SOPCINFO 1 GENERATION_ID 1778337555"/>
-        <assignment_value text="QSYS_NAME projectM1 HAS_SOPCINFO 1 GENERATION_ID 1778339158"/>
+        <assignment_value text="QSYS_NAME projectM1 HAS_SOPCINFO 1 GENERATION_ID 1778742234"/>
+        <assignment_value text="QSYS_NAME projectM1 HAS_SOPCINFO 1 GENERATION_ID 1778742566"/>
       </assignment_values>
       <parameters/>
     </sld_info>

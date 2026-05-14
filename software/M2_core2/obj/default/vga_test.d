@@ -10,8 +10,8 @@ obj/default/vga_test.o: vga_test.c ../M2_core2_bsp/system.h \
  ../M2_core2_bsp//HAL/inc/sys/alt_llist.h \
  ../M2_core2_bsp//HAL/inc/priv/alt_alarm.h \
  ../M2_core2_bsp//UCOSII/inc/ucos_ii.h ../M2_core2_bsp//HAL/inc/os_cpu.h \
- ../M2_core2_bsp/HAL/inc/io.h interrupts.h image_data.h vga_text_render.h \
- vga_text.h
+ ../M2_core2_bsp/HAL/inc/io.h interrupts.h image_data.h vga_gfx.h \
+ game_render.h game.h
 
 ../M2_core2_bsp/system.h:
 
@@ -53,6 +53,8 @@ interrupts.h:
 
 image_data.h:
 
-vga_text_render.h:
+vga_gfx.h:
 
-vga_text.h:
+game_render.h:
+
+game.h:

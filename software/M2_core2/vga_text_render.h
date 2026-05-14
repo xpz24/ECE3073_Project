@@ -10,6 +10,7 @@
 
 // Forward declaration - already in vga.c
 extern void write_pixel(unsigned int addr, uint16_t color);
+extern void fps_tick(void);
 
 // SCROLL STATE
 // tilt_scroll_offset > 0  : user is browsing history via bottom strip
@@ -36,6 +37,13 @@ static int last_main_start = 0;
 #define HIST_SCALE   1
 #define HIST_SLOT_W  (FONT_W * HIST_SCALE + 2)
 #define HIST_MAX     (FB_WIDTH / HIST_SLOT_W)      // max chars visible in history strip
+
+// Marquee scroll state for main area
+static int marquee_pixel_offset = -(PANEL_SPLIT);  // start off-screen right
+// MARQUEE_STEP: pixels to shift per vga_task tick (tune to taste)
+#define MARQUEE_STEP 2
+#define VSYNC_BASE CORE_2_VSYNC_BASE
+#define HSYNC_BASE CORE_2_HSYNC_BASE
 
 // Low-level primitives
 
@@ -72,25 +80,24 @@ static void draw_string(const char *s, int x, int y, int scale, uint16_t fg, uin
 // Full redraw of the main area. Only called on init, window shift, or tilt reset.
 
 static void draw_main_area(void) {
+    // Clear the whole main area (label + divider + char band)
     fill_rect(0, 0, PANEL_SPLIT, MAIN_AREA_H, COL_BG);
-
     draw_string("DETECTED:", 8, 8, 1, COL_LABEL, COL_BG);
     fill_rect(8, 20, PANEL_SPLIT - 16, 1, COL_DIVIDER);
 
     if (ticker.count == 0) return;
 
-    int cy    = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
-    int start = ticker.count > MAIN_MAX ? ticker.count - MAIN_MAX : 0;
-    int i;
-    int cx = 4;
-
-    for (i = start; i < ticker.count; i++) {
-        char c = ticker_get(i);
-        draw_char(c, cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
-        cx += MAIN_SLOT_W;
+    int cy = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    int i, cx;
+    for (i = 0; i < ticker.count; i++) {
+        cx = 4 + i * MAIN_SLOT_W - marquee_pixel_offset;
+        // Only draw if the char is within the main area panel
+        if (cx + FONT_W * MAIN_SCALE < 0) continue;
+        if (cx >= PANEL_SPLIT)            break;
+        draw_char(ticker_get(i), cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
     }
 
-    last_main_start = start;
+    last_main_start = 0; // marquee mode doesn't use window start
 }
 
 // draw_main_append()
@@ -98,19 +105,81 @@ static void draw_main_area(void) {
 // If the window has shifted (oldest char scrolled off), falls back to full redraw.
 
 static void draw_main_append(char c) {
-    int start = ticker.count > MAIN_MAX ? ticker.count - MAIN_MAX : 0;
+    int cy   = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    int slot = ticker.count - 1;
+    int cx   = 4 + slot * MAIN_SLOT_W - marquee_pixel_offset;
 
-    if (start != last_main_start) {
-        // window shifted, full redraw needed
-        draw_main_area();
-        return;
+    if (cx >= 0 && cx < PANEL_SPLIT)
+        draw_char(c, cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
+    // else: char is off-screen right or left, draw_marquee_tick will handle it
+}
+
+// draw_one_marquee_column()
+// Draws a single x column of the marquee band.
+// Extracted so both the delta updater and full redraw can share it.
+static void draw_one_marquee_column(int x, int cy, int char_h, int total_width) {
+    int string_x  = x + marquee_pixel_offset - 4;
+    int base_addr = cy * FB_WIDTH + x;
+
+    if (string_x >= 0 && string_x < total_width) {
+        int slot   = string_x / MAIN_SLOT_W;
+        int char_x = string_x % MAIN_SLOT_W;
+
+        if (slot < ticker.count && char_x < FONT_W * MAIN_SCALE) {
+            int mask = (0x80 >> (char_x / MAIN_SCALE));
+            int idx  = font_index(ticker_get(slot));
+            int r, s;
+            int addr = base_addr;
+
+            for (r = 0; r < FONT_H; r++) {
+                uint16_t color = (font8x12[idx][r] & mask)
+                                 ? COL_TICKER_FG : COL_BG;
+                // Write MAIN_SCALE identical pixels — unrolled for scale=3
+                write_pixel(addr,                color);
+                write_pixel(addr +     FB_WIDTH, color);
+                write_pixel(addr + 2 * FB_WIDTH, color);
+                addr += 3 * FB_WIDTH;  // MAIN_SCALE * FB_WIDTH
+            }
+            return;
+        }
     }
 
-    // just draw the new char in its slot, no clearing needed
-    int slot = ticker.count - 1 - start;
-    int cx   = 4 + slot * MAIN_SLOT_W;
-    int cy   = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
-    draw_char(c, cx, cy, MAIN_SCALE, COL_TICKER_FG, COL_BG);
+    // Background: tight loop
+    int y;
+    for (y = 0; y < char_h; y++)
+        write_pixel(base_addr + y * FB_WIDTH, COL_BG);
+}
+
+// wait for blinking
+static void wait_for_blanking(void) {
+    // Wait for vsync to go low (sync pulse starts)
+    while (IORD_ALTERA_AVALON_PIO_DATA(VSYNC_BASE) != 0);
+    // Wait for vsync to go high (back porch starts — safe to write)
+    while (IORD_ALTERA_AVALON_PIO_DATA(VSYNC_BASE) == 0);
+}
+
+// Call this every tick when display_active.
+// Shifts the marquee left by MARQUEE_STEP pixels and redraws only the char band.
+// When the full string has scrolled off, resets to loop.
+
+static void draw_marquee_tick(void) {
+    if (ticker.count == 0) return;
+
+    int total_width = ticker.count * MAIN_SLOT_W;
+    int cy          = MAIN_AREA_H / 2 - (FONT_H * MAIN_SCALE) / 2;
+    int char_h      = FONT_H * MAIN_SCALE;
+
+    marquee_pixel_offset += MARQUEE_STEP;
+    if (marquee_pixel_offset >= total_width + 4)
+        marquee_pixel_offset = -(PANEL_SPLIT);
+
+    wait_for_blanking();
+
+    int x;
+    for (x = 0; x < PANEL_SPLIT; x++)
+        draw_one_marquee_column(x, cy, char_h, total_width);
+
+    fps_tick();
 }
 
 // draw_history_strip()
@@ -187,6 +256,7 @@ static void vga_text_init(void) {
     ticker_init();
     tilt_scroll_offset = 0;
     last_main_start    = 0;
+    marquee_pixel_offset = -(PANEL_SPLIT);
     fill_rect(0, 0, FB_WIDTH, FB_HEIGHT, COL_BG);
     draw_main_area();
     draw_history_strip();
@@ -196,7 +266,7 @@ static void vga_text_init(void) {
 // Uses dirty redraw: only redraws the new char slot, not the full panel.
 static void vga_text_update(char new_char) {
     ticker_push(new_char);
-    draw_main_append(new_char);
+//    marquee_pixel_offset = -(PANEL_SPLIT);
     draw_history_append(new_char);
 }
 
