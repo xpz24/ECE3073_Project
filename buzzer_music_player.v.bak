@@ -1,0 +1,191 @@
+// =============================================================================
+// buzzer_music_player.v
+// -----------------------------------------------------------------------------
+// Makes an ACTIVE buzzer behave like a PASSIVE buzzer by driving it with a
+// precise square wave.  The internal oscillator of the active buzzer cannot
+// follow rapid toggling, so the membrane vibrates at the FPGA-generated
+// frequency instead.
+//
+// Target : DE-series FPGA (DE1-SoC / DE0-CV …)  – Core 3
+// Clock  : 50 MHz (CLOCK_50)
+// Control: SW[3] = 1 → play melody   SW[3] = 0 → silent
+//
+// Integration note
+//   • Instantiate this module inside your Core 3 top-level (or wherever the
+//     buzzer GPIO pin is routed).
+//   • Connect BUZZER_OUT to the GPIO pin that drives the active buzzer.
+//   • The buzzer's other terminal goes to GND (positive-logic drive).
+// =============================================================================
+
+module buzzer_music_player (
+    input  wire        clk,          // 50 MHz system clock
+    input  wire        rst_n,        // Active-low reset
+    input  wire        sw_play,      // SW[3]: 1 = play, 0 = silent
+    output reg         buzzer_out    // Connect to active-buzzer pin
+);
+
+    // =========================================================================
+    // 1.  Note frequency table
+    //     Period (half-period) counts for a 50 MHz clock.
+    //     half_period = 50_000_000 / (2 * frequency_Hz)
+    // =========================================================================
+    //  Note       Freq(Hz)  half_period
+    //  REST          –       0          (pin held LOW)
+    //  C4          261.63   95,602
+    //  D4          293.66   85,096
+    //  E4          329.63   75,756
+    //  F4          349.23   71,587
+    //  G4          392.00   63,776
+    //  A4          440.00   56,818
+    //  B4          493.88   50,619
+    //  C5          523.25   47,778
+    //  D5          587.33   42,553
+    //  E5          659.26   37,921
+    //  G5          783.99   31,888
+
+    localparam REST = 32'd0;
+    localparam C4   = 32'd95602;
+    localparam D4   = 32'd85096;
+    localparam E4   = 32'd75756;
+    localparam F4   = 32'd71587;
+    localparam G4   = 32'd63776;
+    localparam A4   = 32'd56818;
+    localparam B4   = 32'd50619;
+    localparam C5   = 32'd47778;
+    localparam D5   = 32'd42553;
+    localparam E5   = 32'd37921;
+    localparam G5   = 32'd31888;
+
+    // =========================================================================
+    // 2.  Note duration table
+    //     One "beat" = 0.5 s at 50 MHz → 25_000_000 clocks
+    //     Quarter note  = 1 beat  = 25_000_000
+    //     Half note     = 2 beats = 50_000_000
+    //     Whole note    = 4 beats = 100_000_000
+    //     Eighth note   = 0.5 beat= 12_500_000
+    // =========================================================================
+    localparam BEAT    = 32'd25_000_000;
+    localparam QUARTER = BEAT;
+    localparam HALF    = BEAT * 2;
+    localparam WHOLE   = BEAT * 4;
+    localparam EIGHTH  = BEAT / 2;
+
+    // =========================================================================
+    // 3.  Melody ROM  –  "Ode to Joy" (Beethoven, simplified)
+    //     Each entry: {half_period[31:0], duration[31:0]}
+    //     Extend or replace this section to change the song.
+    // =========================================================================
+    //  Index  Note  Duration
+    localparam MELODY_LEN = 33;
+
+    reg [63:0] melody [0:MELODY_LEN-1];
+
+    initial begin
+        //              half_period   duration
+        melody[ 0] = {E4,           QUARTER};
+        melody[ 1] = {E4,           QUARTER};
+        melody[ 2] = {F4,           QUARTER};
+        melody[ 3] = {G4,           QUARTER};
+        melody[ 4] = {G4,           QUARTER};
+        melody[ 5] = {F4,           QUARTER};
+        melody[ 6] = {E4,           QUARTER};
+        melody[ 7] = {D4,           QUARTER};
+        melody[ 8] = {C4,           QUARTER};
+        melody[ 9] = {C4,           QUARTER};
+        melody[10] = {D4,           QUARTER};
+        melody[11] = {E4,           QUARTER};
+        melody[12] = {E4,           QUARTER + EIGHTH};
+        melody[13] = {D4,           EIGHTH};
+        melody[14] = {D4,           HALF};
+        melody[15] = {E4,           QUARTER};
+        melody[16] = {E4,           QUARTER};
+        melody[17] = {F4,           QUARTER};
+        melody[18] = {G4,           QUARTER};
+        melody[19] = {G4,           QUARTER};
+        melody[20] = {F4,           QUARTER};
+        melody[21] = {E4,           QUARTER};
+        melody[22] = {D4,           QUARTER};
+        melody[23] = {C4,           QUARTER};
+        melody[24] = {C4,           QUARTER};
+        melody[25] = {D4,           QUARTER};
+        melody[26] = {E4,           QUARTER};
+        melody[27] = {D4,           QUARTER + EIGHTH};
+        melody[28] = {C4,           EIGHTH};
+        melody[29] = {C4,           HALF};
+        melody[30] = {D4,           HALF};
+        melody[31] = {E4,           HALF};
+        melody[32] = {REST,         QUARTER};  // brief silence before loop
+    end
+
+    // =========================================================================
+    // 4.  Playback state machine
+    // =========================================================================
+    reg  [31:0] note_index;     // current position in melody[]
+    reg  [31:0] dur_counter;    // counts down note duration
+    reg  [31:0] half_period;    // current note half-period (frequency control)
+    reg  [31:0] tone_counter;   // counts within one half-period
+    reg         playing;        // internal play flag
+
+    // Decode current note fields
+    wire [31:0] cur_half = melody[note_index][63:32];
+    wire [31:0] cur_dur  = melody[note_index][31: 0];
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            note_index  <= 0;
+            dur_counter <= 0;
+            half_period <= 0;
+            tone_counter <= 0;
+            buzzer_out  <= 1'b0;
+            playing     <= 1'b0;
+        end else begin
+            if (!sw_play) begin
+                // ── Silent: pin low, reset sequencer ──────────────────────────
+                buzzer_out  <= 1'b0;
+                note_index  <= 0;
+                dur_counter <= cur_dur;
+                half_period <= cur_half;
+                tone_counter <= 0;
+                playing     <= 1'b0;
+            end else begin
+                // ── Playing ───────────────────────────────────────────────────
+                if (!playing) begin
+                    // First clock after SW[3] goes high: latch first note
+                    half_period  <= cur_half;
+                    dur_counter  <= cur_dur;
+                    tone_counter <= 0;
+                    playing      <= 1'b1;
+                end else begin
+                    // ── Note duration counter ─────────────────────────────────
+                    if (dur_counter > 0)
+                        dur_counter <= dur_counter - 1;
+                    else begin
+                        // Advance to next note (loop)
+                        if (note_index == MELODY_LEN - 1)
+                            note_index <= 0;
+                        else
+                            note_index <= note_index + 1;
+                        half_period  <= cur_half;
+                        dur_counter  <= cur_dur;
+                        tone_counter <= 0;
+                    end
+
+                    // ── Tone square-wave generator ────────────────────────────
+                    if (half_period == 0) begin
+                        // REST: keep pin low
+                        buzzer_out   <= 1'b0;
+                        tone_counter <= 0;
+                    end else begin
+                        if (tone_counter >= half_period - 1) begin
+                            tone_counter <= 0;
+                            buzzer_out   <= ~buzzer_out; // toggle → square wave
+                        end else begin
+                            tone_counter <= tone_counter + 1;
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+endmodule

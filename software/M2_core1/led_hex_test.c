@@ -14,7 +14,7 @@
 #define LEDR_BASE CORE_1_LEDR_BASE
 #define HEX_LO_BASE CORE_1_HEX_LO_BASE
 #define HEX_HI_BASE CORE_1_HEX_HI_BASE
-#define SPEAKER_BASE CORE_1_SPEAKER_BASE
+#define BUZZER_EN_BASE CORE_1_BUZZER_ENABLE_BASE
 #define TRAFFIC_LED_BASE CORE_1_TRAFFIC_LED_BASE
 #define TX_BASE CORE_1_3_TX_BASE
 #define RX_BASE CORE_1_3_RX_BASE
@@ -68,45 +68,6 @@
 #define CPU_USAGE_CORE1  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE1_OFFSET))
 #define CPU_USAGE_CORE2  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE2_OFFSET))
 #define CPU_USAGE_CORE3  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE3_OFFSET))
-
-// buzzer
-#define NOTE_C4  262
-#define NOTE_D4  294
-#define NOTE_E4  330
-#define NOTE_F4  349
-#define NOTE_G4  392
-
-int melody[] = {
-    NOTE_E4,
-    NOTE_E4,
-    0,
-    NOTE_E4,
-    0,
-    NOTE_C4,
-    NOTE_E4,
-    0,
-    NOTE_G4,
-    0,
-    0,
-    0,
-    NOTE_G4
-};
-
-int durations[] = {
-    300,
-    300,
-    150,
-    300,
-    150,
-    300,
-    300,
-    150,
-    600,
-    300,
-    300,
-    300,
-    600
-};
 
 // task config
 #define HEX_PRIORITY    3
@@ -222,43 +183,11 @@ void emergency_msg(void) {
 	write_hex(dash, s, t, o, p, dash);
 }
 
-// play buzzer
-void play_tone(int frequency, int duration_ms) {
-    if (frequency == 0) {
-        // If the note is 0, just wait (Silence/Rest)
-        alt_busy_sleep(duration_ms * 1000);
-    } else {
-        // TURN ON the active buzzer's internal oscillator
-        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 1);
-
-        // Let it beep at its own natural frequency for the duration of the note
-        alt_busy_sleep(duration_ms * 1000);
-
-        // TURN OFF
-        IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
-    }
-}
-
-void play_mario_theme(void) {
-    int length = sizeof(melody) / sizeof(int);
-
-    for (int i = 0; i < length; i++) {
-        // Play the internal tone for the duration specified in your array
-        play_tone(melody[i], durations[i]);
-
-        // IMPORTANT: The "Staccato" gap.
-        // Mario sounds like Mario because the notes are detached.
-        alt_busy_sleep(30000); // 30ms gap between notes
-    }
-
-    IOWR_ALTERA_AVALON_PIO_DATA(SPEAKER_BASE, 0);
-}
 
 // HEX TASK
 void hex_task(void* pdata) {
     int scroll_pos     = 0;
     int scroll_counter = 0;
-    int speaker        = 0;
     int traffic_led    = 0;
     const char* last_message = NULL;
     int cpu_usage      = (int)OSCPUUsage; // initialise cpu usage once
@@ -366,10 +295,10 @@ void hex_task(void* pdata) {
             	cpu_timer = 0;
             }
         }
-
+        // SW3 - enable buzzer
         if (sw & 0x8) {
-        	// enable buzzer
-        }
+        	IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 1);
+        } else IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 0);
 
         // small delay to prevent cpu hogging
         OSTimeDly(4);

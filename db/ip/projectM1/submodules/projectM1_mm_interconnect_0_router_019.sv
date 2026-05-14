@@ -50,9 +50,9 @@ module projectM1_mm_interconnect_0_router_019_default_decode
                DEFAULT_DESTID = 0 
    )
   (output [95 - 90 : 0] default_destination_id,
-   output [41-1 : 0] default_wr_channel,
-   output [41-1 : 0] default_rd_channel,
-   output [41-1 : 0] default_src_channel
+   output [42-1 : 0] default_wr_channel,
+   output [42-1 : 0] default_rd_channel,
+   output [42-1 : 0] default_src_channel
   );
 
   assign default_destination_id = 
@@ -63,7 +63,7 @@ module projectM1_mm_interconnect_0_router_019_default_decode
       assign default_src_channel = '0;
     end
     else begin : default_channel_assignment
-      assign default_src_channel = 41'b1 << DEFAULT_CHANNEL;
+      assign default_src_channel = 42'b1 << DEFAULT_CHANNEL;
     end
   endgenerate
 
@@ -73,8 +73,8 @@ module projectM1_mm_interconnect_0_router_019_default_decode
       assign default_rd_channel = '0;
     end
     else begin : default_rw_channel_assignment
-      assign default_wr_channel = 41'b1 << DEFAULT_WR_CHANNEL;
-      assign default_rd_channel = 41'b1 << DEFAULT_RD_CHANNEL;
+      assign default_wr_channel = 42'b1 << DEFAULT_WR_CHANNEL;
+      assign default_rd_channel = 42'b1 << DEFAULT_RD_CHANNEL;
     end
   endgenerate
 
@@ -103,7 +103,7 @@ module projectM1_mm_interconnect_0_router_019
     // -------------------
     output                          src_valid,
     output reg [109-1    : 0] src_data,
-    output reg [41-1 : 0] src_channel,
+    output reg [42-1 : 0] src_channel,
     output                          src_startofpacket,
     output                          src_endofpacket,
     input                           src_ready
@@ -119,7 +119,7 @@ module projectM1_mm_interconnect_0_router_019
     localparam PKT_PROTECTION_H = 99;
     localparam PKT_PROTECTION_L = 97;
     localparam ST_DATA_W = 109;
-    localparam ST_CHANNEL_W = 41;
+    localparam ST_CHANNEL_W = 42;
     localparam DECODER_TYPE = 1;
 
     localparam PKT_TRANS_WRITE = 65;
@@ -158,7 +158,7 @@ module projectM1_mm_interconnect_0_router_019
     assign src_valid         = sink_valid;
     assign src_startofpacket = sink_startofpacket;
     assign src_endofpacket   = sink_endofpacket;
-    wire [41-1 : 0] default_src_channel;
+    wire [42-1 : 0] default_src_channel;
 
 
 
@@ -190,27 +190,19 @@ module projectM1_mm_interconnect_0_router_019
 
 
         if (destid == 0 ) begin
-            src_channel = 41'b000001;
+            src_channel = 42'b0001;
         end
 
         if (destid == 1  && read_transaction) begin
-            src_channel = 41'b000010;
+            src_channel = 42'b0010;
         end
 
         if (destid == 2 ) begin
-            src_channel = 41'b000100;
+            src_channel = 42'b0100;
         end
 
         if (destid == 3  && read_transaction) begin
-            src_channel = 41'b001000;
-        end
-
-        if (destid == 4 ) begin
-            src_channel = 41'b010000;
-        end
-
-        if (destid == 5  && read_transaction) begin
-            src_channel = 41'b100000;
+            src_channel = 42'b1000;
         end
 
 

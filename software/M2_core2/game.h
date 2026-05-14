@@ -41,6 +41,18 @@
 #define STATUS_BAR_Y  PLAY_AREA_H           // 192 — status bar starts here
 #define STATUS_BAR_H  (240 - PLAY_AREA_H)   // 48px status bar
 
+// Scrolling banner reserved at top of screen in game mode
+#define BANNER_H      16    // pixels tall — exactly one tile height
+
+// Shift all game rendering down by BANNER_H
+#define GAME_Y_OFFSET BANNER_H
+
+// Recalculate status bar position to account for banner
+#undef  STATUS_BAR_Y
+#undef  STATUS_BAR_H
+#define STATUS_BAR_Y  (GAME_Y_OFFSET + PLAY_AREA_H)   // 16+192 = 208
+#define STATUS_BAR_H  (FB_HEIGHT - STATUS_BAR_Y)       // 240-208 = 32
+
 // Each door tile has a required camera character stored in door_keys[].
 // Up to 4 doors per floor.
 #define MAX_DOORS     4

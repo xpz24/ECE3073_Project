@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_2' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Wed May 13 14:50:18 SGT 2026
+ * Generated: Thu May 14 14:35:05 SGT 2026
  */
 
 /*
@@ -166,19 +166,19 @@
 #define ALT_NUM_INTERNAL_INTERRUPT_CONTROLLERS 1
 #define ALT_NUM_INTERRUPT_CONTROLLERS 1
 #define ALT_STDERR "/dev/core_2_jtag"
-#define ALT_STDERR_BASE 0x4003178
+#define ALT_STDERR_BASE 0x4003198
 #define ALT_STDERR_DEV core_2_jtag
 #define ALT_STDERR_IS_JTAG_UART
 #define ALT_STDERR_PRESENT
 #define ALT_STDERR_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDIN "/dev/core_2_jtag"
-#define ALT_STDIN_BASE 0x4003178
+#define ALT_STDIN_BASE 0x4003198
 #define ALT_STDIN_DEV core_2_jtag
 #define ALT_STDIN_IS_JTAG_UART
 #define ALT_STDIN_PRESENT
 #define ALT_STDIN_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDOUT "/dev/core_2_jtag"
-#define ALT_STDOUT_BASE 0x4003178
+#define ALT_STDOUT_BASE 0x4003198
 #define ALT_STDOUT_DEV core_2_jtag
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
@@ -192,7 +192,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_1_rx altera_avalon_pio
-#define CORE_2_1_RX_BASE 0x4003150
+#define CORE_2_1_RX_BASE 0x4003170
 #define CORE_2_1_RX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_1_RX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_1_RX_CAPTURE 1
@@ -219,7 +219,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_1_tx altera_avalon_pio
-#define CORE_2_1_TX_BASE 0x4003160
+#define CORE_2_1_TX_BASE 0x4003180
 #define CORE_2_1_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_1_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_1_TX_CAPTURE 0
@@ -246,7 +246,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_3_rx altera_avalon_pio
-#define CORE_2_3_RX_BASE 0x4003130
+#define CORE_2_3_RX_BASE 0x4003150
 #define CORE_2_3_RX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_3_RX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_3_RX_CAPTURE 1
@@ -273,7 +273,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_3_tx altera_avalon_pio
-#define CORE_2_3_TX_BASE 0x4003140
+#define CORE_2_3_TX_BASE 0x4003160
 #define CORE_2_3_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_3_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_3_TX_CAPTURE 0
@@ -295,12 +295,39 @@
 
 
 /*
+ * core_2_buzzer configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_core_2_buzzer altera_avalon_pio
+#define CORE_2_BUZZER_BASE 0x40030e0
+#define CORE_2_BUZZER_BIT_CLEARING_EDGE_REGISTER 0
+#define CORE_2_BUZZER_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define CORE_2_BUZZER_CAPTURE 0
+#define CORE_2_BUZZER_DATA_WIDTH 4
+#define CORE_2_BUZZER_DO_TEST_BENCH_WIRING 0
+#define CORE_2_BUZZER_DRIVEN_SIM_VALUE 0
+#define CORE_2_BUZZER_EDGE_TYPE "NONE"
+#define CORE_2_BUZZER_FREQ 50000000
+#define CORE_2_BUZZER_HAS_IN 0
+#define CORE_2_BUZZER_HAS_OUT 1
+#define CORE_2_BUZZER_HAS_TRI 0
+#define CORE_2_BUZZER_IRQ -1
+#define CORE_2_BUZZER_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define CORE_2_BUZZER_IRQ_TYPE "NONE"
+#define CORE_2_BUZZER_NAME "/dev/core_2_buzzer"
+#define CORE_2_BUZZER_RESET_VALUE 0
+#define CORE_2_BUZZER_SPAN 16
+#define CORE_2_BUZZER_TYPE "altera_avalon_pio"
+
+
+/*
  * core_2_hsync configuration
  *
  */
 
 #define ALT_MODULE_CLASS_core_2_hsync altera_avalon_pio
-#define CORE_2_HSYNC_BASE 0x40030d0
+#define CORE_2_HSYNC_BASE 0x40030f0
 #define CORE_2_HSYNC_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_HSYNC_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_HSYNC_CAPTURE 0
@@ -327,7 +354,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_jtag altera_avalon_jtag_uart
-#define CORE_2_JTAG_BASE 0x4003178
+#define CORE_2_JTAG_BASE 0x4003198
 #define CORE_2_JTAG_IRQ 3
 #define CORE_2_JTAG_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define CORE_2_JTAG_NAME "/dev/core_2_jtag"
@@ -374,7 +401,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_pixel_addr altera_avalon_pio
-#define CORE_2_PIXEL_ADDR_BASE 0x40030f0
+#define CORE_2_PIXEL_ADDR_BASE 0x4003110
 #define CORE_2_PIXEL_ADDR_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_PIXEL_ADDR_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_PIXEL_ADDR_CAPTURE 0
@@ -401,7 +428,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_pixel_data altera_avalon_pio
-#define CORE_2_PIXEL_DATA_BASE 0x4003100
+#define CORE_2_PIXEL_DATA_BASE 0x4003130
 #define CORE_2_PIXEL_DATA_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_PIXEL_DATA_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_PIXEL_DATA_CAPTURE 0
@@ -428,7 +455,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_pixel_wren altera_avalon_pio
-#define CORE_2_PIXEL_WREN_BASE 0x40030e0
+#define CORE_2_PIXEL_WREN_BASE 0x4003100
 #define CORE_2_PIXEL_WREN_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_PIXEL_WREN_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_PIXEL_WREN_CAPTURE 0
@@ -481,7 +508,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_2_vsync altera_avalon_pio
-#define CORE_2_VSYNC_BASE 0x4003120
+#define CORE_2_VSYNC_BASE 0x4003140
 #define CORE_2_VSYNC_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_2_VSYNC_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_2_VSYNC_CAPTURE 0
@@ -654,7 +681,7 @@
  */
 
 #define ALT_MODULE_CLASS_us_counter altera_avalon_pio
-#define US_COUNTER_BASE 0x4003110
+#define US_COUNTER_BASE 0x4003120
 #define US_COUNTER_BIT_CLEARING_EDGE_REGISTER 0
 #define US_COUNTER_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define US_COUNTER_CAPTURE 0

@@ -13,8 +13,8 @@
 #define ACCEL_STACKSIZE   4096
 OS_STK accel_stk[ACCEL_STACKSIZE];
 
-#define UPSIDE_DOWN_THRESH  (-250)
-#define UPRIGHT_THRESH      ( 250)
+#define UPSIDE_DOWN_THRESH  (-240)
+#define UPRIGHT_THRESH      ( 240)
 #define STABLE_COUNT        3
 
 int stable = 0;
@@ -67,9 +67,6 @@ void accel_task(void* pdata) {
 		alt_up_accelerometer_spi_read_x_axis(accel, &x);
 		alt_up_accelerometer_spi_read_y_axis(accel, &y);
 		alt_up_accelerometer_spi_read_z_axis(accel, &z);
-
-//		printf("[ACCEL] X=%ld Y=%ld Z=%ld\n", x, y, z);
-//		for (int i = 0; i < 10000; i++);
 
 		// if emergency not active
 		if (!emergency_active) {

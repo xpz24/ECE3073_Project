@@ -7,7 +7,7 @@
 #include "../M2_core2_bsp/HAL/inc/io.h"
 #include "interrupts.h"
 #include "image_data.h"
-#include "vga_text_render.h"
+#include "vga_gfx.h"
 #include "game_render.h"
 
 // base addresses
@@ -26,6 +26,76 @@
 #define CPU_USAGE_CORE3  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE3_OFFSET))
 
 #define CPU_USAGE_SPEED 300
+
+// buzzer
+#define BUZZER_BASE  CORE_2_BUZZER_BASE
+
+#define NOTE_REST  0
+#define NOTE_C4    1
+#define NOTE_D4    2
+#define NOTE_E4    3
+#define NOTE_F4    4
+#define NOTE_G4    5
+#define NOTE_A4    6
+#define NOTE_B4    7
+#define NOTE_C5    8
+#define NOTE_D5    9
+#define NOTE_E5    10
+#define NOTE_F5    11
+#define NOTE_G5    12
+#define NOTE_A5    13
+#define NOTE_B5    14
+#define NOTE_C6    15
+
+void mario_theme()
+{
+    int notes[] = {
+        NOTE_E5, NOTE_E5, NOTE_REST, NOTE_E5,
+        NOTE_REST, NOTE_C5, NOTE_E5, NOTE_G5,
+        NOTE_REST, NOTE_G4,
+
+        NOTE_C5, NOTE_G4, NOTE_E4,
+        NOTE_A4, NOTE_B4,
+        NOTE_A4, NOTE_G4,
+
+        NOTE_E5, NOTE_G5, NOTE_A5,
+        NOTE_F5, NOTE_G5,
+
+        NOTE_REST,
+        NOTE_E5, NOTE_C5,
+        NOTE_D5, NOTE_B4
+    };
+
+    int durations[] = {
+        150, 150, 150, 150,
+        150, 150, 150, 300,
+        300, 300,
+
+        300, 300, 300,
+        150, 150,
+        150, 150,
+
+        150, 150, 300,
+        150, 150,
+
+        150,
+        150, 150,
+        150, 300
+    };
+
+    int length = sizeof(notes) / sizeof(notes[0]);
+
+    for(int i = 0; i < length; i++)
+    {
+        IOWR(BUZZER_BASE, 0, notes[i]);
+
+        usleep(durations[i] * 1000);
+
+        // brief separation
+        IOWR(BUZZER_BASE, 0, NOTE_REST);
+        usleep(20000);
+    }
+}
 
 // frame buffer dimensions
 #define FB_WIDTH  320
@@ -96,19 +166,14 @@ void vga_task(void *pdata) {
     clear_framebuffer();
 
     // mode flags — mutually exclusive
-    // display_active = 1 : text marquee mode (KEY1)
     // game_active    = 1 : dungeon game mode (KEY0 while display off, or dedicated trigger)
-    int display_active = 0;
     int game_active    = 0;
-
-    // text mode locals
-    int tilt_timer = 0;
-    #define TILT_TIMER 10
 
     // text mode test injection
     static const char test_chars[] = "PLAY MARIO";
-    int test_idx   = 0;
     int test_timer = 0;
+    int test_idx = 0;
+#define TILT_TIMER 10
 
     printf("[VGA] Ready.\n");
 
@@ -124,8 +189,6 @@ void vga_task(void *pdata) {
             if (game_active) {
                 game_draw_map();
                 game_draw_status();
-            } else if (display_active) {
-                vga_text_init();
             } else {
                 clear_framebuffer();
             }
@@ -134,7 +197,6 @@ void vga_task(void *pdata) {
 
         // KEY0:
         //   - in game mode  - restart game
-        //   - in text mode  - clear screen
         //   - idle          - start game
         if (key_flags & (1 << 0)) {
             key_flags &= ~(1 << 0);
@@ -144,14 +206,10 @@ void vga_task(void *pdata) {
                 game_init();
                 game_draw_map();
                 game_draw_status();
-            } else if (display_active) {
-                // leave text mode, clear screen
-                display_active = 0;
-                printf("[VGA] Text mode cleared\n");
-                clear_framebuffer();
             } else {
                 // start game
                 game_active = 1;
+                marquee_pixel_offset = -(FB_WIDTH);
                 printf("[VGA] Game started\n");
                 game_init();
                 game_draw_map();
@@ -162,15 +220,34 @@ void vga_task(void *pdata) {
         // KEY1: toggle text marquee mode (only when game is not active)
         if (key_flags & (1 << 1)) {
             key_flags &= ~(1 << 1);
-            if (!game_active) {
-                display_active = 1;
-                tilt_timer     = 0;
-                printf("[VGA] Text mode on\n");
-                vga_text_init();
-                test_idx   = 0;
-                test_timer = 0;
-            }
+			clear_framebuffer();
+			mario_theme();
         }
+
+        // always feed camera ai character first
+        // test char injection
+		test_timer++;
+		if (test_timer >= 20 && test_idx < (int)(sizeof(test_chars) - 1)) {
+			test_timer = 0;
+			ai_detected_char = test_chars[test_idx];
+			test_idx++;
+		}
+
+		// new character from Grove AI
+		char c = ai_detected_char;
+		if (c != 0x00) {
+			ai_detected_char = 0x00;
+			ticker_push(c);
+			if (game_active) {
+				// also try to unlock a door with this character
+				int door_opened = game_handle_camera(c);
+				if (status_is_dirty()) {
+					game_draw_status();
+					status_snapshot();
+				}
+				if (door_opened) game_draw_map();
+			}
+		}
 
         if (game_active) {
             // game_tick handles tilt via its own game_tilt_timer
@@ -181,45 +258,13 @@ void vga_task(void *pdata) {
             // (handled above in KEY0 block — restart resets state)
         }
 
-        else if (display_active) {
-            // test char injection
-            test_timer++;
-            if (test_timer >= 20 && test_idx < (int)(sizeof(test_chars) - 1)) {
-                test_timer = 0;
-                ai_detected_char = test_chars[test_idx];
-                test_idx++;
-            }
-
-            // new character from Grove AI
-            char c = ai_detected_char;
-            if (c != 0x00) {
-                ai_detected_char = 0x00;
-                vga_text_update(c);
-            }
-
-            // marquee scroll
-            draw_marquee_tick();
-
-            // tilt scrolls history strip — only active in text mode
-            int tilt = tilt_flag;
-            if (tilt == TILT_LEFT || tilt == TILT_RIGHT) {
-                tilt_timer++;
-                if (tilt_timer >= TILT_TIMER) {
-                    tilt_timer = 0;
-                    vga_tilt_scroll(tilt == TILT_LEFT ? +1 : -1);
-                }
-            } else {
-                tilt_timer = 0;
-            }
-        }
-
         cpu_timer++;
         if (cpu_timer >= CPU_USAGE_SPEED) {
             cpu_timer = 0;
             CPU_USAGE_CORE2 = (int)OSCPUUsage;
         }
 
-        OSTimeDly(1);
+        OSTimeDly(5);
     }
 }
 

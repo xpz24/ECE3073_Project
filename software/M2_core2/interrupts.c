@@ -56,8 +56,6 @@ static void rx_1_2_irq_handler(void *context, alt_u32 id)
 	else if (val == TILT_RIGHT)    tilt_flag = TILT_RIGHT;
 	else if (val == TILT_FORWARD)  tilt_flag = TILT_FORWARD;
 	else if (val == TILT_BACKWARD) tilt_flag = TILT_BACKWARD;
-
-	printf("0x0%X\n",val);
 }
 
 void init_rx_1_2_irq(void)
