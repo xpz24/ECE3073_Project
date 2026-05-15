@@ -88,14 +88,90 @@ void mario_theme()
     for(int i = 0; i < length; i++)
     {
         IOWR(BUZZER_BASE, 0, notes[i]);
-
         usleep(durations[i] * 1000);
-
-        // brief separation
         IOWR(BUZZER_BASE, 0, NOTE_REST);
         usleep(20000);
     }
 }
+
+// =========================================================================
+// Non-blocking sound engine
+// =========================================================================
+typedef struct {
+    int note;
+    int duration_ms;
+} SoundNote;
+
+#define SFX_MAX_NOTES 16
+
+typedef struct {
+    SoundNote notes[SFX_MAX_NOTES];
+    int       length;
+    int       index;
+    int       timer_ms;
+    int       playing;
+} SoundPlayer;
+
+static SoundPlayer sfx = {0};
+
+static void sfx_play(const SoundNote *notes, int length) {
+    if (sfx.playing) return;  // don't interrupt current sound
+    int i;
+    for (i = 0; i < length && i < SFX_MAX_NOTES; i++)
+        sfx.notes[i] = notes[i];
+    sfx.length   = length;
+    sfx.index    = 0;
+    sfx.timer_ms = 0;
+    sfx.playing  = 1;
+    IOWR(BUZZER_BASE, 0, sfx.notes[0].note);
+}
+
+// call once per vga_task loop — dt_ms should match OSTimeDly value
+void sfx_tick(int dt_ms) {
+    if (!sfx.playing) return;
+    sfx.timer_ms += dt_ms;
+    if (sfx.timer_ms >= sfx.notes[sfx.index].duration_ms) {
+        sfx.timer_ms = 0;
+        sfx.index++;
+        if (sfx.index >= sfx.length) {
+            sfx.playing = 0;
+            IOWR(BUZZER_BASE, 0, NOTE_REST);
+        } else {
+            IOWR(BUZZER_BASE, 0, sfx.notes[sfx.index].note);
+        }
+    }
+}
+
+// sound definitions
+static const SoundNote SND_KEY[] = {
+    {NOTE_G4,   80}, {NOTE_REST, 20},
+    {NOTE_C5,   80}, {NOTE_REST, 20},
+    {NOTE_E5,  120}, {NOTE_REST, 20}
+};
+static const SoundNote SND_COIN[] = {
+    {NOTE_B4,   60}, {NOTE_REST, 10},
+    {NOTE_E5,   50}, {NOTE_REST, 10},
+    {NOTE_G5,  180}, {NOTE_REST, 20}
+};
+static const SoundNote SND_DOOR[] = {
+    {NOTE_C4,   80}, {NOTE_REST, 15},
+    {NOTE_E4,   80}, {NOTE_REST, 15},
+    {NOTE_G4,   80}, {NOTE_REST, 15},
+    {NOTE_C5,  200}, {NOTE_REST, 20}
+};
+static const SoundNote SND_DAMAGE[] = {
+    {NOTE_B4,   60}, {NOTE_REST, 10},
+    {NOTE_A4,   60}, {NOTE_REST, 10},
+    {NOTE_G4,   60}, {NOTE_REST, 10},
+    {NOTE_E4,  150}, {NOTE_REST, 20}
+};
+
+#define SND_LEN(arr) (int)(sizeof(arr)/sizeof(arr[0]))
+
+void sfx_key_pickup(void)  { sfx_play(SND_KEY,    SND_LEN(SND_KEY));    }
+void sfx_coin_pickup(void) { sfx_play(SND_COIN,   SND_LEN(SND_COIN));   }
+void sfx_door_open(void)   { sfx_play(SND_DOOR,   SND_LEN(SND_DOOR));   }
+void sfx_damage(void)      { sfx_play(SND_DAMAGE, SND_LEN(SND_DAMAGE)); }
 
 // frame buffer dimensions
 #define FB_WIDTH  320
@@ -107,7 +183,7 @@ void mario_theme()
 static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
 
 // task config
-#define VGA_STACKSIZE 4096
+#define VGA_STACKSIZE 16384
 #define VGA_PRIORITY  2
 OS_STK vga_stk[VGA_STACKSIZE];
 
@@ -195,33 +271,49 @@ void vga_task(void *pdata) {
             printf("[VGA] EMERGENCY CLEARED\n\n");
         }
 
-        // KEY0:
-        //   - in game mode  - restart game
-        //   - idle          - start game
+        // KEY0: clears screen and plays mario theme
         if (key_flags & (1 << 0)) {
             key_flags &= ~(1 << 0);
-            if (game_active) {
-                // restart game
-                printf("[VGA] Game restart\n");
-                game_init();
-                game_draw_map();
-                game_draw_status();
-            } else {
-                // start game
-                game_active = 1;
-                marquee_pixel_offset = -(FB_WIDTH);
-                printf("[VGA] Game started\n");
-                game_init();
-                game_draw_map();
-                game_draw_status();
-            }
+            banner_visible = 0;
+            ticker_init();
+            marquee_pixel_offset = -(FB_WIDTH);
+            clear_framebuffer();
+            banner_dirty = 1;
+			mario_theme();
         }
 
-        // KEY1: toggle text marquee mode (only when game is not active)
+        // KEY1:
+        //   - in game mode  - restart game
+		//   - idle          - start game
         if (key_flags & (1 << 1)) {
             key_flags &= ~(1 << 1);
-			clear_framebuffer();
-			mario_theme();
+            test_timer = 0;
+			test_idx = 0;
+			ticker_init();
+            if (game_active) {
+				// restart game
+            	test_timer = 0;
+				test_idx = 0;
+				banner_visible = 1;
+				marquee_pixel_offset = -(FB_WIDTH);
+				marquee_accumulator  = 0;
+				banner_dirty = 1;
+				printf("[VGA] Game restart\n");
+				game_init();
+				game_draw_map();
+				game_draw_status();
+			} else {
+				// start game
+				game_active = 1;
+				banner_visible = 1;
+				marquee_pixel_offset = -(FB_WIDTH);
+				marquee_accumulator  = 0;
+				banner_dirty = 1;
+				printf("[VGA] Game started\n");
+				game_init();
+				game_draw_map();
+				game_draw_status();
+			}
         }
 
         // always feed camera ai character first
@@ -257,6 +349,8 @@ void vga_task(void *pdata) {
             // exit game on GAME_OVER or GAME_WIN after a long press of KEY0
             // (handled above in KEY0 block — restart resets state)
         }
+
+        sfx_tick(5);
 
         cpu_timer++;
         if (cpu_timer >= CPU_USAGE_SPEED) {

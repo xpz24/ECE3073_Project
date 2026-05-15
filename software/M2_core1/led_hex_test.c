@@ -301,7 +301,7 @@ void hex_task(void* pdata) {
         } else IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 0);
 
         // small delay to prevent cpu hogging
-        OSTimeDly(4);
+        OSTimeDly(5);
     }
 }
 

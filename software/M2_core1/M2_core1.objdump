@@ -1442,7 +1442,7 @@ void accel_task(void* pdata) {
 		else {
 			if (z > UPRIGHT_THRESH) {
      4e4:	e0bffe17 	ldw	r2,-8(fp)
-     4e8:	10803c50 	cmplti	r2,r2,241
+     4e8:	10803750 	cmplti	r2,r2,221
      4ec:	1000341e 	bne	r2,zero,5c0 <accel_task+0x348>
 				stable++;
      4f0:	d0a72417 	ldw	r2,-25456(gp)
@@ -2509,8 +2509,8 @@ void hex_task(void* pdata) {
     1048:	10c00035 	stwio	r3,0(r2)
 
         // small delay to prevent cpu hogging
-        OSTimeDly(4);
-    104c:	01000104 	movi	r4,4
+        OSTimeDly(5);
+    104c:	01000144 	movi	r4,5
     1050:	00161e80 	call	161e8 <OSTimeDly>
     }
     1054:	003f4906 	br	d7c <__ram_exceptions_end+0xfbfffb48>

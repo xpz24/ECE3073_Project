@@ -182,25 +182,37 @@ static void wait_for_blanking(void) {
 #define BANNER_BG     0x112   // dark blue
 
 // Pixels to advance per tick — increase for faster scroll, decrease for slower
-#define MARQUEE_STEP  2
+#define MARQUEE_STEP_NUM  1   // numerator   — advance 1 pixel
+#define MARQUEE_STEP_DEN  3   // denominator — every 3 frames
 
 static int marquee_pixel_offset = -(FB_WIDTH);
+static int banner_visible = 0;
+static int marquee_accumulator  = 0;
+static int banner_dirty = 1;
 
 static void draw_banner_tick(void) {
+	if (!banner_visible) return;
+
     if (ticker.count == 0) {
         fill_rect(0, 0, FB_WIDTH, BANNER_H, BANNER_BG);
         return;
     }
 
     int total_width = ticker.count * BANNER_SLOT_W;
-    int cy          = (BANNER_H - FONT_H * BANNER_SCALE) / 2;
+    int cy          = (BANNER_H - FONT_H * BANNER_SCALE) / 2 + 2;
     int char_h      = FONT_H * BANNER_SCALE;
 
-    marquee_pixel_offset += MARQUEE_STEP;
-    if (marquee_pixel_offset >= total_width + 4)
-        marquee_pixel_offset = -(FB_WIDTH);
+	marquee_accumulator += MARQUEE_STEP_NUM;
+	if (marquee_accumulator >= MARQUEE_STEP_DEN) {
+	    marquee_accumulator = 0;
+	    marquee_pixel_offset++;
+	    if (marquee_pixel_offset >= total_width + 4)
+	        marquee_pixel_offset = -(FB_WIDTH);
+	    banner_dirty = 1;
+	}
 
-    wait_for_blanking();
+	if (!banner_dirty) return;  // nothing changed, skip all pixel writes
+	banner_dirty = 0;
 
     int x;
     for (x = 0; x < FB_WIDTH; x++) {
