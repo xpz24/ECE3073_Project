@@ -14,7 +14,7 @@
 OS_STK accel_stk[ACCEL_STACKSIZE];
 
 #define UPSIDE_DOWN_THRESH  (-240)
-#define UPRIGHT_THRESH      ( 240)
+#define UPRIGHT_THRESH      ( 220)
 #define STABLE_COUNT        3
 
 int stable = 0;

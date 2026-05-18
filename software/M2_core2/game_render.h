@@ -266,12 +266,11 @@ static void move_player_smooth(int dcol, int drow) {
 // tilt_flag and ai_detected_char are read from interrupts.h globals.
 
 static int  game_tilt_timer   = 0;
-#define     GAME_TILT_DELAY   20    // ticks between tilt-triggered moves
+#define     GAME_TILT_DELAY   40    // ticks between tilt-triggered moves
 static int  game_chest_timer  = 0;
 #define     GAME_CHEST_SHOW   60   // ticks to display chest message
 
 static void game_tick(void) {
-
 	draw_banner_tick();
 
     // camera input (any state) — only redraw map if a door was actually opened

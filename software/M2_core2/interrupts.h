@@ -7,6 +7,7 @@
 extern volatile int key_flags;
 extern volatile int emergency_flag;
 extern volatile int tilt_flag;
+extern volatile int capture_flag;
 
 // tilting
 #define TILT_NORMAL    0x4

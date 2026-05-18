@@ -6,6 +6,12 @@
 
 #include <stdint.h>
 
+// forward declarations
+extern void sfx_key_pickup(void);
+extern void sfx_coin_pickup(void);
+extern void sfx_door_open(void);
+extern void sfx_damage(void);
+
 #define TILE_EMPTY    0   // walkable floor
 #define TILE_WALL     1   // impassable wall
 #define TILE_DOOR     2   // locked — requires camera letter to open
@@ -236,6 +242,7 @@ static int game_move(int dcol, int drow) {
                     cur_doors[d].open = 1;
                     cur_map[nr][nc]   = TILE_EMPTY;
                     door_open = 1;
+                    sfx_door_open();
                     break;
                 }
                 // need camera input
@@ -262,14 +269,17 @@ static int game_move(int dcol, int drow) {
         case TILE_CHEST:
             player.score += 50;
             cur_map[nr][nc] = TILE_EMPTY;
+            sfx_coin_pickup();
             game_state = GAME_CHEST;
             break;
         case TILE_KEY:
             player.keys++;
             cur_map[nr][nc] = TILE_EMPTY;
+            sfx_key_pickup();
             break;
         case TILE_TRAP:
             player.hp--;
+            sfx_damage();
             if (player.hp <= 0) game_state = GAME_OVER;
             break;
         case TILE_EXIT:

@@ -21,6 +21,11 @@
 #define TX_1_2_BASE CORE_1_2_TX_BASE
 #define SDRAM_BASE SHARED_SDRAM_BASE
 
+// CAPTURED TEXT
+#define CAPTURE_TEXT_OFFSET  0x200
+#define CAPTURE_TEXT_MAX     256
+#define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
+
 // 7-SEGMENT DICTIONARY
 #define SEG_0     0x40
 #define SEG_1     0x79
@@ -194,6 +199,8 @@ void hex_task(void* pdata) {
     int cpu_timer      = 0;
     int cpu_core       = 1;
     int cpu_cycle      = 0; // auto cycle between cores
+    int sw4_prev       = 0;
+    int sw4_curr       = 0;
 
     CPU_USAGE_CORE1    = (int)OSCPUUsage;
 
@@ -295,13 +302,33 @@ void hex_task(void* pdata) {
             	cpu_timer = 0;
             }
         }
+
         // SW3 - enable buzzer
         if (sw & 0x8) {
         	IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 1);
         } else IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 0);
 
+        // SW4 - enable capture message
+        sw4_curr = (sw & 0x10) ? 1 : 0;
+        if (sw4_curr && !sw4_prev) {
+        	tx_pulse(TX_1_2_BASE, 0x40);
+        	// read from SDRAM into a local buffer (can't pass volatile char* directly to process_string)
+			static char hex_capture_buf[CAPTURE_TEXT_MAX];
+			int i;
+			for (i = 0; i < CAPTURE_TEXT_MAX - 1 && CAPTURE_TEXT[i] != '\0'; i++)
+				hex_capture_buf[i] = CAPTURE_TEXT[i];
+			hex_capture_buf[i] = '\0';
+
+			set_hex_message(hex_capture_buf);
+			total          = processed_len + DISPLAY_WIDTH;
+			scroll_pos     = 0;
+			scroll_counter = 0;
+			printf("[HEX] Capture loaded: %s\n", hex_capture_buf);
+        }
+        sw4_prev = sw4_curr;
+
         // small delay to prevent cpu hogging
-        OSTimeDly(4);
+        OSTimeDly(5);
     }
 }
 
