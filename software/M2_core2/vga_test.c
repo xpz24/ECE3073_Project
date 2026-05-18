@@ -27,6 +27,11 @@
 
 #define CPU_USAGE_SPEED 300
 
+// SDRAM capture text buffer
+#define CAPTURE_TEXT_OFFSET  0x200
+#define CAPTURE_TEXT_MAX     256
+#define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
+
 // buzzer
 #define BUZZER_BASE  CORE_2_BUZZER_BASE
 
@@ -182,6 +187,8 @@ void sfx_damage(void)      { sfx_play(SND_DAMAGE, SND_LEN(SND_DAMAGE)); }
 #define EMERGENCY_FB_ADDR  0x3DA000
 static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
 
+#define TILT_TIMER 10
+
 // task config
 #define VGA_STACKSIZE 16384
 #define VGA_PRIORITY  2
@@ -241,15 +248,15 @@ void vga_task(void *pdata) {
 
     clear_framebuffer();
 
-    // mode flags — mutually exclusive
-    // game_active    = 1 : dungeon game mode (KEY0 while display off, or dedicated trigger)
+    // mode flags
     int game_active    = 0;
 
-    // text mode test injection
-    static const char test_chars[] = "PLAY MARIO";
-    int test_timer = 0;
-    int test_idx = 0;
-#define TILT_TIMER 10
+    // write sim string to SDRAM once at startup, before the while loop
+    static const char sim_capture[] = "PLAY GAME";
+    int i;
+	for (i = 0; i < (int)sizeof(sim_capture); i++)
+		CAPTURE_TEXT[i] = sim_capture[i];
+	printf("[VGA] Sim capture preloaded: %s\n", sim_capture);
 
     printf("[VGA] Ready.\n");
 
@@ -279,7 +286,6 @@ void vga_task(void *pdata) {
             marquee_pixel_offset = -(FB_WIDTH);
             clear_framebuffer();
             banner_dirty = 1;
-			mario_theme();
         }
 
         // KEY1:
@@ -287,13 +293,9 @@ void vga_task(void *pdata) {
 		//   - idle          - start game
         if (key_flags & (1 << 1)) {
             key_flags &= ~(1 << 1);
-            test_timer = 0;
-			test_idx = 0;
 			ticker_init();
             if (game_active) {
 				// restart game
-            	test_timer = 0;
-				test_idx = 0;
 				banner_visible = 1;
 				marquee_pixel_offset = -(FB_WIDTH);
 				marquee_accumulator  = 0;
@@ -316,30 +318,24 @@ void vga_task(void *pdata) {
 			}
         }
 
-        // always feed camera ai character first
-        // test char injection
-		test_timer++;
-		if (test_timer >= 20 && test_idx < (int)(sizeof(test_chars) - 1)) {
-			test_timer = 0;
-			ai_detected_char = test_chars[test_idx];
-			test_idx++;
-		}
+        // capture_flag: load CAPTURE_TEXT from SDRAM into ticker and start scrolling
+        if (capture_flag) {
+            capture_flag = 0;
 
-		// new character from Grove AI
-		char c = ai_detected_char;
-		if (c != 0x00) {
-			ai_detected_char = 0x00;
-			ticker_push(c);
-			if (game_active) {
-				// also try to unlock a door with this character
-				int door_opened = game_handle_camera(c);
-				if (status_is_dirty()) {
-					game_draw_status();
-					status_snapshot();
-				}
-				if (door_opened) game_draw_map();
-			}
-		}
+            ticker_init();
+            int i = 0;
+            while (i < CAPTURE_TEXT_MAX - 1 && CAPTURE_TEXT[i] != '\0') {
+                ticker_push(CAPTURE_TEXT[i]);
+                i++;
+            }
+
+            marquee_pixel_offset = -(FB_WIDTH);
+            marquee_accumulator  = 0;
+            banner_visible = 1;
+            banner_dirty   = 1;
+
+            printf("[VGA] Banner loaded: %d chars\n", i);
+        }
 
         if (game_active) {
             // game_tick handles tilt via its own game_tilt_timer

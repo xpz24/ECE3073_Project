@@ -1,9 +1,9 @@
-16:46:43 **** Incremental Build of configuration Nios II for project M2_core3 ****
+21:40:50 **** Incremental Build of configuration Nios II for project M2_core3 ****
 make all 
 Info: Building ../M2_core3_bsp/
 C:/intelFPGA_lite/18.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/make --no-print-directory -C ../M2_core3_bsp/
 [BSP build complete]
 [M2_core3 build complete]
 
-16:46:44 Build Finished (took 1s.125ms)
+21:40:51 Build Finished (took 642ms)
 

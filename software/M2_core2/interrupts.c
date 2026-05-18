@@ -14,6 +14,7 @@
 volatile int key_flags = 0;
 volatile int emergency_flag = 0;
 volatile int tilt_flag = 0;
+volatile int capture_flag = 0;
 
 // RX flag values
 #define RX_KEY0          0x1
@@ -21,6 +22,8 @@ volatile int tilt_flag = 0;
 
 #define EMERGENCY_START  0x1
 #define EMERGENCY_CLEAR  0x2
+
+#define CAPTURE_FLAG  0x40
 
 // rx_3_2_irq_handler
 static void rx_3_2_irq_handler(void *context, alt_u32 id)
@@ -56,6 +59,8 @@ static void rx_1_2_irq_handler(void *context, alt_u32 id)
 	else if (val == TILT_RIGHT)    tilt_flag = TILT_RIGHT;
 	else if (val == TILT_FORWARD)  tilt_flag = TILT_FORWARD;
 	else if (val == TILT_BACKWARD) tilt_flag = TILT_BACKWARD;
+	// capture flag
+	if (val == CAPTURE_FLAG) capture_flag = 1;
 }
 
 void init_rx_1_2_irq(void)
