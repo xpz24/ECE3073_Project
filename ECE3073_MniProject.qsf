@@ -452,5 +452,5 @@ set_global_assignment -name SDC_FILE project_timing.sdc
 set_global_assignment -name QIP_FILE PLL_DRAM.qip
 set_global_assignment -name QIP_FILE PLL_VGA.qip
 set_global_assignment -name QIP_FILE RAM_VGA.qip
-set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp

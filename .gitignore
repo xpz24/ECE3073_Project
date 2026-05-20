@@ -1,5 +1,8 @@
 # # Manual Ignores
 *.pdf
+pythonScripts/captured_frames/
+pythonScripts/Character_Detection_Swift-YOLO_192/
+pythonScripts/runs/
 
 # # PYTHON
 # Byte-compiled / optimized / DLL files
