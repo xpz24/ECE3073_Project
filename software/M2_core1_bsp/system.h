@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_1' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Thu May 14 14:34:59 SGT 2026
+ * Generated: Sun May 24 22:39:15 SGT 2026
  */
 
 /*
@@ -159,19 +159,19 @@
 #define ALT_NUM_INTERNAL_INTERRUPT_CONTROLLERS 1
 #define ALT_NUM_INTERRUPT_CONTROLLERS 1
 #define ALT_STDERR "/dev/core_1_jtag"
-#define ALT_STDERR_BASE 0x40031b8
+#define ALT_STDERR_BASE 0x4003198
 #define ALT_STDERR_DEV core_1_jtag
 #define ALT_STDERR_IS_JTAG_UART
 #define ALT_STDERR_PRESENT
 #define ALT_STDERR_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDIN "/dev/core_1_jtag"
-#define ALT_STDIN_BASE 0x40031b8
+#define ALT_STDIN_BASE 0x4003198
 #define ALT_STDIN_DEV core_1_jtag
 #define ALT_STDIN_IS_JTAG_UART
 #define ALT_STDIN_PRESENT
 #define ALT_STDIN_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDOUT "/dev/core_1_jtag"
-#define ALT_STDOUT_BASE 0x40031b8
+#define ALT_STDOUT_BASE 0x4003198
 #define ALT_STDOUT_DEV core_1_jtag
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
@@ -185,7 +185,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_2_rx altera_avalon_pio
-#define CORE_1_2_RX_BASE 0x4003130
+#define CORE_1_2_RX_BASE 0x4003120
 #define CORE_1_2_RX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_2_RX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_2_RX_CAPTURE 1
@@ -212,7 +212,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_2_tx altera_avalon_pio
-#define CORE_1_2_TX_BASE 0x4003140
+#define CORE_1_2_TX_BASE 0x4003130
 #define CORE_1_2_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_2_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_2_TX_CAPTURE 0
@@ -239,7 +239,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_3_rx altera_avalon_pio
-#define CORE_1_3_RX_BASE 0x4003100
+#define CORE_1_3_RX_BASE 0x40030f0
 #define CORE_1_3_RX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_3_RX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_3_RX_CAPTURE 1
@@ -266,7 +266,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_3_tx altera_avalon_pio
-#define CORE_1_3_TX_BASE 0x4003110
+#define CORE_1_3_TX_BASE 0x4003100
 #define CORE_1_3_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_3_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_3_TX_CAPTURE 0
@@ -307,7 +307,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_buzzer_enable altera_avalon_pio
-#define CORE_1_BUZZER_ENABLE_BASE 0x40030f0
+#define CORE_1_BUZZER_ENABLE_BASE 0x40030e0
 #define CORE_1_BUZZER_ENABLE_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_BUZZER_ENABLE_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_BUZZER_ENABLE_CAPTURE 0
@@ -334,7 +334,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_hex_hi altera_avalon_pio
-#define CORE_1_HEX_HI_BASE 0x4003160
+#define CORE_1_HEX_HI_BASE 0x4003140
 #define CORE_1_HEX_HI_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_HEX_HI_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_HEX_HI_CAPTURE 0
@@ -361,7 +361,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_hex_lo altera_avalon_pio
-#define CORE_1_HEX_LO_BASE 0x4003170
+#define CORE_1_HEX_LO_BASE 0x4003150
 #define CORE_1_HEX_LO_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_HEX_LO_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_HEX_LO_CAPTURE 0
@@ -388,7 +388,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_jtag altera_avalon_jtag_uart
-#define CORE_1_JTAG_BASE 0x40031b8
+#define CORE_1_JTAG_BASE 0x4003198
 #define CORE_1_JTAG_IRQ 5
 #define CORE_1_JTAG_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define CORE_1_JTAG_NAME "/dev/core_1_jtag"
@@ -406,7 +406,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_ledr altera_avalon_pio
-#define CORE_1_LEDR_BASE 0x4003180
+#define CORE_1_LEDR_BASE 0x4003160
 #define CORE_1_LEDR_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_LEDR_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_LEDR_CAPTURE 0
@@ -462,7 +462,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_1_sw altera_avalon_pio
-#define CORE_1_SW_BASE 0x4003190
+#define CORE_1_SW_BASE 0x4003170
 #define CORE_1_SW_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_1_SW_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_1_SW_CAPTURE 1
@@ -510,33 +510,6 @@
 
 
 /*
- * core_1_traffic_led configuration
- *
- */
-
-#define ALT_MODULE_CLASS_core_1_traffic_led altera_avalon_pio
-#define CORE_1_TRAFFIC_LED_BASE 0x4003150
-#define CORE_1_TRAFFIC_LED_BIT_CLEARING_EDGE_REGISTER 0
-#define CORE_1_TRAFFIC_LED_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define CORE_1_TRAFFIC_LED_CAPTURE 0
-#define CORE_1_TRAFFIC_LED_DATA_WIDTH 3
-#define CORE_1_TRAFFIC_LED_DO_TEST_BENCH_WIRING 0
-#define CORE_1_TRAFFIC_LED_DRIVEN_SIM_VALUE 0
-#define CORE_1_TRAFFIC_LED_EDGE_TYPE "NONE"
-#define CORE_1_TRAFFIC_LED_FREQ 50000000
-#define CORE_1_TRAFFIC_LED_HAS_IN 0
-#define CORE_1_TRAFFIC_LED_HAS_OUT 1
-#define CORE_1_TRAFFIC_LED_HAS_TRI 0
-#define CORE_1_TRAFFIC_LED_IRQ -1
-#define CORE_1_TRAFFIC_LED_IRQ_INTERRUPT_CONTROLLER_ID -1
-#define CORE_1_TRAFFIC_LED_IRQ_TYPE "NONE"
-#define CORE_1_TRAFFIC_LED_NAME "/dev/core_1_traffic_led"
-#define CORE_1_TRAFFIC_LED_RESET_VALUE 0
-#define CORE_1_TRAFFIC_LED_SPAN 16
-#define CORE_1_TRAFFIC_LED_TYPE "altera_avalon_pio"
-
-
-/*
  * hal configuration
  *
  */
@@ -553,7 +526,7 @@
  */
 
 #define ALT_MODULE_CLASS_mutex_0 altera_avalon_mutex
-#define MUTEX_0_BASE 0x40031b0
+#define MUTEX_0_BASE 0x4003190
 #define MUTEX_0_IRQ -1
 #define MUTEX_0_IRQ_INTERRUPT_CONTROLLER_ID -1
 #define MUTEX_0_NAME "/dev/mutex_0"
@@ -688,7 +661,7 @@
  */
 
 #define ALT_MODULE_CLASS_us_counter altera_avalon_pio
-#define US_COUNTER_BASE 0x4003120
+#define US_COUNTER_BASE 0x4003110
 #define US_COUNTER_BIT_CLEARING_EDGE_REGISTER 0
 #define US_COUNTER_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define US_COUNTER_CAPTURE 0

@@ -4,7 +4,7 @@
 			accel_I2C_SCLK       : out   std_logic;                                        -- I2C_SCLK
 			accel_G_SENSOR_CS_N  : out   std_logic;                                        -- G_SENSOR_CS_N
 			accel_G_SENSOR_INT   : in    std_logic                     := 'X';             -- G_SENSOR_INT
-			buzzer_export        : out   std_logic_vector(3 downto 0);                     -- export
+			buzzer_export        : out   std_logic_vector(4 downto 0);                     -- export
 			buzzer_enable_export : out   std_logic;                                        -- export
 			clk_clk              : in    std_logic                     := 'X';             -- clk
 			core_2_hsync_export  : in    std_logic                     := 'X';             -- export

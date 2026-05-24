@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>ucosii</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>May 18, 2026 9:39:00 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1779111540949</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>May 25, 2026 12:04:26 AM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1779638666689</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\cklie\OneDrive\Documents\Academic\Monash\Y3\ECE3073\Quartus\Project\software\M2_core1_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\projectM1.sopcinfo</SopcDesignFile>
@@ -1782,79 +1782,73 @@
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_buzzer_enable</slaveDescriptor>
-                <addressRange>0x040030F0 - 0x040030FF</addressRange>
+                <addressRange>0x040030E0 - 0x040030EF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_3_rx</slaveDescriptor>
-                <addressRange>0x04003100 - 0x0400310F</addressRange>
+                <addressRange>0x040030F0 - 0x040030FF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_3_tx</slaveDescriptor>
-                <addressRange>0x04003110 - 0x0400311F</addressRange>
+                <addressRange>0x04003100 - 0x0400310F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>us_counter</slaveDescriptor>
-                <addressRange>0x04003120 - 0x0400312F</addressRange>
+                <addressRange>0x04003110 - 0x0400311F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_2_rx</slaveDescriptor>
-                <addressRange>0x04003130 - 0x0400313F</addressRange>
+                <addressRange>0x04003120 - 0x0400312F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_2_tx</slaveDescriptor>
-                <addressRange>0x04003140 - 0x0400314F</addressRange>
-                <addressSpan>16</addressSpan>
-                <attributes/>
-        </MemoryMap>
-        <MemoryMap>
-                <slaveDescriptor>core_1_traffic_led</slaveDescriptor>
-                <addressRange>0x04003150 - 0x0400315F</addressRange>
+                <addressRange>0x04003130 - 0x0400313F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_hex_hi</slaveDescriptor>
-                <addressRange>0x04003160 - 0x0400316F</addressRange>
+                <addressRange>0x04003140 - 0x0400314F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_hex_lo</slaveDescriptor>
-                <addressRange>0x04003170 - 0x0400317F</addressRange>
+                <addressRange>0x04003150 - 0x0400315F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_ledr</slaveDescriptor>
-                <addressRange>0x04003180 - 0x0400318F</addressRange>
+                <addressRange>0x04003160 - 0x0400316F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_sw</slaveDescriptor>
-                <addressRange>0x04003190 - 0x0400319F</addressRange>
+                <addressRange>0x04003170 - 0x0400317F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>mutex_0</slaveDescriptor>
-                <addressRange>0x040031B0 - 0x040031B7</addressRange>
+                <addressRange>0x04003190 - 0x04003197</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>core_1_jtag</slaveDescriptor>
-                <addressRange>0x040031B8 - 0x040031BF</addressRange>
+                <addressRange>0x04003198 - 0x0400319F</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes>printable</attributes>
         </MemoryMap>

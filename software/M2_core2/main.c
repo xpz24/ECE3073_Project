@@ -9,6 +9,7 @@
 
 // forward declarations
 void vga_init(void);
+void audio_led_init(void);
 
 // start task
 #define START_PRIORITY  1
@@ -26,6 +27,7 @@ void start_task(void* pdata) {
 	alt_irq_enable_all(1);
 
 	vga_init();
+	audio_led_init();
 
     printf("Start task deleting itself\n");
     OSTaskDel(OS_PRIO_SELF);

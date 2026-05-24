@@ -15,7 +15,6 @@
 #define HEX_LO_BASE CORE_1_HEX_LO_BASE
 #define HEX_HI_BASE CORE_1_HEX_HI_BASE
 #define BUZZER_EN_BASE CORE_1_BUZZER_ENABLE_BASE
-#define TRAFFIC_LED_BASE CORE_1_TRAFFIC_LED_BASE
 #define TX_BASE CORE_1_3_TX_BASE
 #define RX_BASE CORE_1_3_RX_BASE
 #define TX_1_2_BASE CORE_1_2_TX_BASE
@@ -255,8 +254,6 @@ void hex_task(void* pdata) {
 			total = processed_len + DISPLAY_WIDTH;
             scroll_pos     = 0;
             scroll_counter = 0;
-            traffic_led = 0;
-            IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, traffic_led);
         }
         // SW0 on - scroll/pause message
         else {

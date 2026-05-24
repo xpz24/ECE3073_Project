@@ -75,7 +75,7 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
  27 .jdi          0000e75f  00000000  00000000  000886b2  2**0
                   CONTENTS, READONLY
- 28 .sopcinfo     00167a60  00000000  00000000  00096e11  2**0
+ 28 .sopcinfo     00167748  00000000  00000000  00096e11  2**0
                   CONTENTS, READONLY
 SYMBOL TABLE:
 04001000 l    d  .entry	00000000 .entry
@@ -1491,7 +1491,7 @@ static inline alt_u32 get_us(void) {
   600548:	d839883a 	mov	fp,sp
     return IORD_ALTERA_AVALON_PIO_DATA(COUNTER_BASE);
   60054c:	00810034 	movhi	r2,1024
-  600550:	108c4804 	addi	r2,r2,12576
+  600550:	108c4404 	addi	r2,r2,12560
   600554:	10800037 	ldwio	r2,0(r2)
 }
   600558:	e037883a 	mov	sp,fp
@@ -1566,7 +1566,7 @@ void spi_task(void* pdata) {
 			tx_pulse(TX_3_1_BASE, TX_KEY0);
   6005e4:	01400044 	movi	r5,1
   6005e8:	01010034 	movhi	r4,1024
-  6005ec:	210c4404 	addi	r4,r4,12560
+  6005ec:	210c4804 	addi	r4,r4,12576
   6005f0:	06003340 	call	600334 <tx_pulse>
 			end = get_us();
   6005f4:	06005400 	call	600540 <get_us>
@@ -1606,7 +1606,7 @@ void spi_task(void* pdata) {
 			tx_pulse(TX_3_1_BASE, TX_KEY1);
   60064c:	01400084 	movi	r5,2
   600650:	01010034 	movhi	r4,1024
-  600654:	210c4404 	addi	r4,r4,12560
+  600654:	210c4804 	addi	r4,r4,12576
   600658:	06003340 	call	600334 <tx_pulse>
 			end = get_us();
   60065c:	06005400 	call	600540 <get_us>

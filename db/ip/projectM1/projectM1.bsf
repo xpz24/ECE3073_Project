@@ -96,8 +96,8 @@ refer to the applicable agreement for further details.
 	(port
 		(pt 0 160)
 		(output)
-		(text "buzzer_export[3..0]" (rect 0 0 75 12)(font "Arial" (font_size 8)))
-		(text "buzzer_export[3..0]" (rect 4 149 118 160)(font "Arial" (font_size 8)))
+		(text "buzzer_export[4..0]" (rect 0 0 76 12)(font "Arial" (font_size 8)))
+		(text "buzzer_export[4..0]" (rect 4 149 118 160)(font "Arial" (font_size 8)))
 		(line (pt 0 160)(pt 144 160)(line_width 3))
 	)
 	(port

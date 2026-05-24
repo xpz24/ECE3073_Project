@@ -51,6 +51,14 @@
 #define NOTE_A5    13
 #define NOTE_B5    14
 #define NOTE_C6    15
+#define NOTE_D6    16
+#define NOTE_E6    17
+#define NOTE_F6    18
+#define NOTE_A3    19
+#define NOTE_B3    20
+// index 21 unused (pad slot)
+#define NOTE_CS4   22   // C#4
+#define NOTE_EB4   23   // Eb4
 
 void mario_theme()
 {
@@ -107,7 +115,7 @@ typedef struct {
     int duration_ms;
 } SoundNote;
 
-#define SFX_MAX_NOTES 16
+#define SFX_MAX_NOTES 20
 
 typedef struct {
     SoundNote notes[SFX_MAX_NOTES];
@@ -121,6 +129,17 @@ static SoundPlayer sfx = {0};
 
 static void sfx_play(const SoundNote *notes, int length) {
     if (sfx.playing) return;  // don't interrupt current sound
+    int i;
+    for (i = 0; i < length && i < SFX_MAX_NOTES; i++)
+        sfx.notes[i] = notes[i];
+    sfx.length   = length;
+    sfx.index    = 0;
+    sfx.timer_ms = 0;
+    sfx.playing  = 1;
+    IOWR(BUZZER_BASE, 0, sfx.notes[0].note);
+}
+
+static void sfx_play_force(const SoundNote *notes, int length) {
     int i;
     for (i = 0; i < length && i < SFX_MAX_NOTES; i++)
         sfx.notes[i] = notes[i];
@@ -148,35 +167,64 @@ void sfx_tick(int dt_ms) {
 }
 
 // sound definitions
-static const SoundNote SND_KEY[] = {
-    {NOTE_G4,   80}, {NOTE_REST, 20},
-    {NOTE_C5,   80}, {NOTE_REST, 20},
-    {NOTE_E5,  120}, {NOTE_REST, 20}
-};
+// Mario coin
 static const SoundNote SND_COIN[] = {
-    {NOTE_B4,   60}, {NOTE_REST, 10},
-    {NOTE_E5,   50}, {NOTE_REST, 10},
-    {NOTE_G5,  180}, {NOTE_REST, 20}
+    {NOTE_B5,   50}, {NOTE_REST,  5},
+    {NOTE_C6,  230}, {NOTE_REST, 20}
 };
-static const SoundNote SND_DOOR[] = {
-    {NOTE_C4,   80}, {NOTE_REST, 15},
-    {NOTE_E4,   80}, {NOTE_REST, 15},
-    {NOTE_G4,   80}, {NOTE_REST, 15},
-    {NOTE_C5,  200}, {NOTE_REST, 20}
-};
+
+// Minecraft "oof"
 static const SoundNote SND_DAMAGE[] = {
-    {NOTE_B4,   60}, {NOTE_REST, 10},
-    {NOTE_A4,   60}, {NOTE_REST, 10},
-    {NOTE_G4,   60}, {NOTE_REST, 10},
-    {NOTE_E4,  150}, {NOTE_REST, 20}
+    {NOTE_A5,   30}, {NOTE_REST,  5},
+    {NOTE_F5,   30}, {NOTE_REST,  5},
+    {NOTE_C5,   30}, {NOTE_REST,  5},
+    {NOTE_EB4,  40}, {NOTE_REST,  5},
+    {NOTE_B3,   90}, {NOTE_REST, 10}
+};
+
+// Minecraft wooden door
+static const SoundNote SND_DOOR[] = {
+	{NOTE_E4,   80}, {NOTE_REST, 20},
+	{NOTE_D4,  100}, {NOTE_REST, 80},
+	{NOTE_E4,   60}, {NOTE_REST, 20},
+	{NOTE_D4,   80}, {NOTE_REST, 20}
+};
+
+// Key pickup
+static const SoundNote SND_KEY[] = {
+    {NOTE_E5,   55}, {NOTE_REST, 10},
+    {NOTE_G5,   55}, {NOTE_REST, 10},
+    {NOTE_B5,   55}, {NOTE_REST, 10},
+    {NOTE_E6,  130}, {NOTE_REST, 20}
+};
+
+// Next floor
+static const SoundNote SND_NEXTFLOOR[] = {
+    {NOTE_C5,   80}, {NOTE_REST, 10},
+    {NOTE_E5,   80}, {NOTE_REST, 10},
+    {NOTE_G5,   80}, {NOTE_REST, 10},
+    {NOTE_C6,   80}, {NOTE_REST, 10},
+    {NOTE_E6,  200}, {NOTE_REST, 20}
+};
+
+// Game over
+static const SoundNote SND_GAMEOVER[] = {
+    {NOTE_B4,  150}, {NOTE_REST, 20},
+    {NOTE_A4,  150}, {NOTE_REST, 20},
+    {NOTE_G4,  150}, {NOTE_REST, 20},
+    {NOTE_E4,  150}, {NOTE_REST, 20},
+    {NOTE_D4,  200}, {NOTE_REST, 30},
+    {NOTE_C4,  400}, {NOTE_REST, 20}
 };
 
 #define SND_LEN(arr) (int)(sizeof(arr)/sizeof(arr[0]))
 
-void sfx_key_pickup(void)  { sfx_play(SND_KEY,    SND_LEN(SND_KEY));    }
-void sfx_coin_pickup(void) { sfx_play(SND_COIN,   SND_LEN(SND_COIN));   }
-void sfx_door_open(void)   { sfx_play(SND_DOOR,   SND_LEN(SND_DOOR));   }
-void sfx_damage(void)      { sfx_play(SND_DAMAGE, SND_LEN(SND_DAMAGE)); }
+void sfx_key_pickup(void)  { sfx_play(SND_KEY,    SND_LEN(SND_KEY));             }
+void sfx_coin_pickup(void) { sfx_play(SND_COIN,   SND_LEN(SND_COIN));            }
+void sfx_door_open(void)   { sfx_play(SND_DOOR,   SND_LEN(SND_DOOR));            }
+void sfx_damage(void)      { sfx_play(SND_DAMAGE, SND_LEN(SND_DAMAGE));          }
+void sfx_next_floor(void)  { sfx_play(SND_NEXTFLOOR, SND_LEN(SND_NEXTFLOOR));    }
+void sfx_game_over(void)   { sfx_play_force(SND_GAMEOVER, SND_LEN(SND_GAMEOVER));}
 
 // frame buffer dimensions
 #define FB_WIDTH  320
@@ -238,6 +286,7 @@ void fps_tick(void) {
 }
 
 // vga_task()
+int game_active = 0;
 void vga_task(void *pdata) {
     int cpu_timer = 0;
 
@@ -248,11 +297,8 @@ void vga_task(void *pdata) {
 
     clear_framebuffer();
 
-    // mode flags
-    int game_active    = 0;
-
     // write sim string to SDRAM once at startup, before the while loop
-    static const char sim_capture[] = "PLAY GAME";
+    static const char sim_capture[] = "ATTACK";
     int i;
 	for (i = 0; i < (int)sizeof(sim_capture); i++)
 		CAPTURE_TEXT[i] = sim_capture[i];
@@ -318,35 +364,11 @@ void vga_task(void *pdata) {
 			}
         }
 
-        // capture_flag: load CAPTURE_TEXT from SDRAM into ticker and start scrolling
-        if (capture_flag) {
-            capture_flag = 0;
-
-            ticker_init();
-            int i = 0;
-            while (i < CAPTURE_TEXT_MAX - 1 && CAPTURE_TEXT[i] != '\0') {
-                ticker_push(CAPTURE_TEXT[i]);
-                i++;
-            }
-
-            marquee_pixel_offset = -(FB_WIDTH);
-            marquee_accumulator  = 0;
-            banner_visible = 1;
-            banner_dirty   = 1;
-
-            printf("[VGA] Banner loaded: %d chars\n", i);
-        }
-
         if (game_active) {
             // game_tick handles tilt via its own game_tilt_timer
             // and camera input via ai_detected_char — no conflict with text mode
             game_tick();
-
-            // exit game on GAME_OVER or GAME_WIN after a long press of KEY0
-            // (handled above in KEY0 block — restart resets state)
         }
-
-        sfx_tick(5);
 
         cpu_timer++;
         if (cpu_timer >= CPU_USAGE_SPEED) {
@@ -367,6 +389,71 @@ void vga_init(void) {
                     VGA_PRIORITY,
                     vga_stk,
                     VGA_STACKSIZE,
+                    NULL,
+                    0);
+}
+
+// audio_led_task — handles sfx_tick and LED patterns non-blocking
+#define TRAFFIC_LED_BASE CORE_2_TRAFFIC_LED_BASE
+#define AUDIO_LED_STACKSIZE 2048
+#define AUDIO_LED_PRIORITY  4   // lower priority than VGA (2)
+OS_STK audio_led_stk[AUDIO_LED_STACKSIZE];
+
+// Replace the blocking flash_led with a request flag
+volatile int led_flash_request = 0;  // set to LED color, task clears it
+#define BLINK_ON_TICKS  50
+#define BLINK_OFF_TICKS 50
+#define BLINK_TIMES     2
+
+static void audio_led_task(void *pdata) {
+    int led_timer = 0;
+    int active_led = 0;
+    int blink_count = 0;
+	int led_on      = 0;
+
+    while (1) {
+        // handle LED flash request
+        if (led_flash_request && !active_led) {
+            active_led = led_flash_request;
+            led_flash_request = 0;
+            led_timer = 0;
+            led_on = 1;
+            blink_count = 0;
+            IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, active_led);
+        }
+
+        if (active_led) {
+            led_timer++;
+            if (led_on && led_timer >= BLINK_ON_TICKS) {
+                led_timer  = 0;
+                led_on = 0;
+                IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, 0);
+            } else if (!led_on && led_timer >= BLINK_OFF_TICKS) {
+            	led_timer = 0;
+            	blink_count++;
+            	if (blink_count >= BLINK_TIMES) {
+            		active_led = 0;
+            	} else {
+            		led_on = 1;
+            		IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, active_led);
+            	}
+            }
+        }
+
+        sfx_tick(5);
+        OSTimeDly(5);
+    }
+}
+
+// audio_led_init()
+void audio_led_init(void) {
+    OSTaskCreateExt(audio_led_task,
+                    NULL,
+                    &audio_led_stk[AUDIO_LED_STACKSIZE - 1],
+					AUDIO_LED_PRIORITY,
+					AUDIO_LED_PRIORITY,
+					audio_led_stk,
+					AUDIO_LED_STACKSIZE,
                     NULL,
                     0);
 }

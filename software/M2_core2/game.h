@@ -5,12 +5,15 @@
 #define GAME_H
 
 #include <stdint.h>
+#include <string.h>
 
 // forward declarations
 extern void sfx_key_pickup(void);
 extern void sfx_coin_pickup(void);
 extern void sfx_door_open(void);
 extern void sfx_damage(void);
+extern void sfx_next_floor(void);
+extern void sfx_game_over(void);
 
 #define TILE_EMPTY    0   // walkable floor
 #define TILE_WALL     1   // impassable wall
@@ -65,7 +68,6 @@ extern void sfx_damage(void);
 typedef struct {
     int col;        // tile column of door
     int row;        // tile row of door
-    char req;       // required character (e.g. 'O', 'A', 'U')
     int  open;      // 1 = already opened
 } DoorInfo;
 
@@ -74,51 +76,51 @@ typedef struct {
 
 #define NUM_FLOORS    3
 
-// Floor 1 — simple intro layout
+// Floor 1 — simple intro layout, 2 enemies guarding key areas
 static const uint8_t floor1_map[MAP_ROWS][MAP_COLS] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,1,1,0,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1},
     {1,0,1,0,0,0,2,0,0,0,1,0,0,0,0,1,0,1,0,1},
     {1,0,1,0,1,1,1,1,1,0,1,1,1,0,0,1,0,0,0,1},
-    {1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,1,1,0,1},
+    {1,0,0,0,0,0,0,0,1,0,0,6,1,0,1,1,1,1,0,1},
     {1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1},
     {1,7,0,0,1,0,1,0,0,0,1,0,0,0,1,0,0,1,0,1},
     {1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1},
+    {1,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,3,1},
     {1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1},
 };
 
-// Floor 2 — longer corridors, two doors
+// Floor 2 — longer corridors, two doors, 3 enemies
 static const uint8_t floor2_map[MAP_ROWS][MAP_COLS] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1},
     {1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1},
-    {1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,1},
+    {1,0,1,0,0,0,0,0,1,0,0,0,0,6,1,0,0,1,0,1},
     {1,0,1,1,1,2,1,0,1,1,1,1,0,0,1,1,0,1,0,1},
     {1,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,1,0,1},
     {1,1,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,0,1},
-    {1,0,0,0,1,0,0,0,0,0,1,0,0,2,0,1,0,0,0,1},
+    {1,0,0,0,1,0,0,0,0,6,1,0,0,2,0,1,0,0,0,1},
     {1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,3,1},
-    {1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,1,0,0,0,0,0,6,0,0,0,0,1},
     {1,7,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1},
 };
 
-// Floor 3 — tight maze, one door, more traps
+// Floor 3 — tight maze, one door, more traps, 4 enemies
 static const uint8_t floor3_map[MAP_ROWS][MAP_COLS] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,1},
     {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,0,1},
     {1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,5,0,1},
     {1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,1,0,1},
-    {1,0,0,0,1,0,0,0,1,2,0,0,1,0,0,0,0,1,0,1},
+    {1,0,0,6,1,0,0,0,1,2,0,0,1,0,0,0,0,1,0,1},
     {1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1},
-    {1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1,0,1},
+    {1,0,0,0,0,0,1,0,0,0,0,6,0,0,1,0,0,1,0,1},
     {1,0,1,1,1,0,1,0,1,1,1,1,0,1,1,0,1,1,0,1},
-    {1,5,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,3,1},
-    {1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1},
+    {1,5,0,0,1,0,0,0,1,0,6,0,0,0,0,0,0,0,3,1},
+    {1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,6,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1},
 };
 
@@ -135,13 +137,24 @@ static const int floor_start_row[NUM_FLOORS] = { 1, 2, 1 };
 
 // Door definitions per floor (col, row, required_char, open)
 static const DoorInfo floor_doors[NUM_FLOORS][MAX_DOORS] = {
-    // Floor 1: one door at (6,3) requires 'O'
-    { {6, 3, 'O', 0}, {-1,-1,0,0}, {-1,-1,0,0}, {-1,-1,0,0} },
-    // Floor 2: two doors
-    { {5, 4, 'A', 0}, {12,7, 'U', 0}, {-1,-1,0,0}, {-1,-1,0,0} },
-    // Floor 3: one door
-    { {9, 5, 'I', 0}, {-1,-1,0,0}, {-1,-1,0,0}, {-1,-1,0,0} },
+    // Floor 1
+    { {6, 3, 0}, {-1,-1,0}, {-1,-1,0}, {-1,-1,0} },
+    // Floor 2
+    { {5, 4, 0}, {12,7, 0}, {-1,-1,0}, {-1,-1,0} },
+    // Floor 3
+    { {9, 5, 0}, {-1,-1,0}, {-1,-1,0}, {-1,-1,0} },
 };
+
+// Enemy tracking — store positions so ATTACK can find nearest to player
+#define MAX_ENEMIES 8
+typedef struct {
+    int col;
+    int row;
+    int alive;
+} EnemyInfo;
+
+static EnemyInfo cur_enemies[MAX_ENEMIES];
+static int       enemy_count = 0;
 
 typedef enum {
     GAME_TITLE,         // title screen
@@ -179,11 +192,22 @@ static void game_load_floor(int floor_idx) {
         for (c = 0; c < MAP_COLS; c++)
             cur_map[r][c] = src[r][c];
 
-    // copy door info
     for (d = 0; d < MAX_DOORS; d++)
         cur_doors[d] = floor_doors[floor_idx][d];
 
-    // place player
+    // scan map for enemies and register them
+    enemy_count = 0;
+    for (r = 0; r < MAP_ROWS && enemy_count < MAX_ENEMIES; r++) {
+        for (c = 0; c < MAP_COLS && enemy_count < MAX_ENEMIES; c++) {
+            if (cur_map[r][c] == TILE_ENEMY) {
+                cur_enemies[enemy_count].col   = c;
+                cur_enemies[enemy_count].row   = r;
+                cur_enemies[enemy_count].alive = 1;
+                enemy_count++;
+            }
+        }
+    }
+
     player.col   = floor_start_col[floor_idx];
     player.row   = floor_start_row[floor_idx];
     player.floor = floor_idx;
@@ -200,22 +224,59 @@ static void game_init(void) {
     game_load_floor(0);
 }
 
+// traffic led
+#define GREEN_LED     4
+#define YELLOW_LED    2
+#define RED_LED       1
+
 // CAMERA INPUT HANDLER
-// Returns 1 if a door was opened (caller should redraw map), 0 otherwise.
-static int game_handle_camera(char c) {
-    if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
-        if (c == cur_doors[pending_door].req) {
+// Returns: 1 = door opened (redraw map), 2 = enemy killed (redraw map), 0 = nothing
+static int game_handle_command(const char *cmd) {
+
+    // UNLOCK — opens the nearest pending door
+    if (strncmp(cmd, "UNLOCK", 6) == 0) {
+        if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
             cur_map[cur_doors[pending_door].row][cur_doors[pending_door].col] = TILE_EMPTY;
             cur_doors[pending_door].open = 1;
             player.score += 20;
             pending_door = -1;
             game_state   = GAME_PLAYING;
-            return 1; // door opened — caller redraws map
+            sfx_door_open();
+            request_led_flash(GREEN_LED);
+            return 1;
         }
-        // wrong character: stay in GAME_WAIT_CAMERA, prompt again
+        return 0;
     }
+
+    // ATTACK — kills the enemy nearest to the player
+    if (strncmp(cmd, "ATTACK", 6) == 0) {
+        if (game_state != GAME_PLAYING) return 0;
+        int best = -1, best_dist = 9999;
+        int i;
+        for (i = 0; i < enemy_count; i++) {
+            if (!cur_enemies[i].alive) continue;
+            int dr = cur_enemies[i].row - player.row;
+            int dc = cur_enemies[i].col - player.col;
+            int dist = (dr < 0 ? -dr : dr) + (dc < 0 ? -dc : dc);
+            if (dist < best_dist) {
+                best_dist = dist;
+                best      = i;
+            }
+        }
+        if (best >= 0) {
+            cur_enemies[best].alive = 0;
+            cur_map[cur_enemies[best].row][cur_enemies[best].col] = TILE_EMPTY;
+            player.score += 30;   // coins for killing enemy
+            sfx_coin_pickup();
+            request_led_flash(YELLOW_LED);
+            return 2;
+        }
+        return 0;
+    }
+
     return 0;
 }
+
 // PLAYER MOVEMENT
 // Returns 1 if move was accepted (or triggered an event), 0 if blocked.
 static int game_move(int dcol, int drow) {
@@ -254,8 +315,26 @@ static int game_move(int dcol, int drow) {
         if (!door_open) return 0; // still locked
     }
 
-    // --- enemy: blocked until gesture (not yet implemented)
-    if (tile == TILE_ENEMY) return 0;
+    // --- enemy: blocked if alive
+    if (tile == TILE_ENEMY) {
+    	// check if it's actually still alive in our enemy list
+    	int i;
+    	for (i = 0; i < enemy_count; i++) {
+    		if (cur_enemies[i].col == nc && cur_enemies[i].row == nr && cur_enemies[i].alive) {
+    			// take damage on contact
+				player.hp--;
+    			printf("[GAME] Enemy contact! HP now %d\n", player.hp);
+				sfx_damage();
+				request_led_flash(RED_LED);
+				if (player.hp <= 0) {
+					game_state = GAME_OVER;
+					sfx_game_over();
+				}
+				return 1;  // move blocked but damage applied
+    		}
+    	}
+    	// dead enemy tile somehow still in map - treat as floor
+    }
 
     // snapshot tile before moving so landing events read correct value
     uint8_t landing_tile = cur_map[nr][nc];
@@ -271,22 +350,30 @@ static int game_move(int dcol, int drow) {
             cur_map[nr][nc] = TILE_EMPTY;
             sfx_coin_pickup();
             game_state = GAME_CHEST;
+            request_led_flash(YELLOW_LED);
             break;
         case TILE_KEY:
             player.keys++;
             cur_map[nr][nc] = TILE_EMPTY;
             sfx_key_pickup();
+            request_led_flash(YELLOW_LED);
             break;
         case TILE_TRAP:
             player.hp--;
             sfx_damage();
-            if (player.hp <= 0) game_state = GAME_OVER;
+            if (player.hp <= 0) {
+            	game_state = GAME_OVER;
+            	sfx_game_over();
+            }
+            request_led_flash(RED_LED);
             break;
         case TILE_EXIT:
             if (player.floor + 1 < NUM_FLOORS)
                 game_state = GAME_NEXT_FLOOR;
             else
                 game_state = GAME_WIN;
+            sfx_next_floor();
+            request_led_flash(GREEN_LED);
             break;
         default:
             break;

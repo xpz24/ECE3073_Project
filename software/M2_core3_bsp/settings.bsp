@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>ucosii</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>May 18, 2026 9:39:08 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1779111548703</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>May 25, 2026 12:04:32 AM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1779638672415</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\cklie\OneDrive\Documents\Academic\Monash\Y3\ECE3073\Quartus\Project\software\M2_core3_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\projectM1.sopcinfo</SopcDesignFile>
@@ -1811,13 +1811,13 @@
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_3_1_tx</slaveDescriptor>
+                <slaveDescriptor>us_counter</slaveDescriptor>
                 <addressRange>0x04003110 - 0x0400311F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>us_counter</slaveDescriptor>
+                <slaveDescriptor>core_3_1_tx</slaveDescriptor>
                 <addressRange>0x04003120 - 0x0400312F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>

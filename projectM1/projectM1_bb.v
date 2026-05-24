@@ -37,7 +37,7 @@ module projectM1 (
 	output		accel_I2C_SCLK;
 	output		accel_G_SENSOR_CS_N;
 	input		accel_G_SENSOR_INT;
-	output	[3:0]	buzzer_export;
+	output	[4:0]	buzzer_export;
 	output		buzzer_enable_export;
 	input		clk_clk;
 	input		core_2_hsync_export;

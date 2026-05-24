@@ -7,7 +7,12 @@
 
 #include "game.h"
 
-extern volatile char ai_detected_char;
+extern int game_active;
+extern volatile int  capture_flag;
+#define SDRAM_BASE        SHARED_SDRAM_BASE
+#define CAPTURE_TEXT_OFFSET  0x200
+#define CAPTURE_TEXT_MAX     256
+#define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
 
 // Top-left pixel of tile (col, row)
 #define TILE_X(col) ((col) * TILE_W)
@@ -80,17 +85,7 @@ static void draw_tile(int col, int row) {
         int bx;
         for (bx = x + 3; bx < x + TILE_W - 2; bx += 4)
             fill_rect(bx, y + 1, 2, TILE_H - 2, 0x840);
-        // draw required character (tiny) centred
-        int d;
-        for (d = 0; d < MAX_DOORS; d++) {
-            if (cur_doors[d].col == col && cur_doors[d].row == row && !cur_doors[d].open) {
-                draw_char(cur_doors[d].req,
-                          x + TILE_W/2 - FONT_W/2,
-                          y + TILE_H/2 - FONT_H/2,
-                          1, 0xFFF, COL_DOOR);
-                break;
-            }
-        }
+        fill_rect(x + TILE_W/2 - 2, y + TILE_H/2 - 2, 4, 4, 0xFFF);
         return;
     }
 
@@ -127,9 +122,19 @@ static void draw_tile(int col, int row) {
 
     // enemy: simple skull-ish cross shape
     if (tile == TILE_ENEMY) {
-        fill_rect(x + TILE_W/2 - 1, y + 2, 2, TILE_H - 4, 0xF88);
-        fill_rect(x + 2, y + TILE_H/2 - 1, TILE_W - 4, 2, 0xF88);
-        return;
+    	// skull top (rounded head)
+		fill_rect(x + 4, y + 2,  8, 7, 0xF88);
+		fill_rect(x + 3, y + 3,  10, 5, 0xF88);
+		// eyes — black hollow sockets
+		fill_rect(x + 5, y + 4,  2, 2, 0x000);
+		fill_rect(x + 9, y + 4,  2, 2, 0x000);
+		// nose — small triangle hint
+		fill_rect(x + 7, y + 7,  2, 1, 0xA44);
+		// jaw — two teeth
+		fill_rect(x + 4, y + 9,  8, 2, 0xF88);
+		fill_rect(x + 5, y + 11, 2, 1, 0xFFF);
+		fill_rect(x + 9, y + 11, 2, 1, 0xFFF);
+		return;
     }
 
     // key: small key icon (handle + shaft)
@@ -222,16 +227,13 @@ static void game_draw_status(void) {
 
     // Row 2 at py+3 — gives ~12px for font height, 2px margin at bottom
     if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
-        char req = cur_doors[pending_door].req;
-        draw_string("SHOW",   4, py + 3, 1, 0xFA0, COL_UI_BG);
-        draw_char(req,       36, py + 3, 1, 0xFFF, 0x500);
-        draw_string("TO OPEN",48, py + 3, 1, 0xFA0, COL_UI_BG);
+    	draw_string("SAY UNLOCK TO OPEN DOOR", 4, py + 3, 1, 0xFA0, COL_UI_BG);
     }
     else if (game_state == GAME_CHEST) {
         draw_string("+50 SCORE!",  4, py + 3, 1, COL_CHEST, COL_UI_BG);
     }
     else if (game_state == GAME_OVER) {
-        draw_string("GAME OVER - KEY0 TO RETRY", 4, py + 3, 1, 0xF00, COL_UI_BG);
+        draw_string("GAME OVER - KEY1 TO RETRY", 4, py + 3, 1, 0xF00, COL_UI_BG);
     }
     else if (game_state == GAME_WIN) {
         draw_string("YOU ESCAPED!  WELL DONE", 4, py + 3, 1, COL_EXIT, COL_UI_BG);
@@ -240,7 +242,7 @@ static void game_draw_status(void) {
         draw_string("NEXT FLOOR...", 4, py + 3, 1, 0x0FF, COL_UI_BG);
     }
     else {
-        draw_string("TILT:MOVE  CAM:UNLOCK  KEY0:CLEAR", 4, py + 3, 1, 0x555, COL_UI_BG);
+        draw_string("TILT:MOVE  CAM:ACTION  KEY0:CLEAR", 4, py + 3, 1, 0x555, COL_UI_BG);
     }
 }
 
@@ -250,6 +252,7 @@ static void game_draw_status(void) {
 static void move_player_smooth(int dcol, int drow) {
     int old_col = player.col;
     int old_row = player.row;
+    int old_hp  = player.hp;
 
     // Run the game logic first (updates player.col/row and game_state)
     game_move(dcol, drow);
@@ -259,7 +262,25 @@ static void move_player_smooth(int dcol, int drow) {
 
     // 2. Draw player at new position immediately after — no tick gap
     draw_player();
+
+    // redraw status if hp/state changed (e.g. enemy contact damage)
+	if (player.hp != old_hp || status_is_dirty()) {
+		game_draw_status();
+		status_snapshot();
+	}
 }
+
+// traffic led
+#define GREEN_LED     4
+#define YELLOW_LED    2
+#define RED_LED       1
+
+extern volatile int led_flash_request;
+
+void request_led_flash(int led) {
+    led_flash_request = led;  // non-blocking, set and forget
+}
+
 
 // Call from vga_task every loop iteration when game_active == 1.
 // Handles tilt movement, camera input, state transitions.
@@ -273,17 +294,38 @@ static int  game_chest_timer  = 0;
 static void game_tick(void) {
 	draw_banner_tick();
 
-    // camera input (any state) — only redraw map if a door was actually opened
-    char cam = ai_detected_char;
-    if (cam != 0x00) {
-        ai_detected_char = 0x00;
-        int door_opened = game_handle_camera(cam);
-        if (status_is_dirty()) {
-        	game_draw_status();
-        	status_snapshot();
-        }
-        if (door_opened) game_draw_map();
-    }
+	// command input — triggered by capture_flag, reads full word from CAPTURE_TEXT
+	if (capture_flag) {
+		capture_flag = 0;
+
+		// read command from SDRAM
+		char cmd[16] = {0};
+		int  ci = 0;
+		while (ci < 15 && CAPTURE_TEXT[ci] != '\0') {
+			cmd[ci] = CAPTURE_TEXT[ci];
+			ci++;
+		}
+
+		printf("[GAME] Command received: %s\n", cmd);
+
+		// also load into ticker banner as before
+		ticker_init();
+		for (ci = 0; cmd[ci] != '\0'; ci++)
+			ticker_push(cmd[ci]);
+		marquee_pixel_offset = -(FB_WIDTH);
+		marquee_accumulator  = 0;
+		banner_visible = 1;
+		banner_dirty   = 1;
+
+		if (game_active) {
+			int result = game_handle_command(cmd);
+			if (status_is_dirty()) {
+				game_draw_status();
+				status_snapshot();
+			}
+			if (result > 0) game_draw_map();
+		}
+	}
 
     // per-state logic
     switch (game_state) {
@@ -341,8 +383,6 @@ static void game_tick(void) {
         case GAME_WAIT_CAMERA:
         case GAME_OVER:
         case GAME_WIN:
-            // no tick logic — wait for KEY0 or camera
-            break;
 
         default:
             break;

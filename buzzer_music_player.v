@@ -55,7 +55,7 @@
 
 module buzzer_music_player (
     input  wire        clk,          // 50 MHz
-    input  wire [3:0]  note_index,   // From Core 2 PIO output (0-15)
+    input  wire [4:0]  note_index,   // From Core 2 PIO output (0-15)
 	 input  wire        sw3_enable,   // From SW[3] via Core 1 conduit (also acts as sync reset when LOW)
     output reg         buzzer_out    // To active buzzer GPIO pin
 );
@@ -65,26 +65,34 @@ module buzzer_music_player (
     //    half_period = 50_000_000 / (2 * freq_Hz)
     //    REST = 0  →  special case: hold pin LOW (silence)
     // =========================================================================
-    reg [31:0] half_period_lut [0:15];
+    reg [31:0] half_period_lut [0:23];
 
     initial begin
-        half_period_lut[ 0] = 32'd0;      // REST
-        half_period_lut[ 1] = 32'd95602;  // C4   261.63 Hz
-        half_period_lut[ 2] = 32'd85096;  // D4   293.66 Hz
-        half_period_lut[ 3] = 32'd75756;  // E4   329.63 Hz
-        half_period_lut[ 4] = 32'd71587;  // F4   349.23 Hz
-        half_period_lut[ 5] = 32'd63776;  // G4   392.00 Hz
-        half_period_lut[ 6] = 32'd56818;  // A4   440.00 Hz
-        half_period_lut[ 7] = 32'd50619;  // B4   493.88 Hz
-        half_period_lut[ 8] = 32'd47778;  // C5   523.25 Hz
-        half_period_lut[ 9] = 32'd42553;  // D5   587.33 Hz
-        half_period_lut[10] = 32'd37921;  // E5   659.26 Hz
-        half_period_lut[11] = 32'd35791;  // F5   698.46 Hz
-        half_period_lut[12] = 32'd31888;  // G5   783.99 Hz
-        half_period_lut[13] = 32'd28409;  // A5   880.00 Hz
-        half_period_lut[14] = 32'd25310;  // B5   987.77 Hz
-        half_period_lut[15] = 32'd23889;  // C6  1046.50 Hz
-    end
+		 half_period_lut[ 0] = 32'd0;       // REST
+		 half_period_lut[ 1] = 32'd95602;   // C4    261.63 Hz
+		 half_period_lut[ 2] = 32'd85096;   // D4    293.66 Hz
+		 half_period_lut[ 3] = 32'd75756;   // E4    329.63 Hz
+		 half_period_lut[ 4] = 32'd71587;   // F4    349.23 Hz
+		 half_period_lut[ 5] = 32'd63776;   // G4    392.00 Hz
+		 half_period_lut[ 6] = 32'd56818;   // A4    440.00 Hz
+		 half_period_lut[ 7] = 32'd50619;   // B4    493.88 Hz
+		 half_period_lut[ 8] = 32'd47778;   // C5    523.25 Hz
+		 half_period_lut[ 9] = 32'd42553;   // D5    587.33 Hz
+		 half_period_lut[10] = 32'd37921;   // E5    659.26 Hz
+		 half_period_lut[11] = 32'd35791;   // F5    698.46 Hz
+		 half_period_lut[12] = 32'd31888;   // G5    783.99 Hz
+		 half_period_lut[13] = 32'd28409;   // A5    880.00 Hz
+		 half_period_lut[14] = 32'd25310;   // B5    987.77 Hz
+		 half_period_lut[15] = 32'd23889;   // C6   1046.50 Hz
+		 half_period_lut[16] = 32'd21281;   // D6   1174.66 Hz
+		 half_period_lut[17] = 32'd18961;   // E6   1318.51 Hz
+		 half_period_lut[18] = 32'd17897;   // F6   1396.91 Hz
+		 half_period_lut[19] = 32'd113636;  // A3    220.00 Hz  (A4 half_period × 2)
+		 half_period_lut[20] = 32'd101239;  // B3    246.94 Hz  (B4 half_period × 2)
+		 half_period_lut[21] = 32'd95556;   // C4b  (unused slot — pad with C4 value)
+		 half_period_lut[22] = 32'd45351;   // C#4   277.18 Hz
+		 half_period_lut[23] = 32'd40187;   // Eb4   311.13 Hz
+	end
 
     // =========================================================================
     // 2. Latch new half_period when note_index changes

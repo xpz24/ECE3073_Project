@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>ucosii</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>May 18, 2026 9:39:06 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1779111546456</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>May 25, 2026 12:04:29 AM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1779638669724</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\cklie\OneDrive\Documents\Academic\Monash\Y3\ECE3073\Quartus\Project\software\M2_core2_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\projectM1.sopcinfo</SopcDesignFile>
@@ -1781,82 +1781,88 @@
                 <attributes>timer</attributes>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_buzzer</slaveDescriptor>
-                <addressRange>0x040030E0 - 0x040030EF</addressRange>
-                <addressSpan>16</addressSpan>
-                <attributes/>
-        </MemoryMap>
-        <MemoryMap>
-                <slaveDescriptor>core_2_hsync</slaveDescriptor>
+                <slaveDescriptor>core_2_traffic_led</slaveDescriptor>
                 <addressRange>0x040030F0 - 0x040030FF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_pixel_wren</slaveDescriptor>
+                <slaveDescriptor>core_2_buzzer</slaveDescriptor>
                 <addressRange>0x04003100 - 0x0400310F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_pixel_addr</slaveDescriptor>
+                <slaveDescriptor>us_counter</slaveDescriptor>
                 <addressRange>0x04003110 - 0x0400311F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>us_counter</slaveDescriptor>
+                <slaveDescriptor>core_2_hsync</slaveDescriptor>
                 <addressRange>0x04003120 - 0x0400312F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_pixel_data</slaveDescriptor>
+                <slaveDescriptor>core_2_pixel_wren</slaveDescriptor>
                 <addressRange>0x04003130 - 0x0400313F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_vsync</slaveDescriptor>
+                <slaveDescriptor>core_2_pixel_addr</slaveDescriptor>
                 <addressRange>0x04003140 - 0x0400314F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_3_rx</slaveDescriptor>
+                <slaveDescriptor>core_2_pixel_data</slaveDescriptor>
                 <addressRange>0x04003150 - 0x0400315F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_3_tx</slaveDescriptor>
+                <slaveDescriptor>core_2_vsync</slaveDescriptor>
                 <addressRange>0x04003160 - 0x0400316F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_1_rx</slaveDescriptor>
+                <slaveDescriptor>core_2_3_rx</slaveDescriptor>
                 <addressRange>0x04003170 - 0x0400317F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_1_tx</slaveDescriptor>
+                <slaveDescriptor>core_2_3_tx</slaveDescriptor>
                 <addressRange>0x04003180 - 0x0400318F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>core_2_jtag</slaveDescriptor>
-                <addressRange>0x04003198 - 0x0400319F</addressRange>
-                <addressSpan>8</addressSpan>
-                <attributes>printable</attributes>
-        </MemoryMap>
-        <MemoryMap>
                 <slaveDescriptor>mutex_0</slaveDescriptor>
-                <addressRange>0x040031B0 - 0x040031B7</addressRange>
+                <addressRange>0x04003190 - 0x04003197</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes/>
+        </MemoryMap>
+        <MemoryMap>
+                <slaveDescriptor>core_2_1_rx</slaveDescriptor>
+                <addressRange>0x040031A0 - 0x040031AF</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
+                <slaveDescriptor>core_2_1_tx</slaveDescriptor>
+                <addressRange>0x040031B0 - 0x040031BF</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
+                <slaveDescriptor>core_2_jtag</slaveDescriptor>
+                <addressRange>0x040031C0 - 0x040031C7</addressRange>
+                <addressSpan>8</addressSpan>
+                <attributes>printable</attributes>
         </MemoryMap>
         <LinkerSection>
                 <sectionName>.text</sectionName>

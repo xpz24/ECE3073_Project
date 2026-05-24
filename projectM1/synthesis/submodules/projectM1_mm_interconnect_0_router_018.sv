@@ -190,27 +190,19 @@ module projectM1_mm_interconnect_0_router_018
 
 
         if (destid == 0 ) begin
-            src_channel = 42'b000001;
+            src_channel = 42'b0001;
         end
 
         if (destid == 1  && read_transaction) begin
-            src_channel = 42'b000010;
+            src_channel = 42'b0010;
         end
 
         if (destid == 2 ) begin
-            src_channel = 42'b000100;
+            src_channel = 42'b0100;
         end
 
         if (destid == 3  && read_transaction) begin
-            src_channel = 42'b001000;
-        end
-
-        if (destid == 4 ) begin
-            src_channel = 42'b010000;
-        end
-
-        if (destid == 5  && read_transaction) begin
-            src_channel = 42'b100000;
+            src_channel = 42'b1000;
         end
 
 

@@ -259,15 +259,15 @@ module projectM1_mm_interconnect_0_router_004
     end
 
     // ( 0x4003110 .. 0x4003120 )
-    if ( {address[RG:PAD9],{PAD9{1'b0}}} == 27'h4003110   ) begin
-            src_channel = 42'b000000100000;
-            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 30;
+    if ( {address[RG:PAD9],{PAD9{1'b0}}} == 27'h4003110  && read_transaction  ) begin
+            src_channel = 42'b000000000010;
+            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 41;
     end
 
     // ( 0x4003120 .. 0x4003130 )
-    if ( {address[RG:PAD10],{PAD10{1'b0}}} == 27'h4003120  && read_transaction  ) begin
-            src_channel = 42'b000000000010;
-            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 41;
+    if ( {address[RG:PAD10],{PAD10{1'b0}}} == 27'h4003120   ) begin
+            src_channel = 42'b000000100000;
+            src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 30;
     end
 
     // ( 0x4003138 .. 0x4003140 )

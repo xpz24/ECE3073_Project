@@ -8,7 +8,7 @@ module projectM1 (
 		output wire        accel_I2C_SCLK,       //              .I2C_SCLK
 		output wire        accel_G_SENSOR_CS_N,  //              .G_SENSOR_CS_N
 		input  wire        accel_G_SENSOR_INT,   //              .G_SENSOR_INT
-		output wire [3:0]  buzzer_export,        //        buzzer.export
+		output wire [4:0]  buzzer_export,        //        buzzer.export
 		output wire        buzzer_enable_export, // buzzer_enable.export
 		input  wire        clk_clk,              //           clk.clk
 		input  wire        core_2_hsync_export,  //  core_2_hsync.export
@@ -141,11 +141,6 @@ module projectM1 (
 	wire   [2:0] mm_interconnect_0_core_1_timer_s1_address;                                              // mm_interconnect_0:core_1_timer_s1_address -> core_1_timer:address
 	wire         mm_interconnect_0_core_1_timer_s1_write;                                                // mm_interconnect_0:core_1_timer_s1_write -> core_1_timer:write_n
 	wire  [15:0] mm_interconnect_0_core_1_timer_s1_writedata;                                            // mm_interconnect_0:core_1_timer_s1_writedata -> core_1_timer:writedata
-	wire         mm_interconnect_0_core_1_traffic_led_s1_chipselect;                                     // mm_interconnect_0:core_1_traffic_led_s1_chipselect -> core_1_traffic_led:chipselect
-	wire  [31:0] mm_interconnect_0_core_1_traffic_led_s1_readdata;                                       // core_1_traffic_led:readdata -> mm_interconnect_0:core_1_traffic_led_s1_readdata
-	wire   [1:0] mm_interconnect_0_core_1_traffic_led_s1_address;                                        // mm_interconnect_0:core_1_traffic_led_s1_address -> core_1_traffic_led:address
-	wire         mm_interconnect_0_core_1_traffic_led_s1_write;                                          // mm_interconnect_0:core_1_traffic_led_s1_write -> core_1_traffic_led:write_n
-	wire  [31:0] mm_interconnect_0_core_1_traffic_led_s1_writedata;                                      // mm_interconnect_0:core_1_traffic_led_s1_writedata -> core_1_traffic_led:writedata
 	wire         mm_interconnect_0_core_1_2_tx_s1_chipselect;                                            // mm_interconnect_0:core_1_2_tx_s1_chipselect -> core_1_2_tx:chipselect
 	wire  [31:0] mm_interconnect_0_core_1_2_tx_s1_readdata;                                              // core_1_2_tx:readdata -> mm_interconnect_0:core_1_2_tx_s1_readdata
 	wire   [1:0] mm_interconnect_0_core_1_2_tx_s1_address;                                               // mm_interconnect_0:core_1_2_tx_s1_address -> core_1_2_tx:address
@@ -257,6 +252,11 @@ module projectM1 (
 	wire   [1:0] mm_interconnect_0_core_2_buzzer_s1_address;                                             // mm_interconnect_0:core_2_buzzer_s1_address -> core_2_buzzer:address
 	wire         mm_interconnect_0_core_2_buzzer_s1_write;                                               // mm_interconnect_0:core_2_buzzer_s1_write -> core_2_buzzer:write_n
 	wire  [31:0] mm_interconnect_0_core_2_buzzer_s1_writedata;                                           // mm_interconnect_0:core_2_buzzer_s1_writedata -> core_2_buzzer:writedata
+	wire         mm_interconnect_0_core_2_traffic_led_s1_chipselect;                                     // mm_interconnect_0:core_2_traffic_led_s1_chipselect -> core_2_traffic_led:chipselect
+	wire  [31:0] mm_interconnect_0_core_2_traffic_led_s1_readdata;                                       // core_2_traffic_led:readdata -> mm_interconnect_0:core_2_traffic_led_s1_readdata
+	wire   [1:0] mm_interconnect_0_core_2_traffic_led_s1_address;                                        // mm_interconnect_0:core_2_traffic_led_s1_address -> core_2_traffic_led:address
+	wire         mm_interconnect_0_core_2_traffic_led_s1_write;                                          // mm_interconnect_0:core_2_traffic_led_s1_write -> core_2_traffic_led:write_n
+	wire  [31:0] mm_interconnect_0_core_2_traffic_led_s1_writedata;                                      // mm_interconnect_0:core_2_traffic_led_s1_writedata -> core_2_traffic_led:writedata
 	wire         mm_interconnect_0_core_3_jtag_avalon_jtag_slave_chipselect;                             // mm_interconnect_0:core_3_jtag_avalon_jtag_slave_chipselect -> core_3_jtag:av_chipselect
 	wire  [31:0] mm_interconnect_0_core_3_jtag_avalon_jtag_slave_readdata;                               // core_3_jtag:av_readdata -> mm_interconnect_0:core_3_jtag_avalon_jtag_slave_readdata
 	wire         mm_interconnect_0_core_3_jtag_avalon_jtag_slave_waitrequest;                            // core_3_jtag:av_waitrequest -> mm_interconnect_0:core_3_jtag_avalon_jtag_slave_waitrequest
@@ -334,11 +334,11 @@ module projectM1 (
 	wire         irq_mapper_002_receiver4_irq;                                                           // core_3_2_rx:irq -> irq_mapper_002:receiver4_irq
 	wire         irq_mapper_002_receiver5_irq;                                                           // core_3_key:irq -> irq_mapper_002:receiver5_irq
 	wire  [31:0] core_3_irq_irq;                                                                         // irq_mapper_002:sender_irq -> core_3:irq
-	wire         rst_controller_reset_out_reset;                                                         // rst_controller:reset_out -> [core_1:reset_n, core_1_2_rx:reset_n, core_1_2_tx:reset_n, core_1_3_tx:reset_n, core_1_accelerometer:reset, core_1_buzzer_enable:reset_n, core_1_hex_hi:reset_n, core_1_hex_lo:reset_n, core_1_jtag:rst_n, core_1_ledr:reset_n, core_1_memory:reset, core_1_sw:reset_n, core_1_timer:reset_n, core_1_traffic_led:reset_n, irq_mapper:reset, mm_interconnect_0:core_1_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
+	wire         rst_controller_reset_out_reset;                                                         // rst_controller:reset_out -> [core_1:reset_n, core_1_2_tx:reset_n, core_1_3_tx:reset_n, core_1_accelerometer:reset, core_1_buzzer_enable:reset_n, core_1_hex_hi:reset_n, core_1_hex_lo:reset_n, core_1_jtag:rst_n, core_1_ledr:reset_n, core_1_memory:reset, core_1_sw:reset_n, core_1_timer:reset_n, irq_mapper:reset, mm_interconnect_0:core_1_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
 	wire         rst_controller_reset_out_reset_req;                                                     // rst_controller:reset_req -> [core_1:reset_req, core_1_memory:reset_req, rst_translator:reset_req_in]
-	wire         rst_controller_001_reset_out_reset;                                                     // rst_controller_001:reset_out -> [core_1_3_rx:reset_n, core_2:reset_n, core_3:reset_n, irq_mapper_001:reset, irq_mapper_002:reset, mm_interconnect_0:core_2_reset_reset_bridge_in_reset_reset, mutex_0:reset_n, rst_translator_001:in_reset, us_counter:reset_n]
+	wire         rst_controller_001_reset_out_reset;                                                     // rst_controller_001:reset_out -> [core_1_2_rx:reset_n, core_1_3_rx:reset_n, core_2:reset_n, core_3:reset_n, irq_mapper_001:reset, irq_mapper_002:reset, mm_interconnect_0:core_2_reset_reset_bridge_in_reset_reset, mutex_0:reset_n, rst_translator_001:in_reset, us_counter:reset_n]
 	wire         rst_controller_001_reset_out_reset_req;                                                 // rst_controller_001:reset_req -> [core_2:reset_req, core_3:reset_req, rst_translator_001:reset_req_in]
-	wire         rst_controller_002_reset_out_reset;                                                     // rst_controller_002:reset_out -> [core_2_1_rx:reset_n, core_2_1_tx:reset_n, core_2_3_rx:reset_n, core_2_3_tx:reset_n, core_2_buzzer:reset_n, core_2_hsync:reset_n, core_2_jtag:rst_n, core_2_memory:reset, core_2_pixel_addr:reset_n, core_2_pixel_data:reset_n, core_2_pixel_wren:reset_n, core_2_timer:reset_n, core_2_vsync:reset_n, mm_interconnect_0:core_2_jtag_reset_reset_bridge_in_reset_reset, rst_translator_002:in_reset]
+	wire         rst_controller_002_reset_out_reset;                                                     // rst_controller_002:reset_out -> [core_2_1_rx:reset_n, core_2_1_tx:reset_n, core_2_3_rx:reset_n, core_2_3_tx:reset_n, core_2_buzzer:reset_n, core_2_hsync:reset_n, core_2_jtag:rst_n, core_2_memory:reset, core_2_pixel_addr:reset_n, core_2_pixel_data:reset_n, core_2_pixel_wren:reset_n, core_2_timer:reset_n, core_2_traffic_led:reset_n, core_2_vsync:reset_n, mm_interconnect_0:core_2_jtag_reset_reset_bridge_in_reset_reset, rst_translator_002:in_reset]
 	wire         rst_controller_002_reset_out_reset_req;                                                 // rst_controller_002:reset_req -> [core_2_memory:reset_req, rst_translator_002:reset_req_in]
 	wire         core_2_debug_reset_request_reset;                                                       // core_2:debug_reset_request -> [rst_controller_002:reset_in1, rst_controller_004:reset_in2]
 	wire         rst_controller_003_reset_out_reset;                                                     // rst_controller_003:reset_out -> [core_3_1_rx:reset_n, core_3_1_tx:reset_n, core_3_2_rx:reset_n, core_3_2_tx:reset_n, core_3_jtag:rst_n, core_3_key:reset_n, core_3_memory:reset, core_3_spi:reset_n, core_3_timer:reset_n, mm_interconnect_0:core_3_jtag_reset_reset_bridge_in_reset_reset, rst_translator_003:in_reset]
@@ -377,7 +377,7 @@ module projectM1 (
 
 	projectM1_core_1_2_rx core_1_2_rx (
 		.clk        (clk_clk),                                     //                 clk.clk
-		.reset_n    (~rst_controller_reset_out_reset),             //               reset.reset_n
+		.reset_n    (~rst_controller_001_reset_out_reset),         //               reset.reset_n
 		.address    (mm_interconnect_0_core_1_2_rx_s1_address),    //                  s1.address
 		.write_n    (~mm_interconnect_0_core_1_2_rx_s1_write),     //                    .write_n
 		.writedata  (mm_interconnect_0_core_1_2_rx_s1_writedata),  //                    .writedata
@@ -532,17 +532,6 @@ module projectM1 (
 		.irq        (irq_mapper_receiver3_irq)                      //   irq.irq
 	);
 
-	projectM1_core_1_traffic_led core_1_traffic_led (
-		.clk        (clk_clk),                                            //                 clk.clk
-		.reset_n    (~rst_controller_reset_out_reset),                    //               reset.reset_n
-		.address    (mm_interconnect_0_core_1_traffic_led_s1_address),    //                  s1.address
-		.write_n    (~mm_interconnect_0_core_1_traffic_led_s1_write),     //                    .write_n
-		.writedata  (mm_interconnect_0_core_1_traffic_led_s1_writedata),  //                    .writedata
-		.chipselect (mm_interconnect_0_core_1_traffic_led_s1_chipselect), //                    .chipselect
-		.readdata   (mm_interconnect_0_core_1_traffic_led_s1_readdata),   //                    .readdata
-		.out_port   (traffic_led_export)                                  // external_connection.export
-	);
-
 	projectM1_core_2 core_2 (
 		.clk                                 (clk_clk),                                              //                       clk.clk
 		.reset_n                             (~rst_controller_001_reset_out_reset),                  //                     reset.reset_n
@@ -620,7 +609,7 @@ module projectM1 (
 		.out_port   (core_2_3_tx_external_connection_export)       // external_connection.export
 	);
 
-	projectM1_core_1_3_tx core_2_buzzer (
+	projectM1_core_2_buzzer core_2_buzzer (
 		.clk        (clk_clk),                                       //                 clk.clk
 		.reset_n    (~rst_controller_002_reset_out_reset),           //               reset.reset_n
 		.address    (mm_interconnect_0_core_2_buzzer_s1_address),    //                  s1.address
@@ -708,6 +697,17 @@ module projectM1 (
 		.chipselect (mm_interconnect_0_core_2_timer_s1_chipselect), //      .chipselect
 		.write_n    (~mm_interconnect_0_core_2_timer_s1_write),     //      .write_n
 		.irq        (irq_mapper_001_receiver2_irq)                  //   irq.irq
+	);
+
+	projectM1_core_2_traffic_led core_2_traffic_led (
+		.clk        (clk_clk),                                            //                 clk.clk
+		.reset_n    (~rst_controller_002_reset_out_reset),                //               reset.reset_n
+		.address    (mm_interconnect_0_core_2_traffic_led_s1_address),    //                  s1.address
+		.write_n    (~mm_interconnect_0_core_2_traffic_led_s1_write),     //                    .write_n
+		.writedata  (mm_interconnect_0_core_2_traffic_led_s1_writedata),  //                    .writedata
+		.chipselect (mm_interconnect_0_core_2_traffic_led_s1_chipselect), //                    .chipselect
+		.readdata   (mm_interconnect_0_core_2_traffic_led_s1_readdata),   //                    .readdata
+		.out_port   (traffic_led_export)                                  // external_connection.export
 	);
 
 	projectM1_core_2_hsync core_2_vsync (
@@ -1029,11 +1029,6 @@ module projectM1 (
 		.core_1_timer_s1_readdata                                             (mm_interconnect_0_core_1_timer_s1_readdata),                                             //                                                         .readdata
 		.core_1_timer_s1_writedata                                            (mm_interconnect_0_core_1_timer_s1_writedata),                                            //                                                         .writedata
 		.core_1_timer_s1_chipselect                                           (mm_interconnect_0_core_1_timer_s1_chipselect),                                           //                                                         .chipselect
-		.core_1_traffic_led_s1_address                                        (mm_interconnect_0_core_1_traffic_led_s1_address),                                        //                                    core_1_traffic_led_s1.address
-		.core_1_traffic_led_s1_write                                          (mm_interconnect_0_core_1_traffic_led_s1_write),                                          //                                                         .write
-		.core_1_traffic_led_s1_readdata                                       (mm_interconnect_0_core_1_traffic_led_s1_readdata),                                       //                                                         .readdata
-		.core_1_traffic_led_s1_writedata                                      (mm_interconnect_0_core_1_traffic_led_s1_writedata),                                      //                                                         .writedata
-		.core_1_traffic_led_s1_chipselect                                     (mm_interconnect_0_core_1_traffic_led_s1_chipselect),                                     //                                                         .chipselect
 		.core_2_debug_mem_slave_address                                       (mm_interconnect_0_core_2_debug_mem_slave_address),                                       //                                   core_2_debug_mem_slave.address
 		.core_2_debug_mem_slave_write                                         (mm_interconnect_0_core_2_debug_mem_slave_write),                                         //                                                         .write
 		.core_2_debug_mem_slave_read                                          (mm_interconnect_0_core_2_debug_mem_slave_read),                                          //                                                         .read
@@ -1103,6 +1098,11 @@ module projectM1 (
 		.core_2_timer_s1_readdata                                             (mm_interconnect_0_core_2_timer_s1_readdata),                                             //                                                         .readdata
 		.core_2_timer_s1_writedata                                            (mm_interconnect_0_core_2_timer_s1_writedata),                                            //                                                         .writedata
 		.core_2_timer_s1_chipselect                                           (mm_interconnect_0_core_2_timer_s1_chipselect),                                           //                                                         .chipselect
+		.core_2_traffic_led_s1_address                                        (mm_interconnect_0_core_2_traffic_led_s1_address),                                        //                                    core_2_traffic_led_s1.address
+		.core_2_traffic_led_s1_write                                          (mm_interconnect_0_core_2_traffic_led_s1_write),                                          //                                                         .write
+		.core_2_traffic_led_s1_readdata                                       (mm_interconnect_0_core_2_traffic_led_s1_readdata),                                       //                                                         .readdata
+		.core_2_traffic_led_s1_writedata                                      (mm_interconnect_0_core_2_traffic_led_s1_writedata),                                      //                                                         .writedata
+		.core_2_traffic_led_s1_chipselect                                     (mm_interconnect_0_core_2_traffic_led_s1_chipselect),                                     //                                                         .chipselect
 		.core_2_vsync_s1_address                                              (mm_interconnect_0_core_2_vsync_s1_address),                                              //                                          core_2_vsync_s1.address
 		.core_2_vsync_s1_readdata                                             (mm_interconnect_0_core_2_vsync_s1_readdata),                                             //                                                         .readdata
 		.core_3_debug_mem_slave_address                                       (mm_interconnect_0_core_3_debug_mem_slave_address),                                       //                                   core_3_debug_mem_slave.address

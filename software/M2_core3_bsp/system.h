@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_3' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Thu May 14 14:35:05 SGT 2026
+ * Generated: Sun May 24 22:39:22 SGT 2026
  */
 
 /*
@@ -219,7 +219,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_3_1_tx altera_avalon_pio
-#define CORE_3_1_TX_BASE 0x4003110
+#define CORE_3_1_TX_BASE 0x4003120
 #define CORE_3_1_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_1_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_1_TX_CAPTURE 0
@@ -559,7 +559,7 @@
  */
 
 #define ALT_MODULE_CLASS_us_counter altera_avalon_pio
-#define US_COUNTER_BASE 0x4003120
+#define US_COUNTER_BASE 0x4003110
 #define US_COUNTER_BIT_CLEARING_EDGE_REGISTER 0
 #define US_COUNTER_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define US_COUNTER_CAPTURE 0

@@ -33,8 +33,8 @@ refer to the applicable agreement for further details.
 	(port
 		(pt 0 48)
 		(input)
-		(text "note_index[3..0]" (rect 0 0 62 12)(font "Arial" ))
-		(text "note_index[3..0]" (rect 21 43 83 55)(font "Arial" ))
+		(text "note_index[4..0]" (rect 0 0 63 12)(font "Arial" ))
+		(text "note_index[4..0]" (rect 21 43 84 55)(font "Arial" ))
 		(line (pt 0 48)(pt 16 48)(line_width 3))
 	)
 	(port

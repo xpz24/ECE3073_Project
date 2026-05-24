@@ -1,0 +1,365 @@
+// game_render.h
+// Tile map, player, and status bar rendering for the dungeon game.
+// Depends on: game.h, vga_text_render.h (for fill_rect / draw_char / draw_string)
+
+#ifndef GAME_RENDER_H
+#define GAME_RENDER_H
+
+#include "game.h"
+
+extern volatile char ai_detected_char;
+
+// Top-left pixel of tile (col, row)
+#define TILE_X(col) ((col) * TILE_W)
+#define TILE_Y(row) ((row) * TILE_H + GAME_Y_OFFSET)
+
+// --- Status bar dirty tracking ---
+// Only redraw the status bar when something visible actually changed.
+typedef struct {
+    int        hp;
+    int        keys;
+    int        score;
+    int        floor;
+    GameState  state;
+} StatusSnapshot;
+
+static StatusSnapshot last_status = { -1, -1, -1, -1, (GameState)-1 };
+
+static int status_is_dirty(void) {
+    return (player.hp    != last_status.hp    ||
+            player.keys  != last_status.keys  ||
+            player.score != last_status.score ||
+            player.floor != last_status.floor ||
+            game_state   != last_status.state);
+}
+
+static void status_snapshot(void) {
+    last_status.hp    = player.hp;
+    last_status.keys  = player.keys;
+    last_status.score = player.score;
+    last_status.floor = player.floor;
+    last_status.state = game_state;
+}
+
+// Fills the tile area with a base colour then draws a simple icon on top.
+static void draw_tile(int col, int row) {
+    int x = TILE_X(col);
+    int y = TILE_Y(row);
+    uint8_t tile = cur_map[row][col];
+
+    // base colour fill
+    uint16_t base;
+    switch (tile) {
+        case TILE_WALL:   base = COL_WALL;   break;
+        case TILE_EMPTY:  base = COL_FLOOR;  break;
+        case TILE_DOOR:   base = COL_DOOR;   break;
+        case TILE_CHEST:  base = COL_CHEST;  break;
+        case TILE_EXIT:   base = COL_EXIT;   break;
+        case TILE_TRAP:   base = COL_TRAP;   break;
+        case TILE_ENEMY:  base = COL_ENEMY;  break;
+        case TILE_KEY:    base = COL_KEY;    break;
+        default:          base = COL_BLACK;  break;
+    }
+    fill_rect(x, y, TILE_W, TILE_H, base);
+
+    // inner border for walls — gives a chunky block feel
+    if (tile == TILE_WALL) {
+        fill_rect(x + 1, y + 1, TILE_W - 2, TILE_H - 2, 0x777);
+        fill_rect(x + 3, y + 3, TILE_W - 6, TILE_H - 6, COL_WALL);
+        return;
+    }
+
+    // floor: faint dot at centre for grid visibility
+    if (tile == TILE_EMPTY) {
+        fill_rect(x + TILE_W/2 - 1, y + TILE_H/2 - 1, 2, 2, 0x333);
+        return;
+    }
+
+    // door: vertical bars suggesting iron bars
+    if (tile == TILE_DOOR) {
+        int bx;
+        for (bx = x + 3; bx < x + TILE_W - 2; bx += 4)
+            fill_rect(bx, y + 1, 2, TILE_H - 2, 0x840);
+        // draw required character (tiny) centred
+        int d;
+        for (d = 0; d < MAX_DOORS; d++) {
+            if (cur_doors[d].col == col && cur_doors[d].row == row && !cur_doors[d].open) {
+                draw_char(cur_doors[d].req,
+                          x + TILE_W/2 - FONT_W/2,
+                          y + TILE_H/2 - FONT_H/2,
+                          1, 0xFFF, COL_DOOR);
+                break;
+            }
+        }
+        return;
+    }
+
+    // chest: small box icon
+    if (tile == TILE_CHEST) {
+        fill_rect(x + 3, y + 4, TILE_W - 6, TILE_H - 7, 0x840);
+        fill_rect(x + 3, y + 4, TILE_W - 6, 3,          0xFA0);
+        fill_rect(x + TILE_W/2 - 1, y + 6, 2, 4, 0xFFF);
+        return;
+    }
+
+    // exit: bright downward arrow
+    if (tile == TILE_EXIT) {
+        // shaft
+        fill_rect(x + TILE_W/2 - 1, y + 2, 2, TILE_H - 6, 0x0FF);
+        // arrowhead
+        fill_rect(x + TILE_W/2 - 3, y + TILE_H - 7, 6, 2, 0x0FF);
+        fill_rect(x + TILE_W/2 - 2, y + TILE_H - 5, 4, 2, 0x0FF);
+        fill_rect(x + TILE_W/2 - 1, y + TILE_H - 3, 2, 2, 0x0FF);
+        return;
+    }
+
+    // trap: red X
+    if (tile == TILE_TRAP) {
+        int i;
+        for (i = 2; i < TILE_W - 2; i++) {
+            write_pixel((y + i)           * FB_WIDTH + (x + i),           0xF44);
+            write_pixel((y + i)           * FB_WIDTH + (x + TILE_W-1-i),  0xF44);
+            write_pixel((y + i + 1)       * FB_WIDTH + (x + i),           0xF44);
+            write_pixel((y + i + 1)       * FB_WIDTH + (x + TILE_W-1-i),  0xF44);
+        }
+        return;
+    }
+
+    // enemy: simple skull-ish cross shape
+    if (tile == TILE_ENEMY) {
+        fill_rect(x + TILE_W/2 - 1, y + 2, 2, TILE_H - 4, 0xF88);
+        fill_rect(x + 2, y + TILE_H/2 - 1, TILE_W - 4, 2, 0xF88);
+        return;
+    }
+
+    // key: small key icon (handle + shaft)
+    if (tile == TILE_KEY) {
+        // ring part
+        fill_rect(x + 3, y + 3, 6, 6, 0xFF0);
+        fill_rect(x + 4, y + 4, 4, 4, COL_KEY);
+        fill_rect(x + 5, y + 5, 2, 2, COL_FLOOR); // hole
+        // shaft
+        fill_rect(x + 9, y + 6,  6, 2, 0xFF0);
+        fill_rect(x + 12, y + 8, 2, 2, 0xFF0);
+        return;
+    }
+}
+
+// Simple cyan filled circle-ish shape with a direction indicator.
+
+static void draw_player(void) {
+    int x = TILE_X(player.col);
+    int y = TILE_Y(player.row);
+    // body
+    fill_rect(x + 3, y + 2, TILE_W - 6, TILE_H - 4, COL_PLAYER);
+    // eyes (two white dots)
+    fill_rect(x + 5,  y + 5, 2, 2, 0xFFF);
+    fill_rect(x + 9,  y + 5, 2, 2, 0xFFF);
+    // mouth
+    fill_rect(x + 5,  y + 10, 6, 1, 0x000);
+}
+
+// Call once on floor load or after emergency clear.
+// Draws every tile then draws the player on top.
+
+static void game_draw_map(void) {
+    int r, c;
+    // Fill banner background before drawing tiles
+	fill_rect(0, 0, FB_WIDTH, BANNER_H, BANNER_BG);
+    for (r = 0; r < MAP_ROWS; r++)
+        for (c = 0; c < MAP_COLS; c++)
+            draw_tile(c, r);
+    draw_player();
+    status_snapshot(); // seed snapshot after full redraw
+}
+
+// 48px strip below the play area.
+// Shows: HP bar | FLOOR number | KEY count | SCORE
+
+static void game_draw_status(void) {
+    int sy = STATUS_BAR_Y;
+    int sh = STATUS_BAR_H;
+
+    fill_rect(0, sy, FB_WIDTH, sh, COL_UI_BG);
+    fill_rect(0, sy, FB_WIDTH, 1,  COL_DIVIDER);
+
+    // Row 1 at sy+4 (was sy+6)
+    draw_char('H', 4,  sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('P', 12, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+
+    fill_rect(22, sy + 5, 60, 8, 0x333);          // bar bg (was h=10, now h=8)
+    int hp_w = (player.hp * 60) / player.hp_max;
+    uint16_t hp_col = (player.hp <= player.hp_max / 3) ? COL_UI_HP_LO : COL_UI_HP;
+    if (hp_w > 0)
+        fill_rect(22, sy + 5, hp_w, 8, hp_col);   // bar fill
+
+    draw_char('0' + player.hp,     86, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('/',                 94, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('0' + player.hp_max, 102,sy + 4, 1, COL_UI_FG, COL_UI_BG);
+
+    draw_char('F', 120, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('L', 128, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('R', 136, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char(':', 144, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('1' + player.floor,  152, sy + 4, 1, 0x0FF, COL_UI_BG);
+
+    draw_char('K', 168, sy + 4, 1, COL_KEY,   COL_UI_BG);
+    draw_char(':', 176, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('0' + player.keys,   184, sy + 4, 1, COL_KEY, COL_UI_BG);
+
+    int sc = player.score;
+    if (sc > 999) sc = 999;
+    draw_char('S',               200, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('C',               208, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char(':',               216, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('0' + sc/100,      224, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('0' + (sc/10)%10,  232, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+    draw_char('0' + sc%10,       240, sy + 4, 1, COL_UI_FG, COL_UI_BG);
+
+    // Inner divider — tighter gap (was sy+24, now sy+17)
+    int py = sy + 17;
+    fill_rect(0, py, FB_WIDTH, 1, 0x222);
+
+    // Row 2 at py+3 — gives ~12px for font height, 2px margin at bottom
+    if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
+        char req = cur_doors[pending_door].req;
+        draw_string("SHOW",   4, py + 3, 1, 0xFA0, COL_UI_BG);
+        draw_char(req,       36, py + 3, 1, 0xFFF, 0x500);
+        draw_string("TO OPEN",48, py + 3, 1, 0xFA0, COL_UI_BG);
+    }
+    else if (game_state == GAME_CHEST) {
+        draw_string("+50 SCORE!",  4, py + 3, 1, COL_CHEST, COL_UI_BG);
+    }
+    else if (game_state == GAME_OVER) {
+        draw_string("GAME OVER - KEY0 TO RETRY", 4, py + 3, 1, 0xF00, COL_UI_BG);
+    }
+    else if (game_state == GAME_WIN) {
+        draw_string("YOU ESCAPED!  WELL DONE", 4, py + 3, 1, COL_EXIT, COL_UI_BG);
+    }
+    else if (game_state == GAME_NEXT_FLOOR) {
+        draw_string("NEXT FLOOR...", 4, py + 3, 1, 0x0FF, COL_UI_BG);
+    }
+    else {
+        draw_string("TILT:MOVE  CAM:UNLOCK  KEY0:CLEAR", 4, py + 3, 1, 0x555, COL_UI_BG);
+    }
+}
+
+// --- Smooth player move ---
+// Draws the old tile (erasing player) and new tile (with player) in one
+// back-to-back burst so the screen never shows a blank intermediate frame.
+static void move_player_smooth(int dcol, int drow) {
+    int old_col = player.col;
+    int old_row = player.row;
+
+    // Run the game logic first (updates player.col/row and game_state)
+    game_move(dcol, drow);
+
+    // 1. Redraw the tile the player just left
+    draw_tile(old_col, old_row);
+
+    // 2. Draw player at new position immediately after — no tick gap
+    draw_player();
+}
+
+// traffic led
+#define TRAFFIC_LED_BASE CORE_2_TRAFFIC_LED_BASE
+#define GREEN_LED     4
+#define YELLOW_LED    2
+#define RED_LED       1
+
+static void flash_led(int led) {
+	IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, led);
+	OSTimeDly(1000);
+	IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, 0);
+}
+
+
+// Call from vga_task every loop iteration when game_active == 1.
+// Handles tilt movement, camera input, state transitions.
+// tilt_flag and ai_detected_char are read from interrupts.h globals.
+
+static int  game_tilt_timer   = 0;
+#define     GAME_TILT_DELAY   40    // ticks between tilt-triggered moves
+static int  game_chest_timer  = 0;
+#define     GAME_CHEST_SHOW   60   // ticks to display chest message
+
+static void game_tick(void) {
+	draw_banner_tick();
+
+    // camera input (any state) — only redraw map if a door was actually opened
+    char cam = ai_detected_char;
+    if (cam != 0x00) {
+        ai_detected_char = 0x00;
+        int door_opened = game_handle_camera(cam);
+        if (status_is_dirty()) {
+        	game_draw_status();
+        	status_snapshot();
+        }
+        if (door_opened) game_draw_map();
+    }
+
+    // per-state logic
+    switch (game_state) {
+
+        case GAME_PLAYING: {
+            int tilt = tilt_flag;
+
+            if (tilt == TILT_LEFT || tilt == TILT_RIGHT ||
+                tilt == TILT_FORWARD || tilt == TILT_BACKWARD) {
+                game_tilt_timer++;
+                if (game_tilt_timer >= GAME_TILT_DELAY) {
+                    game_tilt_timer = 0;
+                    int dc = 0, dr = 0;
+                    if      (tilt == TILT_LEFT)     dc = -1;
+                    else if (tilt == TILT_RIGHT)     dc = +1;
+                    else if (tilt == TILT_FORWARD)   dr = -1;
+                    else if (tilt == TILT_BACKWARD)  dr = +1;
+
+                    move_player_smooth(dc, dr);
+
+                    if (status_is_dirty()) {
+                    	game_draw_status();
+                    	status_snapshot();
+                    }
+                }
+            } else {
+                game_tilt_timer = 0;
+            }
+            break;
+        }
+
+        case GAME_CHEST:
+            game_chest_timer++;
+            if (game_chest_timer >= GAME_CHEST_SHOW) {
+                game_chest_timer = 0;
+                game_state = GAME_PLAYING;
+                game_draw_status();
+                status_snapshot();
+            }
+            break;
+
+        case GAME_NEXT_FLOOR:
+            // brief pause then load next floor
+            game_chest_timer++;
+            if (game_chest_timer >= GAME_CHEST_SHOW) {
+                game_chest_timer = 0;
+                game_load_floor(player.floor + 1);
+                game_state = GAME_PLAYING;
+                game_draw_map();
+                game_draw_status();
+                status_snapshot();
+            }
+            break;
+
+        case GAME_WAIT_CAMERA:
+        case GAME_OVER:
+        case GAME_WIN:
+            // no tick logic — wait for KEY0 or camera
+            break;
+
+        default:
+            break;
+    }
+}
+
+#endif // GAME_RENDER_H
