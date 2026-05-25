@@ -117,6 +117,14 @@ void write_hex(unsigned char s5, unsigned char s4, unsigned char s3,
     IOWR_ALTERA_AVALON_PIO_DATA(HEX_HI_BASE, ((alt_u32)s5 << 16) | ((alt_u32)s4 << 8) | (alt_u32)s3);
 }
 
+// TRAFFIC LED STATES
+#define TRAFFIC_STATE_OFFSET  0x110
+#define TRAFFIC_STATE         (*(volatile int*)(SHARED_SDRAM_BASE + TRAFFIC_STATE_OFFSET))
+#define LED_OFF    0
+#define LED_RED    1
+#define LED_YELLOW 2
+#define LED_GREEN  3
+
 // CLEAR HEX FUNCTION
 void clear_hex(void) {
     unsigned char blank = SEG_BLANK | 0x80;
@@ -166,6 +174,22 @@ void scroll_step(int pos, int cpuFlag, int cpu_core, int cpu) {
     }
     // Write to displays
     write_hex(display[0], display[1], display[2], display[3], display[4], display[5]);
+}
+
+// traffic LED state
+// Read from SDRAM and write directly to the Core 1 hardware PIO
+void set_led(){
+	int current_light = TRAFFIC_STATE;
+
+	if (current_light == LED_RED) {
+		IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, 0x01);
+	} else if (current_light == LED_YELLOW) {
+		IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, 0x02);
+	} else if (current_light == LED_GREEN) {
+		IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, 0x04);
+	} else {
+		IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, 0x00);
+	}
 }
 
 // current message
@@ -284,6 +308,8 @@ void hex_task(void* pdata) {
             			cpu_core++;
             			if (cpu_core > 3) cpu_core = 1;
             		}
+
+            		set_LED();
 
             		cpu_usage = usage[cpu_core];
             	}

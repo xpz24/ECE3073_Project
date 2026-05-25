@@ -32,10 +32,18 @@
 #define CAPTURE_TEXT_MAX     256
 #define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
 
+// Traffic LED state configurations shared via SDRAM
+#define TRAFFIC_STATE_OFFSET 0x110
+#define TRAFFIC_STATE        (*(volatile int*)(SDRAM_BASE + TRAFFIC_STATE_OFFSET))
+#define LED_OFF    0
+#define LED_RED    1
+#define LED_YELLOW 2
+#define LED_GREEN  3
+
 // buzzer
 #define BUZZER_BASE  CORE_2_BUZZER_BASE
 
-#define NOTE_REST  0
+#define NOTE_REST   0
 #define NOTE_C4    1
 #define NOTE_D4    2
 #define NOTE_E4    3
@@ -141,6 +149,7 @@ void sfx_tick(int dt_ms) {
         if (sfx.index >= sfx.length) {
             sfx.playing = 0;
             IOWR(BUZZER_BASE, 0, NOTE_REST);
+            TRAFFIC_STATE = LED_OFF;
         } else {
             IOWR(BUZZER_BASE, 0, sfx.notes[sfx.index].note);
         }
@@ -173,10 +182,10 @@ static const SoundNote SND_DAMAGE[] = {
 
 #define SND_LEN(arr) (int)(sizeof(arr)/sizeof(arr[0]))
 
-void sfx_key_pickup(void)  { sfx_play(SND_KEY,    SND_LEN(SND_KEY));    }
-void sfx_coin_pickup(void) { sfx_play(SND_COIN,   SND_LEN(SND_COIN));   }
-void sfx_door_open(void)   { sfx_play(SND_DOOR,   SND_LEN(SND_DOOR));   }
-void sfx_damage(void)      { sfx_play(SND_DAMAGE, SND_LEN(SND_DAMAGE)); }
+void sfx_key_pickup(void)  { TRAFFIC_STATE = LED_YELLOW; sfx_play(SND_KEY,    SND_LEN(SND_KEY));    }
+void sfx_coin_pickup(void) { TRAFFIC_STATE = LED_YELLOW; sfx_play(SND_COIN,   SND_LEN(SND_COIN));   }
+void sfx_door_open(void)   { TRAFFIC_STATE = LED_GREEN;  sfx_play(SND_DOOR,   SND_LEN(SND_DOOR));   }
+void sfx_damage(void)      { TRAFFIC_STATE = LED_RED;    sfx_play(SND_DAMAGE, SND_LEN(SND_DAMAGE)); }
 
 // frame buffer dimensions
 #define FB_WIDTH  320
