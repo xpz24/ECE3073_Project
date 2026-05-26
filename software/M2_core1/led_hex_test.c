@@ -15,9 +15,8 @@
 #define HEX_LO_BASE CORE_1_HEX_LO_BASE
 #define HEX_HI_BASE CORE_1_HEX_HI_BASE
 #define BUZZER_EN_BASE CORE_1_BUZZER_ENABLE_BASE
-#define TX_BASE CORE_1_3_TX_BASE
-#define RX_BASE CORE_1_3_RX_BASE
-#define TX_1_2_BASE CORE_1_2_TX_BASE
+#define TX_1_3_BASE CORE_1_3_TX_BASE
+#define RX_1_3_BASE CORE_1_3_RX_BASE
 #define SDRAM_BASE SHARED_SDRAM_BASE
 
 // CAPTURED TEXT
@@ -192,7 +191,6 @@ void emergency_msg(void) {
 void hex_task(void* pdata) {
     int scroll_pos     = 0;
     int scroll_counter = 0;
-    int traffic_led    = 0;
     const char* last_message = NULL;
     int cpu_usage      = (int)OSCPUUsage; // initialise cpu usage once
     int cpu_timer      = 0;
@@ -228,10 +226,10 @@ void hex_task(void* pdata) {
 
 		if (key_flags & (1 << 0)) {
 			key_flags &= ~(1 << 0);
-			new_msg = "CAPTURING";
+			new_msg = "CLEARING";
 		} else if (key_flags & (1 << 1)) {
 			key_flags &= ~(1 << 1);
-			new_msg = "DISPLAYING";
+			new_msg = "PLAYING";
 		}
 
 		// If message changed, reset scroll
@@ -305,10 +303,16 @@ void hex_task(void* pdata) {
         	IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 1);
         } else IOWR_ALTERA_AVALON_PIO_DATA(BUZZER_EN_BASE, 0);
 
-        // SW4 - enable capture message
+        // SW4 - simulate esp data ready
         sw4_curr = (sw & 0x10) ? 1 : 0;
         if (sw4_curr && !sw4_prev) {
-        	tx_pulse(TX_1_2_BASE, 0x40);
+        	tx_pulse(TX_1_3_BASE, 0x4);
+        }
+        sw4_prev = sw4_curr;
+
+        // image captured signal from core 3
+        if (capture_flag == 1) {
+        	capture_flag = 0;
         	// read from SDRAM into a local buffer (can't pass volatile char* directly to process_string)
 			static char hex_capture_buf[CAPTURE_TEXT_MAX];
 			int i;
@@ -322,7 +326,6 @@ void hex_task(void* pdata) {
 			scroll_counter = 0;
 			printf("[HEX] Capture loaded: %s\n", hex_capture_buf);
         }
-        sw4_prev = sw4_curr;
 
         // small delay to prevent cpu hogging
         OSTimeDly(5);

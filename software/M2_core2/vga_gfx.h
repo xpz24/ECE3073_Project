@@ -17,6 +17,8 @@
 extern void write_pixel(unsigned int addr, uint16_t color);
 extern void fps_tick(void);
 
+extern volatile int screen_busy;
+
 // =========================================================================
 // Screen constants
 // =========================================================================

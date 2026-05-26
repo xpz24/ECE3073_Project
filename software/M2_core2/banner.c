@@ -11,10 +11,10 @@ OS_STK banner_stk[BANNER_STACKSIZE];
 
 static void banner_task(void *pdata) {
     while (1) {
-        if (banner_visible && ticker.count > 0) {
+        if (banner_visible && ticker.count > 0 && !screen_busy) {
 			draw_banner_tick();
         }
-        OSTimeDly(9);
+        OSTimeDly(10);
     }
 }
 

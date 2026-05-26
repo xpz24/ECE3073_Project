@@ -13,8 +13,10 @@
 #define RX_IDLE     0x0
 #define RX_KEY0     0x1
 #define RX_KEY1     0x2
+#define CAPTURE     0x4
 
 volatile int key_flags = 0;
+volatile int capture_flag = 0;
 
 static void rx_irq_handler(void *context, alt_u32 id)
 {
@@ -22,10 +24,9 @@ static void rx_irq_handler(void *context, alt_u32 id)
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_1_3_BASE, 0);
 
     // decode incoming RX pulse into key_flags bits
-    if (val & RX_KEY0)
-        key_flags |= (1 << 0);   // maps to "CAPTURING IMAGE"
-    if (val & RX_KEY1)
-        key_flags |= (1 << 1);   // maps to "DISPLAYING IMAGE"
+    if (val & RX_KEY0) key_flags |= (1 << 0);
+    if (val & RX_KEY1) key_flags |= (1 << 1);
+    if (val == CAPTURE) capture_flag = 1;
 }
 
 void init_rx_irq(void)

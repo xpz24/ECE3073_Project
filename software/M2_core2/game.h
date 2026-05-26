@@ -159,7 +159,6 @@ static int       enemy_count = 0;
 typedef enum {
     GAME_TITLE,         // title screen
     GAME_PLAYING,       // normal gameplay
-    GAME_WAIT_CAMERA,   // paused, waiting for camera input to unlock door
     GAME_CHEST,         // showing chest reward message
     GAME_NEXT_FLOOR,    // transitioning to next floor
     GAME_OVER,          // player died
@@ -181,9 +180,6 @@ static uint8_t  cur_map[MAP_ROWS][MAP_COLS];
 static DoorInfo cur_doors[MAX_DOORS];
 static Player   player;
 static GameState game_state = GAME_TITLE;
-
-// which door index the player is currently trying to unlock (-1 = none)
-static int pending_door = -1;
 
 static void game_load_floor(int floor_idx) {
     int r, c, d;
@@ -220,7 +216,6 @@ static void game_init(void) {
     player.score  = 0;
     player.floor  = 0;
     game_state    = GAME_PLAYING;
-    pending_door  = -1;
     game_load_floor(0);
 }
 
@@ -235,16 +230,23 @@ static int game_handle_command(const char *cmd) {
 
     // UNLOCK — opens the nearest pending door
     if (strncmp(cmd, "UNLOCK", 6) == 0) {
-        if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
-            cur_map[cur_doors[pending_door].row][cur_doors[pending_door].col] = TILE_EMPTY;
-            cur_doors[pending_door].open = 1;
-            player.score += 20;
-            pending_door = -1;
-            game_state   = GAME_PLAYING;
-            sfx_door_open();
-            request_led_flash(GREEN_LED);
-            return 1;
-        }
+    	if (game_state != GAME_PLAYING) return 0;
+    	int d;
+    	for (d = 0; d < MAX_DOORS; d++) {
+    		if (cur_doors[d].open) continue;
+			if (cur_doors[d].col < 0) continue;  // invalid door slot
+			int dr = cur_doors[d].row - player.row;
+			int dc = cur_doors[d].col - player.col;
+			int dist = (dr < 0 ? -dr : dr) + (dc < 0 ? -dc : dc);
+			if (dist <= 1) {
+				cur_map[cur_doors[d].row][cur_doors[d].col] = TILE_EMPTY;
+				cur_doors[d].open = 1;
+				player.score += 20;
+				sfx_door_open();
+				request_led_flash(GREEN_LED);
+				return 1;
+			}
+    	}
         return 0;
     }
 
@@ -263,7 +265,7 @@ static int game_handle_command(const char *cmd) {
                 best      = i;
             }
         }
-        if (best >= 0) {
+        if (best >= 0 && best_dist <= 2) {
             cur_enemies[best].alive = 0;
             cur_map[cur_enemies[best].row][cur_enemies[best].col] = TILE_EMPTY;
             player.score += 30;   // coins for killing enemy
@@ -294,25 +296,20 @@ static int game_move(int dcol, int drow) {
 
     // --- door: check for key or camera input
     if (tile == TILE_DOOR) {
-        int d, door_open = 0;
+        int d;
         for (d = 0; d < MAX_DOORS; d++) {
-            if (cur_doors[d].col == nc && cur_doors[d].row == nr) {
-                if (cur_doors[d].open) { door_open = 1; break; }
+            if (cur_doors[d].col == nc && cur_doors[d].row == nr && !cur_doors[d].open) {
                 if (player.keys > 0) {
                     player.keys--;
                     cur_doors[d].open = 1;
                     cur_map[nr][nc]   = TILE_EMPTY;
-                    door_open = 1;
                     sfx_door_open();
                     break;
+                } else {
+                	return 0;
                 }
-                // need camera input
-                pending_door = d;
-                game_state   = GAME_WAIT_CAMERA;
-                return 1;
             }
         }
-        if (!door_open) return 0; // still locked
     }
 
     // --- enemy: blocked if alive

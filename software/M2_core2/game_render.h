@@ -18,6 +18,32 @@ extern volatile int  capture_flag;
 #define TILE_X(col) ((col) * TILE_W)
 #define TILE_Y(row) ((row) * TILE_H + GAME_Y_OFFSET)
 
+// helper - returns 1 if any unopened door is within 1 tile
+static int player_near_door(void) {
+    int d;
+    for (d = 0; d < MAX_DOORS; d++) {
+        if (cur_doors[d].open || cur_doors[d].col < 0) continue;
+        int dr = cur_doors[d].row - player.row;
+        int dc = cur_doors[d].col - player.col;
+        int dist = (dr < 0 ? -dr : dr) + (dc < 0 ? -dc : dc);
+        if (dist <= 1) return 1;
+    }
+    return 0;
+}
+
+// helper - returns 1 if enemy is within 2 tiles
+static int player_near_enemy(void) {
+    int i;
+    for (i = 0; i < enemy_count; i++) {
+        if (!cur_enemies[i].alive) continue;
+        int dr = cur_enemies[i].row - player.row;
+        int dc = cur_enemies[i].col - player.col;
+        int dist = (dr < 0 ? -dr : dr) + (dc < 0 ? -dc : dc);
+        if (dist <= 2) return 1;
+    }
+    return 0;
+}
+
 // --- Status bar dirty tracking ---
 // Only redraw the status bar when something visible actually changed.
 typedef struct {
@@ -25,25 +51,31 @@ typedef struct {
     int        keys;
     int        score;
     int        floor;
+    int        near_door;
+    int        near_enemy;
     GameState  state;
 } StatusSnapshot;
 
-static StatusSnapshot last_status = { -1, -1, -1, -1, (GameState)-1 };
-
-static int status_is_dirty(void) {
-    return (player.hp    != last_status.hp    ||
-            player.keys  != last_status.keys  ||
-            player.score != last_status.score ||
-            player.floor != last_status.floor ||
-            game_state   != last_status.state);
-}
+static StatusSnapshot last_status = { -1, -1, -1, -1, -1, (GameState)-1 };
 
 static void status_snapshot(void) {
     last_status.hp    = player.hp;
     last_status.keys  = player.keys;
     last_status.score = player.score;
     last_status.floor = player.floor;
+    last_status.near_door = player_near_door();
+    last_status.near_enemy = player_near_enemy();
     last_status.state = game_state;
+}
+
+static int status_is_dirty(void) {
+    return (player.hp    != last_status.hp    ||
+            player.keys  != last_status.keys  ||
+            player.score != last_status.score ||
+            player.floor != last_status.floor ||
+			player_near_door()!= last_status.near_door ||
+			player_near_enemy()!= last_status.near_enemy ||
+            game_state   != last_status.state);
 }
 
 // Fills the tile area with a base colour then draws a simple icon on top.
@@ -226,10 +258,7 @@ static void game_draw_status(void) {
     fill_rect(0, py, FB_WIDTH, 1, 0x222);
 
     // Row 2 at py+3 — gives ~12px for font height, 2px margin at bottom
-    if (game_state == GAME_WAIT_CAMERA && pending_door >= 0) {
-    	draw_string("SAY UNLOCK TO OPEN DOOR", 4, py + 3, 1, 0xFA0, COL_UI_BG);
-    }
-    else if (game_state == GAME_CHEST) {
+    if (game_state == GAME_CHEST) {
         draw_string("+50 SCORE!",  4, py + 3, 1, COL_CHEST, COL_UI_BG);
     }
     else if (game_state == GAME_OVER) {
@@ -240,6 +269,15 @@ static void game_draw_status(void) {
     }
     else if (game_state == GAME_NEXT_FLOOR) {
         draw_string("NEXT FLOOR...", 4, py + 3, 1, 0x0FF, COL_UI_BG);
+    }
+    else if (game_state == GAME_PLAYING) {
+        // check if any door is within 1 tile
+        if (player_near_door())
+            draw_string("SAY UNLOCK TO OPEN DOOR", 4, py + 3, 1, 0xFA0, COL_UI_BG);
+        else if (player_near_enemy())
+        	draw_string("SAY ATTACK TO DEFEAT ENEMY", 4, py + 3, 1, 0xF44, COL_UI_BG);
+        else
+            draw_string("TILT:MOVE  CAM:ACTION  KEY0:CLEAR", 4, py + 3, 1, 0x555, COL_UI_BG);
     }
     else {
         draw_string("TILT:MOVE  CAM:ACTION  KEY0:CLEAR", 4, py + 3, 1, 0x555, COL_UI_BG);
@@ -375,7 +413,6 @@ static void game_tick(void) {
             }
             break;
 
-        case GAME_WAIT_CAMERA:
         case GAME_OVER:
         case GAME_WIN:
 

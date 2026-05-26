@@ -51,17 +51,13 @@ void spi_task(void* pdata) {
     	if (emergency_flag) {
     		printf("\n[SPI] EMERGENCY STOP - HALTING OPERATION\n");
 			while (emergency_flag) {
-				OSTimeDly(5);
+				OSTimeDly(2);
 			}
 			key_flags = 0;
 			printf("[SPI] EMERGENCY CLEARED - CONTINUING OPERATION\n\n");
     	}
 		if (key_flags & (1 << 0)) {
 			key_flags &= ~(1 << 0);
-//			start = get_us();
-//          test_communication();
-//			end = get_us();
-//			printf("\n[LATENCY] SPI capture data: %lu us\n\n", end - start);
 			// notify core 1 key0 pressed
 			start = get_us();
 			tx_pulse(TX_3_1_BASE, TX_KEY0);
@@ -72,10 +68,6 @@ void spi_task(void* pdata) {
 		}
 		if (key_flags & (1 << 1)) {
 			key_flags &= ~(1 << 1);
-//			start = get_us();
-//          request_capture_data();
-//			end = get_us();
-//			printf("\n[LATENCY] SPI print data: %lu us\n\n", end - start);
 			// notify core 1 key1 pressed
 			start = get_us();
 			tx_pulse(TX_3_1_BASE, TX_KEY1);
@@ -90,7 +82,7 @@ void spi_task(void* pdata) {
 			cpu_timer = 0;
 			CPU_USAGE_CORE3 = (int)OSCPUUsage;
 		}
-    	OSTimeDly(3);
+    	OSTimeDly(2);
     }
 
 }

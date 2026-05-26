@@ -8,12 +8,14 @@
 
 // base addresses
 #define KEY_BASE     CORE_3_KEY_BASE
-#define TX_3_1_BASE  CORE_3_1_TX_BASE
 #define RX_3_1_BASE  CORE_3_1_RX_BASE
+#define TX_3_1_BASE  CORE_3_1_TX_BASE
+#define TX_3_2_BASE  CORE_3_2_TX_BASE
 
 // incoming flags
 #define EMERGENCY_START  0x1
 #define EMERGENCY_CLEAR  0x2
+#define CAPTURE_FLAG     0x4
 
 // flags
 volatile int key_flags = 0;
@@ -35,7 +37,7 @@ void init_key_irq(void) {
     alt_irq_enable_all(1);
 }
 
-// pulse tx to notify cpu1
+// pulse tx to notify other cores
 void tx_pulse(int base, alt_u32 flag)
 {
     IOWR_ALTERA_AVALON_PIO_DATA(base, flag);
@@ -49,11 +51,12 @@ static void rx_irq_handler(void *context, alt_u32 id)
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_3_1_BASE, 0);
 
     // decode incoming RX pulse into flags
-	if (val & EMERGENCY_START) {
-		emergency_flag = 1;
-	}
-	if (val & EMERGENCY_CLEAR) {
-		emergency_flag = 0;
+	if (val & EMERGENCY_START) emergency_flag = 1;
+	if (val & EMERGENCY_CLEAR) emergency_flag = 0;
+
+	if (val == CAPTURE_FLAG) {
+		tx_pulse(TX_3_2_BASE, 0x4);
+		tx_pulse(TX_3_1_BASE, 0x4);
 	}
 }
 

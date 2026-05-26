@@ -23,7 +23,7 @@ volatile int capture_flag = 0;
 #define EMERGENCY_START  0x1
 #define EMERGENCY_CLEAR  0x2
 
-#define CAPTURE_FLAG  0x40
+#define CAPTURE_FLAG  0x4
 
 // rx_3_2_irq_handler
 static void rx_3_2_irq_handler(void *context, alt_u32 id)
@@ -32,10 +32,10 @@ static void rx_3_2_irq_handler(void *context, alt_u32 id)
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_3_BASE, 0);
 
     // decode incoming RX pulse into key_flags bits
-    if (val & RX_KEY0)
-        key_flags |= (1 << 0);
-    if (val & RX_KEY1)
-        key_flags |= (1 << 1);
+    if (val & RX_KEY0) key_flags |= (1 << 0);
+    if (val & RX_KEY1) key_flags |= (1 << 1);
+    // capture flag
+	if (val == CAPTURE_FLAG) capture_flag = 1;
 }
 
 void init_rx_3_2_irq(void)
@@ -59,8 +59,6 @@ static void rx_1_2_irq_handler(void *context, alt_u32 id)
 	else if (val == TILT_RIGHT)    tilt_flag = TILT_RIGHT;
 	else if (val == TILT_FORWARD)  tilt_flag = TILT_FORWARD;
 	else if (val == TILT_BACKWARD) tilt_flag = TILT_BACKWARD;
-	// capture flag
-	if (val == CAPTURE_FLAG) capture_flag = 1;
 }
 
 void init_rx_1_2_irq(void)

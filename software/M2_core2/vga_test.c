@@ -14,6 +14,7 @@
 Ticker ticker           = {{0}, 0, 0};
 int marquee_pixel_offset = -(FB_WIDTH);
 int banner_visible       = 0;
+volatile int screen_busy = 0;
 
 // base addresses
 #define PIXEL_ADDR_BASE CORE_2_PIXEL_ADDR_BASE
@@ -109,7 +110,7 @@ void vga_task(void *pdata) {
     clear_framebuffer();
 
     // write sim string to SDRAM once at startup, before the while loop
-    static const char sim_capture[] = "ATTACK";
+    static const char sim_capture[] = "UNLOCK";
     int i;
 	for (i = 0; i < (int)sizeof(sim_capture); i++)
 		CAPTURE_TEXT[i] = sim_capture[i];
@@ -121,57 +122,52 @@ void vga_task(void *pdata) {
 
         if (emergency_flag) {
             printf("\n[VGA] EMERGENCY STOP\n");
+            banner_visible = 0;
+            screen_busy = 1;
+            OSTimeDly(10);
             write_emergency();
             while (emergency_flag) OSTimeDly(5);
-            key_flags        = 0;
-            ai_detected_char = 0x00;
+            key_flags = 0;
             // restore previous mode display
             if (game_active) {
                 game_draw_map();
                 game_draw_status();
+                if (ticker.count > 0) banner_visible = 1;  // resume scrolling from where it left off
             } else {
                 clear_framebuffer();
             }
+            screen_busy = 0;
             printf("[VGA] EMERGENCY CLEARED\n\n");
         }
 
-        // KEY0: clears screen and plays mario theme
+        // KEY0: clears screen
         if (key_flags & (1 << 0)) {
             key_flags &= ~(1 << 0);
+            screen_busy = 1;
             banner_visible = 0;
             ticker_init();
             marquee_pixel_offset = -(FB_WIDTH);
             clear_framebuffer();
+            screen_busy = 0;
         }
 
-        // KEY1:
-        //   - in game mode  - restart game
-		//   - idle          - start game
+        // KEY1: start/restart game
         if (key_flags & (1 << 1)) {
             key_flags &= ~(1 << 1);
+            screen_busy = 1;
 			ticker_init();
-            if (game_active) {
-				// restart game
-				banner_visible = 1;
-				marquee_pixel_offset = -(FB_WIDTH);
-				printf("[VGA] Game restart\n");
-				game_init();
-				game_draw_map();
-				game_draw_status();
-			} else {
-				// start game
-				game_active = 1;
-				banner_visible = 1;
-				marquee_pixel_offset = -(FB_WIDTH);
-				printf("[VGA] Game started\n");
-				game_init();
-				game_draw_map();
-				game_draw_status();
-			}
+			banner_visible = 1;
+			marquee_pixel_offset = -(FB_WIDTH);
+			printf("[VGA] Game %s\n", game_active ? "restart" : "started");
+			game_active = 1;
+			game_init();
+			game_draw_map();
+			game_draw_status();
+			screen_busy = 0;
         }
 
+        // game active
         if (game_active) {
-            // game_tick handles tilt via its own game_tilt_timer
             game_tick();
         }
 
