@@ -285,7 +285,11 @@ void hex_task(void* pdata) {
         // SW0 on - scroll/pause message
         else {
         	scroll_step(scroll_pos, cpuFlag, cpu_core, cpu_usage); // always display current position
-            // SW0 + SW1 - scroll message
+
+        	// Update audio reactive lights whenever SW0 is active
+        	set_led();
+
+        	// SW0 + SW1 - scroll message
             if (sw & 0x2) {
 				cpuFlag = (sw & 0x4) ? 1 : 0; // cpu usage
             	if (cpuFlag) { // display cpu usage
@@ -308,8 +312,6 @@ void hex_task(void* pdata) {
             			cpu_core++;
             			if (cpu_core > 3) cpu_core = 1;
             		}
-
-            		set_LED();
 
             		cpu_usage = usage[cpu_core];
             	}
