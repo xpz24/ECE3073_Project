@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>ucosii</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>May 25, 2026 12:04:32 AM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1779638672415</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>May 26, 2026 4:15:53 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1779783353127</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\cklie\OneDrive\Documents\Academic\Monash\Y3\ECE3073\Quartus\Project\software\M2_core3_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\projectM1.sopcinfo</SopcDesignFile>

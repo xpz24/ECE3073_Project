@@ -10,6 +10,7 @@
 // forward declarations
 void vga_init(void);
 void audio_led_init(void);
+void banner_init(void);
 
 // start task
 #define START_PRIORITY  1
@@ -28,6 +29,7 @@ void start_task(void* pdata) {
 
 	vga_init();
 	audio_led_init();
+	banner_init();
 
     printf("Start task deleting itself\n");
     OSTaskDel(OS_PRIO_SELF);

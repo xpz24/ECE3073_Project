@@ -10,6 +10,11 @@
 #include "vga_gfx.h"
 #include "game_render.h"
 
+// variable definitions for banner
+Ticker ticker           = {{0}, 0, 0};
+int marquee_pixel_offset = -(FB_WIDTH);
+int banner_visible       = 0;
+
 // base addresses
 #define PIXEL_ADDR_BASE CORE_2_PIXEL_ADDR_BASE
 #define PIXEL_DATA_BASE CORE_2_PIXEL_DATA_BASE
@@ -31,200 +36,6 @@
 #define CAPTURE_TEXT_OFFSET  0x200
 #define CAPTURE_TEXT_MAX     256
 #define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
-
-// buzzer
-#define BUZZER_BASE  CORE_2_BUZZER_BASE
-
-#define NOTE_REST  0
-#define NOTE_C4    1
-#define NOTE_D4    2
-#define NOTE_E4    3
-#define NOTE_F4    4
-#define NOTE_G4    5
-#define NOTE_A4    6
-#define NOTE_B4    7
-#define NOTE_C5    8
-#define NOTE_D5    9
-#define NOTE_E5    10
-#define NOTE_F5    11
-#define NOTE_G5    12
-#define NOTE_A5    13
-#define NOTE_B5    14
-#define NOTE_C6    15
-#define NOTE_D6    16
-#define NOTE_E6    17
-#define NOTE_F6    18
-#define NOTE_A3    19
-#define NOTE_B3    20
-// index 21 unused (pad slot)
-#define NOTE_CS4   22   // C#4
-#define NOTE_EB4   23   // Eb4
-
-void mario_theme()
-{
-    int notes[] = {
-        NOTE_E5, NOTE_E5, NOTE_REST, NOTE_E5,
-        NOTE_REST, NOTE_C5, NOTE_E5, NOTE_G5,
-        NOTE_REST, NOTE_G4,
-
-        NOTE_C5, NOTE_G4, NOTE_E4,
-        NOTE_A4, NOTE_B4,
-        NOTE_A4, NOTE_G4,
-
-        NOTE_E5, NOTE_G5, NOTE_A5,
-        NOTE_F5, NOTE_G5,
-
-        NOTE_REST,
-        NOTE_E5, NOTE_C5,
-        NOTE_D5, NOTE_B4
-    };
-
-    int durations[] = {
-        150, 150, 150, 150,
-        150, 150, 150, 300,
-        300, 300,
-
-        300, 300, 300,
-        150, 150,
-        150, 150,
-
-        150, 150, 300,
-        150, 150,
-
-        150,
-        150, 150,
-        150, 300
-    };
-
-    int length = sizeof(notes) / sizeof(notes[0]);
-
-    for(int i = 0; i < length; i++)
-    {
-        IOWR(BUZZER_BASE, 0, notes[i]);
-        usleep(durations[i] * 1000);
-        IOWR(BUZZER_BASE, 0, NOTE_REST);
-        usleep(20000);
-    }
-}
-
-// =========================================================================
-// Non-blocking sound engine
-// =========================================================================
-typedef struct {
-    int note;
-    int duration_ms;
-} SoundNote;
-
-#define SFX_MAX_NOTES 20
-
-typedef struct {
-    SoundNote notes[SFX_MAX_NOTES];
-    int       length;
-    int       index;
-    int       timer_ms;
-    int       playing;
-} SoundPlayer;
-
-static SoundPlayer sfx = {0};
-
-static void sfx_play(const SoundNote *notes, int length) {
-    if (sfx.playing) return;  // don't interrupt current sound
-    int i;
-    for (i = 0; i < length && i < SFX_MAX_NOTES; i++)
-        sfx.notes[i] = notes[i];
-    sfx.length   = length;
-    sfx.index    = 0;
-    sfx.timer_ms = 0;
-    sfx.playing  = 1;
-    IOWR(BUZZER_BASE, 0, sfx.notes[0].note);
-}
-
-static void sfx_play_force(const SoundNote *notes, int length) {
-    int i;
-    for (i = 0; i < length && i < SFX_MAX_NOTES; i++)
-        sfx.notes[i] = notes[i];
-    sfx.length   = length;
-    sfx.index    = 0;
-    sfx.timer_ms = 0;
-    sfx.playing  = 1;
-    IOWR(BUZZER_BASE, 0, sfx.notes[0].note);
-}
-
-// call once per vga_task loop — dt_ms should match OSTimeDly value
-void sfx_tick(int dt_ms) {
-    if (!sfx.playing) return;
-    sfx.timer_ms += dt_ms;
-    if (sfx.timer_ms >= sfx.notes[sfx.index].duration_ms) {
-        sfx.timer_ms = 0;
-        sfx.index++;
-        if (sfx.index >= sfx.length) {
-            sfx.playing = 0;
-            IOWR(BUZZER_BASE, 0, NOTE_REST);
-        } else {
-            IOWR(BUZZER_BASE, 0, sfx.notes[sfx.index].note);
-        }
-    }
-}
-
-// sound definitions
-// Mario coin
-static const SoundNote SND_COIN[] = {
-    {NOTE_B5,   50}, {NOTE_REST,  5},
-    {NOTE_C6,  230}, {NOTE_REST, 20}
-};
-
-// Minecraft "oof"
-static const SoundNote SND_DAMAGE[] = {
-    {NOTE_A5,   30}, {NOTE_REST,  5},
-    {NOTE_F5,   30}, {NOTE_REST,  5},
-    {NOTE_C5,   30}, {NOTE_REST,  5},
-    {NOTE_EB4,  40}, {NOTE_REST,  5},
-    {NOTE_B3,   90}, {NOTE_REST, 10}
-};
-
-// Minecraft wooden door
-static const SoundNote SND_DOOR[] = {
-	{NOTE_E4,   80}, {NOTE_REST, 20},
-	{NOTE_D4,  100}, {NOTE_REST, 80},
-	{NOTE_E4,   60}, {NOTE_REST, 20},
-	{NOTE_D4,   80}, {NOTE_REST, 20}
-};
-
-// Key pickup
-static const SoundNote SND_KEY[] = {
-    {NOTE_E5,   55}, {NOTE_REST, 10},
-    {NOTE_G5,   55}, {NOTE_REST, 10},
-    {NOTE_B5,   55}, {NOTE_REST, 10},
-    {NOTE_E6,  130}, {NOTE_REST, 20}
-};
-
-// Next floor
-static const SoundNote SND_NEXTFLOOR[] = {
-    {NOTE_C5,   80}, {NOTE_REST, 10},
-    {NOTE_E5,   80}, {NOTE_REST, 10},
-    {NOTE_G5,   80}, {NOTE_REST, 10},
-    {NOTE_C6,   80}, {NOTE_REST, 10},
-    {NOTE_E6,  200}, {NOTE_REST, 20}
-};
-
-// Game over
-static const SoundNote SND_GAMEOVER[] = {
-    {NOTE_B4,  150}, {NOTE_REST, 20},
-    {NOTE_A4,  150}, {NOTE_REST, 20},
-    {NOTE_G4,  150}, {NOTE_REST, 20},
-    {NOTE_E4,  150}, {NOTE_REST, 20},
-    {NOTE_D4,  200}, {NOTE_REST, 30},
-    {NOTE_C4,  400}, {NOTE_REST, 20}
-};
-
-#define SND_LEN(arr) (int)(sizeof(arr)/sizeof(arr[0]))
-
-void sfx_key_pickup(void)  { sfx_play(SND_KEY,    SND_LEN(SND_KEY));             }
-void sfx_coin_pickup(void) { sfx_play(SND_COIN,   SND_LEN(SND_COIN));            }
-void sfx_door_open(void)   { sfx_play(SND_DOOR,   SND_LEN(SND_DOOR));            }
-void sfx_damage(void)      { sfx_play(SND_DAMAGE, SND_LEN(SND_DAMAGE));          }
-void sfx_next_floor(void)  { sfx_play(SND_NEXTFLOOR, SND_LEN(SND_NEXTFLOOR));    }
-void sfx_game_over(void)   { sfx_play_force(SND_GAMEOVER, SND_LEN(SND_GAMEOVER));}
 
 // frame buffer dimensions
 #define FB_WIDTH  320
@@ -331,7 +142,6 @@ void vga_task(void *pdata) {
             ticker_init();
             marquee_pixel_offset = -(FB_WIDTH);
             clear_framebuffer();
-            banner_dirty = 1;
         }
 
         // KEY1:
@@ -344,8 +154,6 @@ void vga_task(void *pdata) {
 				// restart game
 				banner_visible = 1;
 				marquee_pixel_offset = -(FB_WIDTH);
-				marquee_accumulator  = 0;
-				banner_dirty = 1;
 				printf("[VGA] Game restart\n");
 				game_init();
 				game_draw_map();
@@ -355,8 +163,6 @@ void vga_task(void *pdata) {
 				game_active = 1;
 				banner_visible = 1;
 				marquee_pixel_offset = -(FB_WIDTH);
-				marquee_accumulator  = 0;
-				banner_dirty = 1;
 				printf("[VGA] Game started\n");
 				game_init();
 				game_draw_map();
@@ -366,7 +172,6 @@ void vga_task(void *pdata) {
 
         if (game_active) {
             // game_tick handles tilt via its own game_tilt_timer
-            // and camera input via ai_detected_char — no conflict with text mode
             game_tick();
         }
 
@@ -389,71 +194,6 @@ void vga_init(void) {
                     VGA_PRIORITY,
                     vga_stk,
                     VGA_STACKSIZE,
-                    NULL,
-                    0);
-}
-
-// audio_led_task — handles sfx_tick and LED patterns non-blocking
-#define TRAFFIC_LED_BASE CORE_2_TRAFFIC_LED_BASE
-#define AUDIO_LED_STACKSIZE 2048
-#define AUDIO_LED_PRIORITY  4   // lower priority than VGA (2)
-OS_STK audio_led_stk[AUDIO_LED_STACKSIZE];
-
-// Replace the blocking flash_led with a request flag
-volatile int led_flash_request = 0;  // set to LED color, task clears it
-#define BLINK_ON_TICKS  50
-#define BLINK_OFF_TICKS 50
-#define BLINK_TIMES     2
-
-static void audio_led_task(void *pdata) {
-    int led_timer = 0;
-    int active_led = 0;
-    int blink_count = 0;
-	int led_on      = 0;
-
-    while (1) {
-        // handle LED flash request
-        if (led_flash_request && !active_led) {
-            active_led = led_flash_request;
-            led_flash_request = 0;
-            led_timer = 0;
-            led_on = 1;
-            blink_count = 0;
-            IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, active_led);
-        }
-
-        if (active_led) {
-            led_timer++;
-            if (led_on && led_timer >= BLINK_ON_TICKS) {
-                led_timer  = 0;
-                led_on = 0;
-                IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, 0);
-            } else if (!led_on && led_timer >= BLINK_OFF_TICKS) {
-            	led_timer = 0;
-            	blink_count++;
-            	if (blink_count >= BLINK_TIMES) {
-            		active_led = 0;
-            	} else {
-            		led_on = 1;
-            		IOWR_ALTERA_AVALON_PIO_DATA(TRAFFIC_LED_BASE, active_led);
-            	}
-            }
-        }
-
-        sfx_tick(5);
-        OSTimeDly(5);
-    }
-}
-
-// audio_led_init()
-void audio_led_init(void) {
-    OSTaskCreateExt(audio_led_task,
-                    NULL,
-                    &audio_led_stk[AUDIO_LED_STACKSIZE - 1],
-					AUDIO_LED_PRIORITY,
-					AUDIO_LED_PRIORITY,
-					audio_led_stk,
-					AUDIO_LED_STACKSIZE,
                     NULL,
                     0);
 }

@@ -1378,7 +1378,43 @@
 			</provider>
 			<provider id="altera.tool.Nios2GCCBuildCommandParser">
 				<language id="org.eclipse.cdt.core.gcc">
+					<resource project-relative-path="banner.c">
+						<entry kind="includePath" name="/M2_core2_bsp/UCOSII/inc">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="includePath" name="/M2_core2_bsp/HAL/inc">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="includePath" name="/M2_core2_bsp">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="includePath" name="/M2_core2_bsp/drivers/inc">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="macro" name="ALTERA_AVALON_JTAG_UART_IGNORE_FIFO_FULL_ERROR" value=""/>
+						<entry kind="macro" name="ALT_NO_INSTRUCTION_EMULATION" value=""/>
+						<entry kind="macro" name="__hal__" value=""/>
+						<entry kind="macro" name="__ucosii__" value=""/>
+					</resource>
 					<resource project-relative-path="main.c">
+						<entry kind="includePath" name="/M2_core2_bsp/UCOSII/inc">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="includePath" name="/M2_core2_bsp/HAL/inc">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="includePath" name="/M2_core2_bsp">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="includePath" name="/M2_core2_bsp/drivers/inc">
+							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
+						</entry>
+						<entry kind="macro" name="ALTERA_AVALON_JTAG_UART_IGNORE_FIFO_FULL_ERROR" value=""/>
+						<entry kind="macro" name="ALT_NO_INSTRUCTION_EMULATION" value=""/>
+						<entry kind="macro" name="__hal__" value=""/>
+						<entry kind="macro" name="__ucosii__" value=""/>
+					</resource>
+					<resource project-relative-path="audio_led.c">
 						<entry kind="includePath" name="/M2_core2_bsp/UCOSII/inc">
 							<flag value="VALUE_WORKSPACE_PATH|RESOLVED"/>
 						</entry>

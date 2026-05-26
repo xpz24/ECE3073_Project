@@ -287,13 +287,11 @@ void request_led_flash(int led) {
 // tilt_flag and ai_detected_char are read from interrupts.h globals.
 
 static int  game_tilt_timer   = 0;
-#define     GAME_TILT_DELAY   40    // ticks between tilt-triggered moves
+#define     GAME_TILT_DELAY   80    // ticks between tilt-triggered moves
 static int  game_chest_timer  = 0;
 #define     GAME_CHEST_SHOW   60   // ticks to display chest message
 
 static void game_tick(void) {
-	draw_banner_tick();
-
 	// command input — triggered by capture_flag, reads full word from CAPTURE_TEXT
 	if (capture_flag) {
 		capture_flag = 0;
@@ -313,9 +311,6 @@ static void game_tick(void) {
 		for (ci = 0; cmd[ci] != '\0'; ci++)
 			ticker_push(cmd[ci]);
 		marquee_pixel_offset = -(FB_WIDTH);
-		marquee_accumulator  = 0;
-		banner_visible = 1;
-		banner_dirty   = 1;
 
 		if (game_active) {
 			int result = game_handle_command(cmd);

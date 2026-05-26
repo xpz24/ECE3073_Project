@@ -145,6 +145,8 @@ ELF := M2_core2.elf
 C_SRCS += main.c
 C_SRCS += vga_test.c
 C_SRCS += interrupts.c
+C_SRCS += banner.c
+C_SRCS += audio_led.c
 CXX_SRCS :=
 ASM_SRCS :=
 

@@ -108,7 +108,7 @@ typedef struct {
     int   count;  // number of valid characters
 } Ticker;
 
-static Ticker ticker;
+extern Ticker ticker;
 
 static void ticker_init(void) {
     ticker.head  = 0;
@@ -181,38 +181,20 @@ static void wait_for_blanking(void) {
 #define BANNER_FG     0xFD0   // warm yellow
 #define BANNER_BG     0x112   // dark blue
 
-// Pixels to advance per tick — increase for faster scroll, decrease for slower
-#define MARQUEE_STEP_NUM  1   // numerator   — advance 1 pixel
-#define MARQUEE_STEP_DEN  3   // denominator — every 3 frames
-
-static int marquee_pixel_offset = -(FB_WIDTH);
-static int banner_visible = 0;
-static int marquee_accumulator  = 0;
-static int banner_dirty = 1;
+extern int marquee_pixel_offset;
+extern int banner_visible;
 
 static void draw_banner_tick(void) {
 	if (!banner_visible) return;
 
-    if (ticker.count == 0) {
-        fill_rect(0, 0, FB_WIDTH, BANNER_H, BANNER_BG);
-        return;
-    }
+    if (ticker.count == 0) return;
 
     int total_width = ticker.count * BANNER_SLOT_W;
     int cy          = (BANNER_H - FONT_H * BANNER_SCALE) / 2 + 2;
-    int char_h      = FONT_H * BANNER_SCALE;
 
-	marquee_accumulator += MARQUEE_STEP_NUM;
-	if (marquee_accumulator >= MARQUEE_STEP_DEN) {
-	    marquee_accumulator = 0;
-	    marquee_pixel_offset++;
-	    if (marquee_pixel_offset >= total_width + 4)
-	        marquee_pixel_offset = -(FB_WIDTH);
-	    banner_dirty = 1;
-	}
-
-	if (!banner_dirty) return;  // nothing changed, skip all pixel writes
-	banner_dirty = 0;
+	marquee_pixel_offset++;
+	if (marquee_pixel_offset >= total_width + 4)
+		marquee_pixel_offset = -(FB_WIDTH);
 
     int x;
     for (x = 0; x < FB_WIDTH; x++) {
@@ -243,13 +225,6 @@ static void draw_banner_tick(void) {
             addr += FB_WIDTH;
         }
     }
-
-    // Fill margin rows above and below the text within the banner strip
-    if (cy > 0)
-        fill_rect(0, 0, FB_WIDTH, cy, BANNER_BG);
-    int bottom_y = cy + char_h;
-    if (bottom_y < BANNER_H)
-        fill_rect(0, bottom_y, FB_WIDTH, BANNER_H - bottom_y, BANNER_BG);
 }
 
 #endif // VGA_GFX_H

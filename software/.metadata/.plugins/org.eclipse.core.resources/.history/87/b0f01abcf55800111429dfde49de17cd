@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include "../M2_core2_bsp/system.h"
+#include "../M2_core2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core2_bsp/HAL/inc/includes.h"
+#include "../M2_core2_bsp/HAL/inc/io.h"
+#include "vga_gfx.h"        // draw_banner_tick, banner_visible, ticker
+
+#define BANNER_STACKSIZE 2048
+#define BANNER_PRIORITY  3
+OS_STK banner_stk[BANNER_STACKSIZE];
+
+static void banner_task(void *pdata) {
+    while (1) {
+        if (banner_visible && ticker.count > 0) {
+			draw_banner_tick();
+        }
+        OSTimeDly(5);
+    }
+}
+
+void banner_init(void) {
+    OSTaskCreateExt(banner_task,
+                    NULL,
+                    &banner_stk[BANNER_STACKSIZE - 1],
+                    BANNER_PRIORITY,
+                    BANNER_PRIORITY,
+                    banner_stk,
+                    BANNER_STACKSIZE,
+                    NULL,
+                    0);
+}
