@@ -1,13 +1,13 @@
-Analysis & Synthesis Status : Successful - Mon May 25 00:00:05 2026
+Analysis & Synthesis Status : Successful - Thu May 28 01:16:09 2026
 Quartus Prime Version : 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 Revision Name : Project
 Top-level Entity Name : top_levelM1
 Family : MAX 10
-Total logic elements : 14,567
-    Total combinational functions : 12,071
-    Dedicated logic registers : 7,640
-Total registers : 7640
-Total pins : 136
+Total logic elements : 14,838
+    Total combinational functions : 12,327
+    Dedicated logic registers : 7,695
+Total registers : 7695
+Total pins : 138
 Total virtual pins : 0
 Total memory bits : 1,161,728
 Embedded Multiplier 9-bit elements : 12

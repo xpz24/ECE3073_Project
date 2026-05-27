@@ -10,9 +10,20 @@
 extern int game_active;
 extern volatile int  capture_flag;
 #define SDRAM_BASE        SHARED_SDRAM_BASE
-#define CAPTURE_TEXT_OFFSET  0x200
-#define CAPTURE_TEXT_MAX     256
-#define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
+#define DEMO_IMAGE_ADDR   0x03FDF000UL
+#define DEMO_STRING_ADDR  (DEMO_IMAGE_ADDR + ESP32_FB_SIZE)
+#define DEMO_STRING_MAX   30
+
+#define ESP32_FB_WIDTH        208
+#define ESP32_FB_HEIGHT       208
+#define ESP32_FB_SIZE         (ESP32_FB_WIDTH * ESP32_FB_HEIGHT * 3 / 2)
+
+#define DEMO_STRING_BUF   ((volatile char*)DEMO_STRING_ADDR)
+
+// latency function
+static inline alt_u32 get_us(void) {
+    return IORD_ALTERA_AVALON_PIO_DATA(US_COUNTER_BASE);
+}
 
 // Top-left pixel of tile (col, row)
 #define TILE_X(col) ((col) * TILE_W)
@@ -330,15 +341,18 @@ static int  game_chest_timer  = 0;
 #define     GAME_CHEST_SHOW   60   // ticks to display chest message
 
 static void game_tick(void) {
+	alt_u32 start = 0;
+	alt_u32 end = 0;
 	// command input — triggered by capture_flag, reads full word from CAPTURE_TEXT
 	if (capture_flag) {
+		start = get_us();
 		capture_flag = 0;
 
 		// read command from SDRAM
 		char cmd[16] = {0};
 		int  ci = 0;
-		while (ci < 15 && CAPTURE_TEXT[ci] != '\0') {
-			cmd[ci] = CAPTURE_TEXT[ci];
+		while (ci < 15 && DEMO_STRING_BUF[ci] != '\0') {
+			cmd[ci] = DEMO_STRING_BUF[ci];
 			ci++;
 		}
 
@@ -358,6 +372,8 @@ static void game_tick(void) {
 			}
 			if (result > 0) game_draw_map();
 		}
+		end = get_us();
+		printf("\n[LATENCY] CAPTURE_FLAG to game state: %lu us\n", end - start);
 	}
 
     // per-state logic

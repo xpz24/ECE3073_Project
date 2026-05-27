@@ -7,6 +7,7 @@
 #include "interrupts.h"
 
 void spi_init(void);
+void init_esp32_ready_irq(void);
 
 #define START_PRIORITY  1
 #define START_STACKSIZE 2048
@@ -20,6 +21,7 @@ void start_task(void* pdata) {
 
     init_key_irq();
     init_rx_irq();
+    init_esp32_ready_irq();
     spi_init();
 
     printf("Start task deleting itself\n");

@@ -7,6 +7,7 @@
    <irq preferredWidth="63" />
   </columns>
  </systemtable>
- <library expandedCategories="Project,Library" />
+ <library
+   expandedCategories="Library/Memory Interfaces and Controllers,Library/Processors and Peripherals/Peripherals,Library/Basic Functions/On Chip Memory,Library/Basic Functions,Project,Library/Processors and Peripherals,Library,Library/Interface Protocols,Library/Interface Protocols/Serial,Library/Memory Interfaces and Controllers/Flash,Library/University Program,Library/University Program/Generic IO" />
  <window width="1938" height="1218" x="-9" y="-9" />
 </preferences>

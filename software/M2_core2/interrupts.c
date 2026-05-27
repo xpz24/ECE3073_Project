@@ -35,7 +35,7 @@ static void rx_3_2_irq_handler(void *context, alt_u32 id)
     if (val & RX_KEY0) key_flags |= (1 << 0);
     if (val & RX_KEY1) key_flags |= (1 << 1);
     // capture flag
-	if (val == CAPTURE_FLAG) capture_flag = 1;
+	if (val & CAPTURE_FLAG) capture_flag = 1;
 }
 
 void init_rx_3_2_irq(void)

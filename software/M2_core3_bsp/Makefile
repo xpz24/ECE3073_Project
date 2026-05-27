@@ -219,6 +219,13 @@ altera_avalon_jtag_uart_driver_C_LIB_SRCS := \
 	$(altera_avalon_jtag_uart_driver_SRCS_ROOT)/src/altera_avalon_jtag_uart_ioctl.c \
 	$(altera_avalon_jtag_uart_driver_SRCS_ROOT)/src/altera_avalon_jtag_uart_fd.c
 
+# altera_avalon_mutex_driver sources root 
+altera_avalon_mutex_driver_SRCS_ROOT := drivers
+
+# altera_avalon_mutex_driver sources 
+altera_avalon_mutex_driver_C_LIB_SRCS := \
+	$(altera_avalon_mutex_driver_SRCS_ROOT)/src/altera_avalon_mutex.c
+
 # altera_avalon_pio_driver sources root 
 altera_avalon_pio_driver_SRCS_ROOT := drivers
 
@@ -358,6 +365,7 @@ ucosii_C_LIB_SRCS := \
 # Assemble all component C source files 
 COMPONENT_C_LIB_SRCS += \
 	$(altera_avalon_jtag_uart_driver_C_LIB_SRCS) \
+	$(altera_avalon_mutex_driver_C_LIB_SRCS) \
 	$(altera_avalon_spi_driver_C_LIB_SRCS) \
 	$(altera_avalon_timer_driver_C_LIB_SRCS) \
 	$(altera_nios2_gen2_ucosii_driver_C_LIB_SRCS) \

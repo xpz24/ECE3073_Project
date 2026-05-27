@@ -1,0 +1,69 @@
+// libraries
+#include <stdio.h>
+#include "../M2_core3_bsp/system.h"
+#include "../M2_core3_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core3_bsp/HAL/inc/sys/alt_irq.h"
+#include "../M2_core3_bsp/HAL/inc/includes.h"
+#include "interrupts.h"
+
+// base addresses
+#define KEY_BASE     CORE_3_KEY_BASE
+#define RX_3_1_BASE  CORE_3_1_RX_BASE
+#define TX_3_1_BASE  CORE_3_1_TX_BASE
+#define TX_3_2_BASE  CORE_3_2_TX_BASE
+
+// incoming flags
+#define EMERGENCY_START  0x1
+#define EMERGENCY_CLEAR  0x2
+#define LIVE_FLAG        0x4
+#define STRING_FLAG      0x8
+
+// flags
+volatile int key_flags = 0;
+volatile int emergency_flag = 0;
+volatile int live_flag = 0;
+
+// key interrupts
+static void key_irq_handler(void* context, alt_u32 id) {
+	int edge = IORD_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE);
+    // clear edge capture for KEY1 PIO
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+    // store which key(s) triggered
+    key_flags |= edge;
+}
+
+void init_key_irq(void) {
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(KEY_BASE, 0xF);
+    alt_irq_register(CORE_3_KEY_IRQ, NULL, key_irq_handler);
+    alt_irq_enable_all(1);
+}
+
+// pulse tx to notify other cores
+void tx_pulse(int base, alt_u32 flag)
+{
+    IOWR_ALTERA_AVALON_PIO_DATA(base, flag);
+    for (volatile int i = 0; i < 50; i++);
+    IOWR_ALTERA_AVALON_PIO_DATA(base, 0);
+}
+
+static void rx_irq_handler(void *context, alt_u32 id)
+{
+	int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_3_1_BASE);
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_3_1_BASE, 0);
+
+    // decode incoming RX pulse into flags
+	if (val & EMERGENCY_START) emergency_flag = 1;
+	if (val & EMERGENCY_CLEAR) emergency_flag = 0;
+
+	if (val & CAPTURE_FLAG) live_flag = 1;
+	if (val & STRING_FLAG)  live_flag = 0;
+}
+
+void init_rx_irq(void)
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_3_1_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_3_1_BASE, 0x7);
+    alt_irq_register(CORE_3_1_RX_IRQ, NULL, rx_irq_handler);
+    alt_irq_enable_all(1);
+}

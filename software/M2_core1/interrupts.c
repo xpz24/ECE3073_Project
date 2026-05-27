@@ -9,7 +9,7 @@
 #define TX_1_3_BASE CORE_1_3_TX_BASE
 #define RX_1_3_BASE CORE_1_3_RX_BASE
 
-// RX flag values — match Core 3's TX_KEY* defines
+// RX flag values - match Core 3's TX_KEY* defines
 #define RX_IDLE     0x0
 #define RX_KEY0     0x1
 #define RX_KEY1     0x2

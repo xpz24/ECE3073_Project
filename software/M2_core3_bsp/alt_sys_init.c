@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_3' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Mon May 11 16:54:07 SGT 2026
+ * Generated: Thu May 28 00:21:08 SGT 2026
  */
 
 /*
@@ -60,6 +60,7 @@
 
 #include "altera_nios2_gen2_irq.h"
 #include "altera_avalon_jtag_uart.h"
+#include "altera_avalon_mutex.h"
 #include "altera_avalon_spi.h"
 #include "altera_avalon_timer.h"
 
@@ -69,6 +70,7 @@
 
 ALTERA_NIOS2_GEN2_IRQ_INSTANCE ( CORE_3, core_3);
 ALTERA_AVALON_JTAG_UART_INSTANCE ( CORE_3_JTAG, core_3_jtag);
+ALTERA_AVALON_MUTEX_INSTANCE ( MUTEX_0, mutex_0);
 ALTERA_AVALON_SPI_INSTANCE ( CORE_3_SPI, core_3_spi);
 ALTERA_AVALON_TIMER_INSTANCE ( CORE_3_TIMER, core_3_timer);
 
@@ -95,5 +97,6 @@ void alt_sys_init( void )
 {
     ALTERA_AVALON_TIMER_INIT ( CORE_3_TIMER, core_3_timer);
     ALTERA_AVALON_JTAG_UART_INIT ( CORE_3_JTAG, core_3_jtag);
+    ALTERA_AVALON_MUTEX_INIT ( MUTEX_0, mutex_0);
     ALTERA_AVALON_SPI_INIT ( CORE_3_SPI, core_3_spi);
 }

@@ -1,0 +1,63 @@
+// menu.h
+// Title / mode-select screen drawn on VGA.
+// Navigation: KEY1 = cycle selection, KEY0 = confirm
+
+#ifndef MENU_H
+#define MENU_H
+
+#include "vga_gfx.h"
+#include "game.h"   // for game_init, game_draw_map etc.
+
+typedef enum {
+    MODE_NONE   = -1,
+    MODE_GAME   = 0,
+    MODE_DEMO   = 1,
+    MODE_SYSINFO= 2,
+} MenuMode;
+
+#define MENU_ITEMS 3
+static const char* menu_labels[MENU_ITEMS] = {
+    "1. DUNGEON GAME",
+    "2. DEMO / BANNER",
+    "3. SYSTEM INFO",
+};
+
+static int menu_sel = 0;   // currently highlighted item
+static int menu_active = 1; // 1 = menu is showing
+
+static void menu_draw(void) {
+    fill_rect(0, 0, FB_WIDTH, FB_HEIGHT, 0x000);
+
+    // Title
+    draw_string("== FPGA MULTI-CORE SYSTEM ==", 10, 20, 1, 0x0FF, 0x000);
+    draw_string("SELECT MODE:", 10, 40, 1, 0xFFF, 0x000);
+
+    int i;
+    for (i = 0; i < MENU_ITEMS; i++) {
+        int y = 70 + i * 30;
+        uint16_t fg = (i == menu_sel) ? 0xFF0 : 0x777;
+        uint16_t bg = (i == menu_sel) ? 0x113 : 0x000;
+        // highlight bar
+        if (i == menu_sel)
+            fill_rect(6, y - 2, FB_WIDTH - 12, 16, 0x113);
+        draw_string(menu_labels[i], 10, y, 1, fg, bg);
+        if (i == menu_sel)
+            draw_string(">", 2, y, 1, 0xFF0, 0x000);
+    }
+
+    draw_string("KEY1:CYCLE  KEY0:SELECT", 10, 190, 1, 0x444, 0x000);
+    draw_string("SW9:EMERGENCY STOP", 10, 205, 1, 0x400, 0x000);
+}
+
+static void menu_cycle(void) {
+    menu_sel = (menu_sel + 1) % MENU_ITEMS;
+    menu_draw();
+}
+
+// Returns the selected mode and clears menu_active
+static MenuMode menu_confirm(void) {
+    menu_active = 0;
+    return (MenuMode)menu_sel;
+}
+
+#endif // MENU_H

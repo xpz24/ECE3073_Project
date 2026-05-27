@@ -187,7 +187,7 @@ extern int marquee_pixel_offset;
 extern int banner_visible;
 
 static void draw_banner_tick(void) {
-	if (!banner_visible) return;
+	if (screen_busy || !banner_visible) return;
 
     if (ticker.count == 0) return;
 

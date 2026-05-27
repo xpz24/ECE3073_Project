@@ -28,8 +28,10 @@
 		.spi_MOSI             (<connected-to-spi_MOSI>),             //              .MOSI
 		.spi_SCLK             (<connected-to-spi_SCLK>),             //              .SCLK
 		.spi_SS_n             (<connected-to-spi_SS_n>),             //              .SS_n
+		.spi_ready_export     (<connected-to-spi_ready_export>),     //     spi_ready.export
 		.sw_export            (<connected-to-sw_export>),            //            sw.export
 		.traffic_led_export   (<connected-to-traffic_led_export>),   //   traffic_led.export
-		.us_counter_export    (<connected-to-us_counter_export>)     //    us_counter.export
+		.us_counter_export    (<connected-to-us_counter_export>),    //    us_counter.export
+		.spi_live_flag_export (<connected-to-spi_live_flag_export>)  // spi_live_flag.export
 	);
 

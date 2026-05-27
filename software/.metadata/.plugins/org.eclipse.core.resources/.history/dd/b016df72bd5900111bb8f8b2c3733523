@@ -1,0 +1,612 @@
+// libraries
+#include <stdio.h>
+#include <string.h>
+#include "../M2_core2_bsp/system.h"
+#include "../M2_core2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core2_bsp/HAL/inc/includes.h"
+#include "../M2_core2_bsp/HAL/inc/io.h"
+#include "interrupts.h"
+#include "image_data.h"
+#include "vga_gfx.h"
+#include "game_render.h"
+#include "menu.h"
+
+// variable definitions for banner
+Ticker ticker           = {{0}, 0, 0};
+int marquee_pixel_offset = -(FB_WIDTH);
+int banner_visible       = 0;
+volatile int screen_busy = 0;
+
+// base addresses
+#define PIXEL_ADDR_BASE CORE_2_PIXEL_ADDR_BASE
+#define PIXEL_DATA_BASE CORE_2_PIXEL_DATA_BASE
+#define PIXEL_WREN_BASE CORE_2_PIXEL_WREN_BASE
+#define SDRAM_BASE SHARED_SDRAM_BASE
+
+// CPU usages
+#define CPU_USAGE_CORE1_OFFSET  0x100
+#define CPU_USAGE_CORE2_OFFSET  0x104
+#define CPU_USAGE_CORE3_OFFSET  0x108
+
+#define CPU_USAGE_CORE1  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE1_OFFSET))
+#define CPU_USAGE_CORE2  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE2_OFFSET))
+#define CPU_USAGE_CORE3  (*(volatile int*)(SDRAM_BASE + CPU_USAGE_CORE3_OFFSET))
+
+#define CPU_USAGE_SPEED 300
+
+// SDRAM capture text buffer
+//#define CAPTURE_TEXT_OFFSET  0x200
+//#define CAPTURE_TEXT_MAX     256
+//#define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
+
+// SDRAM live camera feed buffer
+// Core 3 writes a 320x208 RGB444 frame here, then sets DEMO_IMAGE_READY = 1.
+// Core 2 reads the flag, blits the frame, then clears DEMO_IMAGE_READY = 0.
+#define DEMO_IMAGE_W      208  // image taken is resized to fit banner and footer
+#define DEMO_IMAGE_H      208
+#define DEMO_IMAGE_SIZE   (DEMO_IMAGE_W * DEMO_IMAGE_H)  // pixels (uint16_t each)
+
+#define DEMO_IMAGE_ADDR   0x03FDF000UL
+#define DEMO_STRING_ADDR  0x03FFF800UL
+#define DEMO_STRING_MAX   256
+
+static uint16_t *DEMO_IMAGE_BUF = (uint16_t *)DEMO_IMAGE_ADDR;
+#define DEMO_STRING_BUF   ((volatile char*)DEMO_STRING_ADDR)
+
+// frame buffer dimensions
+#define FB_WIDTH  320
+#define FB_HEIGHT 240
+#define FB_SIZE   (FB_WIDTH * FB_HEIGHT)
+
+// sdram buffer address for emergency stop
+#define EMERGENCY_FB_ADDR  0x3DA000
+static uint16_t *emergency_fb = (uint16_t *)EMERGENCY_FB_ADDR;
+
+// task config
+#define VGA_STACKSIZE 16384
+#define VGA_PRIORITY  2
+OS_STK vga_stk[VGA_STACKSIZE];
+
+// active mode flags
+int game_active     = 0;
+int demo_active     = 0;
+int sysinfo_active  = 0;
+
+// write_pixel()
+void write_pixel(unsigned int addr, uint16_t color) {
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_ADDR_BASE, addr);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_DATA_BASE, color & 0xFFF);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 1);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIXEL_WREN_BASE, 0);
+}
+
+// write_emergency()
+static void write_emergency(void) {
+    unsigned int i;
+    for (i = 0; i < FB_SIZE; i++)
+        write_pixel(i, emergency_fb[i]);
+}
+
+// clear_framebuffer()
+static void clear_framebuffer(void) {
+    unsigned int i;
+    for (i = 0; i < FB_SIZE; i++)
+        write_pixel(i, 0x0);
+}
+
+// FPS tracking
+static uint32_t last_fps_time = 0;
+static int      frame_count   = 0;
+
+static uint32_t get_time_ms(void) {
+    return IORD_ALTERA_AVALON_PIO_DATA(US_COUNTER_BASE) / 1000;
+}
+
+void fps_tick(void) {
+    frame_count++;
+    uint32_t now = get_time_ms();
+    if (now - last_fps_time >= 1000) {
+        printf("[VGA] FPS: %d\n", frame_count);
+        frame_count   = 0;
+        last_fps_time = now;
+    }
+}
+
+// helper: deactivate all modes and reset shared state
+static void deactivate_all_modes(void) {
+    game_active    = 0;
+    demo_active    = 0;
+    sysinfo_active = 0;
+    banner_visible = 0;
+    ticker_init();
+    marquee_pixel_offset = -(FB_WIDTH);
+}
+
+// DEMO MODE
+// Shows a scrolling banner of captured text strings.
+// KEY1 = push a test string into the ticker (simulates a capture).
+// KEY0 = back to menu.
+#define DEMO_FOOTER_H    16
+#define DEMO_FOOTER_Y    (FB_HEIGHT - DEMO_FOOTER_H)   // 224
+#define DEMO_IMAGE_Y     BANNER_H                      // 16
+
+// Last string shown in the banner -- used to detect changes.
+static char last_demo_string[DEMO_STRING_MAX] = {0};
+
+// Draw the footer bar once (static chrome, never changes while in demo mode)
+static void demo_draw_footer(void) {
+    fill_rect(0, DEMO_FOOTER_Y, FB_WIDTH, DEMO_FOOTER_H, 0x112);
+    fill_rect(0, DEMO_FOOTER_Y, FB_WIDTH, 1, 0x333);
+    draw_string("KEY0:MENU", 4, DEMO_FOOTER_Y + 4, 1, 0x444, 0x112);
+    draw_string("LIVE CAMERA FEED", (FB_WIDTH / 2) - 64, DEMO_FOOTER_Y + 4, 1, 0x0FF, 0x112);
+}
+
+// Draw the "no signal" placeholder that fills the image area before the
+// first frame arrives. A dark background with centred status text.
+static void demo_draw_placeholder(void) {
+    fill_rect(0, DEMO_IMAGE_Y, FB_WIDTH, DEMO_IMAGE_H, 0x001);
+
+    // Centred "NO SIGNAL" block
+    int cx = FB_WIDTH  / 2;
+    int cy = DEMO_IMAGE_Y + DEMO_IMAGE_H / 2;
+
+    // Outer border box
+    fill_rect(cx - 68, cy - 18, 136, 36, 0x113);
+    fill_rect(cx - 66, cy - 16, 132, 32, 0x001);
+
+    draw_string("NO SIGNAL",      cx - 36, cy - 10, 1, 0x444, 0x001);
+    draw_string("WAITING FOR",    cx - 44, cy +  2, 1, 0x333, 0x001);
+    draw_string("CAMERA...",      cx - 36, cy + 14, 1, 0x333, 0x001);
+
+    // Corner markers for visual interest
+    fill_rect(cx - 68, cy - 18, 8,  1, 0x0FF);
+    fill_rect(cx - 68, cy - 18, 1,  8, 0x0FF);
+    fill_rect(cx + 60, cy - 18, 8,  1, 0x0FF);
+    fill_rect(cx + 67, cy - 18, 1,  8, 0x0FF);
+    fill_rect(cx - 68, cy + 17, 8,  1, 0x0FF);
+    fill_rect(cx - 68, cy + 10, 1,  8, 0x0FF);
+    fill_rect(cx + 60, cy + 17, 8,  1, 0x0FF);
+    fill_rect(cx + 67, cy + 10, 1,  8, 0x0FF);
+}
+
+// Blit the full image area from SDRAM in one sequential pass.
+// Called only when DEMO_IMAGE_READY == 1 to avoid tearing.
+static void demo_blit_frame(void) {
+	int x_offset = (FB_WIDTH - DEMO_IMAGE_W) / 2;  // = 56, centres the 208px image
+	int r, c;
+	for (r = 0; r < DEMO_IMAGE_H; r++) {
+		for (c = 0; c < DEMO_IMAGE_W; c++) {
+			unsigned int addr = (DEMO_IMAGE_Y + r) * FB_WIDTH + x_offset + c;
+			write_pixel(addr, DEMO_IMAGE_BUF[r * DEMO_IMAGE_W + c]);
+		}
+	}
+}
+
+// Read the string from SDRAM into a local buffer.
+// Returns 1 if it differs from last_demo_string, 0 if unchanged.
+static int demo_string_changed(char *out, int max_len) {
+    int i;
+    for (i = 0; i < max_len - 1; i++) {
+        out[i] = DEMO_STRING_BUF[i];
+        if (out[i] == '\0') break;
+    }
+    out[i] = '\0';
+
+    // Compare with what was last shown
+    int changed = 0;
+    for (i = 0; i < max_len; i++) {
+        if (out[i] != last_demo_string[i]) { changed = 1; break; }
+        if (out[i] == '\0') break;
+    }
+    return changed;
+}
+
+// demo_init
+static void demo_init(void) {
+    demo_active    = 1;
+    banner_visible = 1;
+    ticker_init();
+    marquee_pixel_offset = -(FB_WIDTH);
+    last_demo_string[0]   = '\0';
+
+    // Pre-load a placeholder string so the banner has something to show
+    const char *placeholder = "WAITING FOR CAMERA...";
+    int i;
+    for (i = 0; placeholder[i] != '\0'; i++)
+        ticker_push(placeholder[i]);
+
+    clear_framebuffer();
+    fill_rect(0, 0, FB_WIDTH, BANNER_H, BANNER_BG);
+    demo_draw_placeholder();
+    demo_draw_footer();
+
+    printf("[DEMO] Demo mode started\n");
+}
+
+// Called each tick while demo_active == 1.
+// capture_flag is fired by core 3 whenever a full frame (possibly new string) has been written into SDRAM
+static void demo_tick(void) {
+    if (!capture_flag) return;
+    capture_flag = 0;
+
+    // blit the latest frame
+    screen_busy = 1;
+    demo_blit_frame();
+    screen_busy = 0;
+
+    // check if the string has been updated
+    char new_str[DEMO_STRING_MAX];
+    if (demo_string_changed(new_str, DEMO_STRING_MAX)) {
+    	// save so can detect next change
+    	int i;
+    	for (i = 0; i < DEMO_STRING_MAX; i++) {
+    		last_demo_string[i] = new_str[i];
+			if (new_str[i] == '\0') break;
+    	}
+
+    	// only reticker if string is non-empty
+    	if (new_str[0] != '\0') {
+			ticker_init();
+			for (i = 0; new_str[i] != '\0'; i++)
+				ticker_push(new_str[i]);
+			marquee_pixel_offset = -(FB_WIDTH);
+			banner_visible = 1;
+			printf("[DEMO] New string: %s\n", new_str);
+		}
+    }
+}
+
+// SYSINFO MODE
+// Displays live CPU usage for all three cores, updated periodically.
+// KEY0 = back to menu.
+// Layout constants - centralised so nothing drifts out of sync
+#define SI_BAR_X       64    // x where the bar starts (after label)
+#define SI_BAR_W      190    // max bar width in pixels
+#define SI_BAR_H       10    // bar height in pixels
+#define SI_PCT_X      (SI_BAR_X + SI_BAR_W + 6)  // x of "XX%" text
+#define SI_ROW_Y(n)   (50 + (n) * 22)            // y of row n (0=core1,1=core2,2=core3)
+
+// How many vga_task ticks between reads
+#define SYSINFO_UPDATE_TICKS  40
+
+static int sysinfo_timer = 0;
+
+// Last rendered value per core — -1 forces a draw on first tick
+static int sysinfo_last[3] = { -1, -1, -1 };
+
+// Draw the static chrome: title, labels, dividers, role text, footer.
+// Called once from sysinfo_init(); never called again unless re-entering.
+static void sysinfo_draw_static(void) {
+    fill_rect(0, 0, FB_WIDTH, FB_HEIGHT, 0x000);
+
+    // Title bar
+    fill_rect(0, 0, FB_WIDTH, 18, 0x113);
+    draw_string("SYSTEM INFO", 8, 4, 1, 0x0FF, 0x113);
+
+    fill_rect(0, 20, FB_WIDTH, 1, 0x333);
+
+    // Section header
+    draw_string("CPU USAGE", 8, 26, 1, 0x888, 0x000);
+
+    // Core labels (never change)
+    draw_string("CORE 1", 8, SI_ROW_Y(0), 1, 0x0FF, 0x000);
+    draw_string("CORE 2", 8, SI_ROW_Y(1), 1, 0x0FF, 0x000);
+    draw_string("CORE 3", 8, SI_ROW_Y(2), 1, 0x0FF, 0x000);
+
+    // Bar track backgrounds (draw once; fill overwrites the filled portion)
+    fill_rect(SI_BAR_X, SI_ROW_Y(0), SI_BAR_W, SI_BAR_H, 0x222);
+    fill_rect(SI_BAR_X, SI_ROW_Y(1), SI_BAR_W, SI_BAR_H, 0x222);
+    fill_rect(SI_BAR_X, SI_ROW_Y(2), SI_BAR_W, SI_BAR_H, 0x222);
+
+    fill_rect(0, SI_ROW_Y(2) + SI_BAR_H + 8, FB_WIDTH, 1, 0x333);
+
+    // Core role descriptions
+    int ry = SI_ROW_Y(2) + SI_BAR_H + 14;
+    draw_string("CORE 1: ACCEL + FPGA PIOs",  8, ry,      1, 0x555, 0x000);
+    draw_string("CORE 2: VGA DISPLAY + GAME", 8, ry + 14, 1, 0x555, 0x000);
+    draw_string("CORE 3: SPI + BUTTONS",      8, ry + 28, 1, 0x555, 0x000);
+
+    fill_rect(0, ry + 44, FB_WIDTH, 1, 0x333);
+
+    // Switch hints
+    draw_string("SW0:HEX  SW1:SCROLL  SW3:BUZZ", 8, ry + 50, 1, 0x444, 0x000);
+    draw_string("SW9:EMERGENCY CLEAR",            8, ry + 64, 1, 0x400, 0x000);
+
+    // Footer
+    fill_rect(0, FB_HEIGHT - 20, FB_WIDTH, 1, 0x333);
+    draw_string("KEY0: BACK TO MENU", 8, FB_HEIGHT - 14, 1, 0x444, 0x000);
+}
+
+// Update a single bar row — only touches pixels that need to change.
+// prev_usage = last rendered value (-1 = force full redraw of this bar).
+static void sysinfo_update_bar(int row, int usage, int prev_usage) {
+    if (usage < 0)   usage = 0;
+    if (usage > 100) usage = 100;
+
+    int bar_y   = SI_ROW_Y(row);
+    int filled  = (usage      * SI_BAR_W) / 100;
+    int p_filled = (prev_usage >= 0) ? (prev_usage * SI_BAR_W) / 100 : -1;
+
+    uint16_t bar_fg = (usage > 80) ? 0xF20 : (usage > 50) ? 0xFA0 : 0x0F4;
+
+    if (p_filled < 0) {
+        // First draw: paint fill then background in one pass
+        if (filled > 0)
+            fill_rect(SI_BAR_X,          bar_y, filled,             SI_BAR_H, bar_fg);
+        if (filled < SI_BAR_W)
+            fill_rect(SI_BAR_X + filled, bar_y, SI_BAR_W - filled,  SI_BAR_H, 0x222);
+    } else if (filled > p_filled) {
+        // Bar grew — paint only the new segment
+        fill_rect(SI_BAR_X + p_filled, bar_y, filled - p_filled, SI_BAR_H, bar_fg);
+    } else if (filled < p_filled) {
+        // Bar shrank — erase only the removed segment
+        fill_rect(SI_BAR_X + filled, bar_y, p_filled - filled, SI_BAR_H, 0x222);
+        // Colour of remaining fill may have changed threshold — repaint it
+        if (filled > 0)
+            fill_rect(SI_BAR_X, bar_y, filled, SI_BAR_H, bar_fg);
+    } else {
+        // Width unchanged — only repaint fill if colour threshold crossed
+        uint16_t prev_fg = (prev_usage > 80) ? 0xF20 : (prev_usage > 50) ? 0xFA0 : 0x0F4;
+        if (bar_fg != prev_fg && filled > 0)
+            fill_rect(SI_BAR_X, bar_y, filled, SI_BAR_H, bar_fg);
+        // Nothing else to do
+        return;
+    }
+
+    // Percentage text — always 4 chars wide (e.g. " 5%" padded, "100%")
+    // Overwrite with background colour first to clear old digits cleanly
+    fill_rect(SI_PCT_X, bar_y, 4 * (FONT_W + 1), SI_BAR_H, 0x000);
+    char pct[5];
+    int u = usage;
+    pct[0] = (u >= 100) ? '1' : ' ';
+    pct[1] = '0' + (u / 10) % 10;
+    pct[2] = '0' + u % 10;
+    pct[3] = '%';
+    pct[4] = '\0';
+    draw_string(pct, SI_PCT_X, bar_y, 1, 0xFFF, 0x000);
+}
+
+static void sysinfo_init(void) {
+    sysinfo_active   = 1;
+    sysinfo_timer    = 0;
+    sysinfo_last[0]  = -1;
+    sysinfo_last[1]  = -1;
+    sysinfo_last[2]  = -1;
+    sysinfo_draw_static();
+    // Immediately render current values so screen isn't blank on entry
+    sysinfo_update_bar(0, CPU_USAGE_CORE1, -1);
+    sysinfo_update_bar(1, CPU_USAGE_CORE2, -1);
+    sysinfo_update_bar(2, CPU_USAGE_CORE3, -1);
+    sysinfo_last[0] = CPU_USAGE_CORE1;
+    sysinfo_last[1] = CPU_USAGE_CORE2;
+    sysinfo_last[2] = CPU_USAGE_CORE3;
+    printf("[SYSINFO] Sysinfo mode started\n");
+}
+
+// Called each tick while sysinfo_active == 1.
+// Reads new CPU values and updates only the pixels that changed.
+static void sysinfo_tick(void) {
+    sysinfo_timer++;
+    if (sysinfo_timer < SYSINFO_UPDATE_TICKS) return;
+    sysinfo_timer = 0;
+
+    int v0 = CPU_USAGE_CORE1;
+    int v1 = CPU_USAGE_CORE2;
+    int v2 = CPU_USAGE_CORE3;
+
+    if (v0 != sysinfo_last[0]) {
+        sysinfo_update_bar(0, v0, sysinfo_last[0]);
+        sysinfo_last[0] = v0;
+    }
+    if (v1 != sysinfo_last[1]) {
+        sysinfo_update_bar(1, v1, sysinfo_last[1]);
+        sysinfo_last[1] = v1;
+    }
+    if (v2 != sysinfo_last[2]) {
+        sysinfo_update_bar(2, v2, sysinfo_last[2]);
+        sysinfo_last[2] = v2;
+    }
+}
+
+// helper: enter menu cleanly from any mode
+static void enter_menu(void) {
+	screen_busy = 1;
+	banner_visible = 0;
+	OSTimeDly(5);
+    deactivate_all_modes();
+    clear_framebuffer();
+    menu_active = 1;
+    menu_sel    = 0;
+    menu_draw();
+    screen_busy = 0;
+    printf("[VGA] Returned to menu\n");
+}
+
+// vga_task()
+void vga_task(void *pdata) {
+    int cpu_timer = 0;
+
+    printf("[VGA] Start task\n");
+
+    memcpy(emergency_fb, emergency_image_data, IMG_BYTES);
+    memcpy(DEMO_IMAGE_BUF, emergency_image_data, IMG_BYTES);
+    printf("[VGA] Emergency image ready in SDRAM (%d bytes).\n", IMG_BYTES);
+
+    clear_framebuffer();
+
+    // write sim string to SDRAM once at startup, before the while loop
+    static const char sim_capture[] = "UNLOCK";
+    int i;
+	for (i = 0; i < (int)sizeof(sim_capture); i++)
+		DEMO_STRING_BUF[i] = sim_capture[i];
+	printf("[VGA] Sim capture preloaded: %s\n", sim_capture);
+
+    // Show main menu on startup
+	menu_active = 1;
+	menu_sel    = 0;
+    menu_draw();
+
+    printf("[VGA] Ready.\n");
+
+    while (1) {
+        if (emergency_flag) {
+            printf("\n[VGA] EMERGENCY STOP\n");
+            banner_visible = 0;
+            screen_busy = 1;
+            OSTimeDly(10);
+            write_emergency();
+            while (emergency_flag) OSTimeDly(5);
+            key_flags = 0;
+            // restore previous mode display
+            if (game_active) {
+                game_draw_map();
+                game_draw_status();
+                if (ticker.count > 0) banner_visible = 1;  // resume scrolling from where it left off
+            } else if (demo_active) {
+            	fill_rect(0, 0, FB_WIDTH, BANNER_H, BANNER_BG);
+            	// Restore image area: if a frame is waiting blit it,
+				// if core 3 hasn't sent anything yet, show placeholder
+				if (last_demo_string[0] != '\0') {
+					demo_blit_frame();
+				} else {
+					demo_draw_placeholder();
+				}
+				demo_draw_footer();
+				if (ticker.count > 0) banner_visible = 1;
+            } else if (sysinfo_active) {
+            	sysinfo_last[0] = sysinfo_last[1] = sysinfo_last[2] = -1;
+				sysinfo_draw_static();
+				sysinfo_update_bar(0, CPU_USAGE_CORE1, -1);
+				sysinfo_update_bar(1, CPU_USAGE_CORE2, -1);
+				sysinfo_update_bar(2, CPU_USAGE_CORE3, -1);
+				sysinfo_last[0] = CPU_USAGE_CORE1;
+				sysinfo_last[1] = CPU_USAGE_CORE2;
+				sysinfo_last[2] = CPU_USAGE_CORE3;
+            } else if (menu_active) {
+            	menu_draw();
+            } else {
+                clear_framebuffer();
+            }
+            screen_busy = 0;
+            printf("[VGA] EMERGENCY CLEARED\n\n");
+        }
+
+        // MENU MODE
+        if (menu_active) {
+        	// KEY0: cycle selection
+			if (key_flags & (1 << 0)) {
+				key_flags &= ~(1 << 0);
+				menu_cycle();
+			}
+			// KEY1: confirm selection
+			if (key_flags & (1 << 1)) {
+				key_flags &= ~(1 << 1);
+				MenuMode chosen = menu_confirm();
+				screen_busy = 1;
+
+				switch (chosen) {
+					case MODE_GAME:
+						printf("[VGA] Mode selected: GAME\n");
+						game_active = 1;
+						ticker_init();
+						banner_visible = 1;
+						marquee_pixel_offset = -(FB_WIDTH);
+						game_init();
+						game_draw_map();
+						game_draw_status();
+						break;
+					case MODE_DEMO:
+						printf("[VGA] Mode selected: DEMO\n");
+						demo_init();
+						break;
+					case MODE_SYSINFO:
+						printf("[VGA] Mode selected: SYSINFO\n");
+						sysinfo_init();
+						break;
+					default:
+						menu_active = 1;
+						menu_draw();
+						break;
+				}
+				screen_busy = 0;
+			}
+			goto update_cpu;
+        }
+
+        // game mode
+        if (game_active) {
+        	// KEY0 = back to menu
+			if (key_flags & (1 << 0)) {
+				key_flags &= ~(1 << 0);
+				printf("[VGA] Game -> menu\n");
+				enter_menu();
+				goto update_cpu;
+			}
+			// KEY1 = restart game
+			if (key_flags & (1 << 1)) {
+				key_flags &= ~(1 << 1);
+				screen_busy = 1;
+				ticker_init();
+				banner_visible = 1;
+				marquee_pixel_offset = -(FB_WIDTH);
+				printf("[VGA] Game restarted\n");
+				game_init();
+				game_draw_map();
+				game_draw_status();
+				screen_busy = 0;
+			}
+			game_tick();
+			goto update_cpu;
+        }
+
+        // demo mode
+        if (demo_active) {
+        	// KEY0 = back to menu
+			if (key_flags & (1 << 0)) {
+				key_flags &= ~(1 << 0);
+				printf("[VGA] Demo -> menu\n");
+				enter_menu();
+				goto update_cpu;
+			}
+
+			demo_tick();
+			goto update_cpu;
+        }
+
+        // sysinfo mode
+        if (sysinfo_active) {
+        	// KEY0 = back to menu
+			if (key_flags & (1 << 0)) {
+				key_flags &= ~(1 << 0);
+				printf("[VGA] Sysinfo -> menu\n");
+				enter_menu();
+				goto update_cpu;
+			}
+
+			sysinfo_tick();
+        }
+
+
+        update_cpu:
+        cpu_timer++;
+        if (cpu_timer >= CPU_USAGE_SPEED) {
+            cpu_timer = 0;
+            CPU_USAGE_CORE2 = (int)OSCPUUsage;
+        }
+
+        OSTimeDly(5);
+    }
+}
+
+// vga_init()
+void vga_init(void) {
+    OSTaskCreateExt(vga_task,
+                    NULL,
+                    &vga_stk[VGA_STACKSIZE - 1],
+                    VGA_PRIORITY,
+                    VGA_PRIORITY,
+                    vga_stk,
+                    VGA_STACKSIZE,
+                    NULL,
+                    0);
+}

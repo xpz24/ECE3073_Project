@@ -29,9 +29,11 @@ module projectM1 (
 	spi_MOSI,
 	spi_SCLK,
 	spi_SS_n,
+	spi_ready_export,
 	sw_export,
 	traffic_led_export,
-	us_counter_export);	
+	us_counter_export,
+	spi_live_flag_export);	
 
 	inout		accel_I2C_SDAT;
 	output		accel_I2C_SCLK;
@@ -62,7 +64,9 @@ module projectM1 (
 	output		spi_MOSI;
 	output		spi_SCLK;
 	output		spi_SS_n;
+	input		spi_ready_export;
 	input	[9:0]	sw_export;
 	output	[2:0]	traffic_led_export;
 	input	[31:0]	us_counter_export;
+	output		spi_live_flag_export;
 endmodule

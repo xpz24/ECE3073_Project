@@ -4,7 +4,7 @@
  * Machine generated for CPU 'core_3' in SOPC Builder design 'projectM1'
  * SOPC Builder design path: ../../projectM1.sopcinfo
  *
- * Generated: Sun May 24 22:39:22 SGT 2026
+ * Generated: Thu May 28 01:17:50 SGT 2026
  */
 
 /*
@@ -142,12 +142,67 @@
  */
 
 #define __ALTERA_AVALON_JTAG_UART
+#define __ALTERA_AVALON_MUTEX
 #define __ALTERA_AVALON_NEW_SDRAM_CONTROLLER
 #define __ALTERA_AVALON_ONCHIP_MEMORY2
 #define __ALTERA_AVALON_PIO
 #define __ALTERA_AVALON_SPI
 #define __ALTERA_AVALON_TIMER
 #define __ALTERA_NIOS2_GEN2
+
+
+/*
+ * PIO_LIVE_FLAG configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_PIO_LIVE_FLAG altera_avalon_pio
+#define PIO_LIVE_FLAG_BASE 0x40030f0
+#define PIO_LIVE_FLAG_BIT_CLEARING_EDGE_REGISTER 0
+#define PIO_LIVE_FLAG_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define PIO_LIVE_FLAG_CAPTURE 0
+#define PIO_LIVE_FLAG_DATA_WIDTH 1
+#define PIO_LIVE_FLAG_DO_TEST_BENCH_WIRING 0
+#define PIO_LIVE_FLAG_DRIVEN_SIM_VALUE 0
+#define PIO_LIVE_FLAG_EDGE_TYPE "NONE"
+#define PIO_LIVE_FLAG_FREQ 50000000
+#define PIO_LIVE_FLAG_HAS_IN 0
+#define PIO_LIVE_FLAG_HAS_OUT 1
+#define PIO_LIVE_FLAG_HAS_TRI 0
+#define PIO_LIVE_FLAG_IRQ -1
+#define PIO_LIVE_FLAG_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define PIO_LIVE_FLAG_IRQ_TYPE "NONE"
+#define PIO_LIVE_FLAG_NAME "/dev/PIO_LIVE_FLAG"
+#define PIO_LIVE_FLAG_RESET_VALUE 0
+#define PIO_LIVE_FLAG_SPAN 16
+#define PIO_LIVE_FLAG_TYPE "altera_avalon_pio"
+
+
+/*
+ * PIO_SPI_READY configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_PIO_SPI_READY altera_avalon_pio
+#define PIO_SPI_READY_BASE 0x4003100
+#define PIO_SPI_READY_BIT_CLEARING_EDGE_REGISTER 0
+#define PIO_SPI_READY_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define PIO_SPI_READY_CAPTURE 1
+#define PIO_SPI_READY_DATA_WIDTH 1
+#define PIO_SPI_READY_DO_TEST_BENCH_WIRING 0
+#define PIO_SPI_READY_DRIVEN_SIM_VALUE 0
+#define PIO_SPI_READY_EDGE_TYPE "RISING"
+#define PIO_SPI_READY_FREQ 50000000
+#define PIO_SPI_READY_HAS_IN 1
+#define PIO_SPI_READY_HAS_OUT 0
+#define PIO_SPI_READY_HAS_TRI 0
+#define PIO_SPI_READY_IRQ 6
+#define PIO_SPI_READY_IRQ_INTERRUPT_CONTROLLER_ID 0
+#define PIO_SPI_READY_IRQ_TYPE "EDGE"
+#define PIO_SPI_READY_NAME "/dev/PIO_SPI_READY"
+#define PIO_SPI_READY_RESET_VALUE 0
+#define PIO_SPI_READY_SPAN 16
+#define PIO_SPI_READY_TYPE "altera_avalon_pio"
 
 
 /*
@@ -166,19 +221,19 @@
 #define ALT_NUM_INTERNAL_INTERRUPT_CONTROLLERS 1
 #define ALT_NUM_INTERRUPT_CONTROLLERS 1
 #define ALT_STDERR "/dev/core_3_jtag"
-#define ALT_STDERR_BASE 0x4003138
+#define ALT_STDERR_BASE 0x4003178
 #define ALT_STDERR_DEV core_3_jtag
 #define ALT_STDERR_IS_JTAG_UART
 #define ALT_STDERR_PRESENT
 #define ALT_STDERR_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDIN "/dev/core_3_jtag"
-#define ALT_STDIN_BASE 0x4003138
+#define ALT_STDIN_BASE 0x4003178
 #define ALT_STDIN_DEV core_3_jtag
 #define ALT_STDIN_IS_JTAG_UART
 #define ALT_STDIN_PRESENT
 #define ALT_STDIN_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDOUT "/dev/core_3_jtag"
-#define ALT_STDOUT_BASE 0x4003138
+#define ALT_STDOUT_BASE 0x4003178
 #define ALT_STDOUT_DEV core_3_jtag
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
@@ -192,7 +247,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_3_1_rx altera_avalon_pio
-#define CORE_3_1_RX_BASE 0x4003100
+#define CORE_3_1_RX_BASE 0x4003150
 #define CORE_3_1_RX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_1_RX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_1_RX_CAPTURE 1
@@ -219,7 +274,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_3_1_tx altera_avalon_pio
-#define CORE_3_1_TX_BASE 0x4003120
+#define CORE_3_1_TX_BASE 0x4003160
 #define CORE_3_1_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_1_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_1_TX_CAPTURE 0
@@ -246,7 +301,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_3_2_rx altera_avalon_pio
-#define CORE_3_2_RX_BASE 0x40030e0
+#define CORE_3_2_RX_BASE 0x4003130
 #define CORE_3_2_RX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_2_RX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_2_RX_CAPTURE 1
@@ -273,7 +328,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_3_2_tx altera_avalon_pio
-#define CORE_3_2_TX_BASE 0x40030f0
+#define CORE_3_2_TX_BASE 0x4003140
 #define CORE_3_2_TX_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_2_TX_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_2_TX_CAPTURE 0
@@ -300,7 +355,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_3_jtag altera_avalon_jtag_uart
-#define CORE_3_JTAG_BASE 0x4003138
+#define CORE_3_JTAG_BASE 0x4003178
 #define CORE_3_JTAG_IRQ 5
 #define CORE_3_JTAG_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define CORE_3_JTAG_NAME "/dev/core_3_jtag"
@@ -318,7 +373,7 @@
  */
 
 #define ALT_MODULE_CLASS_core_3_key altera_avalon_pio
-#define CORE_3_KEY_BASE 0x40030d0
+#define CORE_3_KEY_BASE 0x4003120
 #define CORE_3_KEY_BIT_CLEARING_EDGE_REGISTER 0
 #define CORE_3_KEY_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CORE_3_KEY_CAPTURE 1
@@ -434,6 +489,24 @@
 #define ALT_MAX_FD 32
 #define ALT_SYS_CLK CORE_3_TIMER
 #define ALT_TIMESTAMP_CLK none
+
+
+/*
+ * mutex_0 configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_mutex_0 altera_avalon_mutex
+#define MUTEX_0_BASE 0x4003190
+#define MUTEX_0_IRQ -1
+#define MUTEX_0_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define MUTEX_0_NAME "/dev/mutex_0"
+#define MUTEX_0_OWNER_INIT 0
+#define MUTEX_0_OWNER_WIDTH 16
+#define MUTEX_0_SPAN 8
+#define MUTEX_0_TYPE "altera_avalon_mutex"
+#define MUTEX_0_VALUE_INIT 0
+#define MUTEX_0_VALUE_WIDTH 16
 
 
 /*

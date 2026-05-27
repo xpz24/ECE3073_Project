@@ -15,11 +15,13 @@
 // incoming flags
 #define EMERGENCY_START  0x1
 #define EMERGENCY_CLEAR  0x2
-#define CAPTURE_FLAG     0x4
+#define LIVE_FLAG        0x4
+#define STRING_FLAG      0x8
 
 // flags
 volatile int key_flags = 0;
 volatile int emergency_flag = 0;
+volatile int live_flag = 0;
 
 // key interrupts
 static void key_irq_handler(void* context, alt_u32 id) {
@@ -54,16 +56,14 @@ static void rx_irq_handler(void *context, alt_u32 id)
 	if (val & EMERGENCY_START) emergency_flag = 1;
 	if (val & EMERGENCY_CLEAR) emergency_flag = 0;
 
-	if (val == CAPTURE_FLAG) {
-		tx_pulse(TX_3_2_BASE, 0x4);
-		tx_pulse(TX_3_1_BASE, 0x4);
-	}
+	if (val & LIVE_FLAG) live_flag = 1;
+	if (val & STRING_FLAG)  live_flag = 0;
 }
 
 void init_rx_irq(void)
 {
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_3_1_BASE, 0);
-    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_3_1_BASE, 0x7);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_3_1_BASE, 0xF);
     alt_irq_register(CORE_3_1_RX_IRQ, NULL, rx_irq_handler);
     alt_irq_enable_all(1);
 }

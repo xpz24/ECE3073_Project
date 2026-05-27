@@ -29,9 +29,11 @@
 			spi_MOSI             : out   std_logic;                                        -- MOSI
 			spi_SCLK             : out   std_logic;                                        -- SCLK
 			spi_SS_n             : out   std_logic;                                        -- SS_n
+			spi_ready_export     : in    std_logic                     := 'X';             -- export
 			sw_export            : in    std_logic_vector(9 downto 0)  := (others => 'X'); -- export
 			traffic_led_export   : out   std_logic_vector(2 downto 0);                     -- export
-			us_counter_export    : in    std_logic_vector(31 downto 0) := (others => 'X')  -- export
+			us_counter_export    : in    std_logic_vector(31 downto 0) := (others => 'X'); -- export
+			spi_live_flag_export : out   std_logic                                         -- export
 		);
 	end component projectM1;
 
@@ -66,8 +68,10 @@
 			spi_MOSI             => CONNECTED_TO_spi_MOSI,             --              .MOSI
 			spi_SCLK             => CONNECTED_TO_spi_SCLK,             --              .SCLK
 			spi_SS_n             => CONNECTED_TO_spi_SS_n,             --              .SS_n
+			spi_ready_export     => CONNECTED_TO_spi_ready_export,     --     spi_ready.export
 			sw_export            => CONNECTED_TO_sw_export,            --            sw.export
 			traffic_led_export   => CONNECTED_TO_traffic_led_export,   --   traffic_led.export
-			us_counter_export    => CONNECTED_TO_us_counter_export     --    us_counter.export
+			us_counter_export    => CONNECTED_TO_us_counter_export,    --    us_counter.export
+			spi_live_flag_export => CONNECTED_TO_spi_live_flag_export  -- spi_live_flag.export
 		);
 

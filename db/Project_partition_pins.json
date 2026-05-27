@@ -52,6 +52,10 @@
 					"strict" : false
 				},
 				{
+					"name" : "spi_live_flag",
+					"strict" : false
+				},
+				{
 					"name" : "ADDRS[12]",
 					"strict" : false
 				},
@@ -508,6 +512,18 @@
 					"strict" : false
 				},
 				{
+					"name" : "KEY[1]",
+					"strict" : false
+				},
+				{
+					"name" : "KEY[0]",
+					"strict" : false
+				},
+				{
+					"name" : "spi_ready",
+					"strict" : false
+				},
+				{
 					"name" : "SW[7]",
 					"strict" : false
 				},
@@ -525,14 +541,6 @@
 				},
 				{
 					"name" : "SW[6]",
-					"strict" : false
-				},
-				{
-					"name" : "KEY[1]",
-					"strict" : false
-				},
-				{
-					"name" : "KEY[0]",
 					"strict" : false
 				},
 				{

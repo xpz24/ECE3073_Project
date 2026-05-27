@@ -20,9 +20,9 @@
 #define SDRAM_BASE SHARED_SDRAM_BASE
 
 // CAPTURED TEXT
-#define CAPTURE_TEXT_OFFSET  0x200
+#define CAPTURE_TEXT_ADDR    0x03FFF800UL
 #define CAPTURE_TEXT_MAX     256
-#define CAPTURE_TEXT         ((volatile char*)(SDRAM_BASE + CAPTURE_TEXT_OFFSET))
+#define CAPTURE_TEXT_BUF     ((volatile char*)CAPTURE_TEXT_ADDR)
 
 // 7-SEGMENT DICTIONARY
 #define SEG_0     0x40
@@ -226,10 +226,10 @@ void hex_task(void* pdata) {
 
 		if (key_flags & (1 << 0)) {
 			key_flags &= ~(1 << 0);
-			new_msg = "CLEARING";
+			new_msg = "MENU";
 		} else if (key_flags & (1 << 1)) {
 			key_flags &= ~(1 << 1);
-			new_msg = "PLAYING";
+			new_msg = "SELECT";
 		}
 
 		// If message changed, reset scroll
@@ -308,6 +308,9 @@ void hex_task(void* pdata) {
         if (sw4_curr && !sw4_prev) {
         	tx_pulse(TX_1_3_BASE, 0x4);
         }
+        if (!sw4_curr && sw4_prev) {
+        	tx_pulse(TX_1_3_BASE, 0x8);
+        }
         sw4_prev = sw4_curr;
 
         // image captured signal from core 3
@@ -316,8 +319,8 @@ void hex_task(void* pdata) {
         	// read from SDRAM into a local buffer (can't pass volatile char* directly to process_string)
 			static char hex_capture_buf[CAPTURE_TEXT_MAX];
 			int i;
-			for (i = 0; i < CAPTURE_TEXT_MAX - 1 && CAPTURE_TEXT[i] != '\0'; i++)
-				hex_capture_buf[i] = CAPTURE_TEXT[i];
+			for (i = 0; i < CAPTURE_TEXT_MAX - 1 && CAPTURE_TEXT_BUF[i] != '\0'; i++)
+				hex_capture_buf[i] = CAPTURE_TEXT_BUF[i];
 			hex_capture_buf[i] = '\0';
 
 			set_hex_message(hex_capture_buf);

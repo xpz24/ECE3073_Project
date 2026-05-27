@@ -9,9 +9,18 @@ obj/default/spi.o: spi.c ../M2_core3_bsp/HAL/inc/includes.h \
  ../M2_core3_bsp//UCOSII/inc/ucos_ii.h ../M2_core3_bsp//HAL/inc/os_cpu.h \
  ../M2_core3_bsp/system.h ../M2_core3_bsp/HAL/inc/io.h \
  ../M2_core3_bsp/HAL/inc/alt_types.h \
+ ../M2_core3_bsp/drivers/inc/altera_avalon_spi.h \
  ../M2_core3_bsp/drivers/inc/altera_avalon_spi_regs.h \
  ../M2_core3_bsp//HAL/inc/io.h \
  ../M2_core3_bsp/drivers/inc/altera_avalon_pio_regs.h \
+ ../M2_core3_bsp/drivers/inc/altera_avalon_mutex.h \
+ ../M2_core3_bsp//HAL/inc/priv/alt_dev_llist.h \
+ ../M2_core3_bsp//HAL/inc/sys/alt_llist.h \
+ ../M2_core3_bsp//HAL/inc/sys/alt_dev.h \
+ ../M2_core3_bsp//HAL/inc/sys/alt_errno.h \
+ ../M2_core3_bsp//UCOSII/inc/os/alt_sem.h \
+ ../M2_core3_bsp//UCOSII/inc/priv/alt_sem_ucosii.h \
+ ../M2_core3_bsp//HAL/inc/includes.h \
  ../M2_core3_bsp/HAL/inc/sys/alt_irq.h interrupts.h
 
 ../M2_core3_bsp/HAL/inc/includes.h:
@@ -46,11 +55,29 @@ obj/default/spi.o: spi.c ../M2_core3_bsp/HAL/inc/includes.h \
 
 ../M2_core3_bsp/HAL/inc/alt_types.h:
 
+../M2_core3_bsp/drivers/inc/altera_avalon_spi.h:
+
 ../M2_core3_bsp/drivers/inc/altera_avalon_spi_regs.h:
 
 ../M2_core3_bsp//HAL/inc/io.h:
 
 ../M2_core3_bsp/drivers/inc/altera_avalon_pio_regs.h:
+
+../M2_core3_bsp/drivers/inc/altera_avalon_mutex.h:
+
+../M2_core3_bsp//HAL/inc/priv/alt_dev_llist.h:
+
+../M2_core3_bsp//HAL/inc/sys/alt_llist.h:
+
+../M2_core3_bsp//HAL/inc/sys/alt_dev.h:
+
+../M2_core3_bsp//HAL/inc/sys/alt_errno.h:
+
+../M2_core3_bsp//UCOSII/inc/os/alt_sem.h:
+
+../M2_core3_bsp//UCOSII/inc/priv/alt_sem_ucosii.h:
+
+../M2_core3_bsp//HAL/inc/includes.h:
 
 ../M2_core3_bsp/HAL/inc/sys/alt_irq.h:
 

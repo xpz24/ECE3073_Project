@@ -64,4 +64,4 @@ module vga_controller (
 
     assign VGA_ADDR = pixelValid ? (H_SCALED + V_SCALED * 320) : 19'd0;
 
-endmodule
+endmodule 

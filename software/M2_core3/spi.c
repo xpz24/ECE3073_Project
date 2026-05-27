@@ -5,8 +5,10 @@
 #include "../M2_core3_bsp/HAL/inc/includes.h"
 #include "../M2_core3_bsp/system.h"
 #include "../M2_core3_bsp/HAL/inc/io.h"
+#include "../M2_core3_bsp/drivers/inc/altera_avalon_spi.h"
 #include "../M2_core3_bsp/drivers/inc/altera_avalon_spi_regs.h"   // for IORD/IOWR register macros
 #include "../M2_core3_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core3_bsp/drivers/inc/altera_avalon_mutex.h"
 #include "../M2_core3_bsp/HAL/inc/sys/alt_irq.h"
 #include "interrupts.h"
 
@@ -16,11 +18,48 @@
 OS_STK spi_task_stk[SPI_TASK_STACKSIZE];
 
 //  Hardware addresses
-#define SPI_BASE         CORE_3_SPI_BASE
+#define ESP32_SPI_BASE   CORE_3_SPI_BASE
+#define ESP32_SPI_SLAVE  0
+#define SPI_READY_BASE   PIO_SPI_READY_BASE
 #define SDRAM_BASE       SHARED_SDRAM_BASE
 #define COUNTER_BASE     US_COUNTER_BASE
 #define TX_3_1_BASE      CORE_3_1_TX_BASE
 #define TX_3_2_BASE      CORE_3_2_TX_BASE
+#define LIVE_BASE        PIO_LIVE_FLAG_BASE
+#define MUTEX_BASE       MUTEX_0_BASE
+
+alt_mutex_dev *frame_mutex = NULL;
+
+#define DEMO_IMAGE_ADDR   0x03FDF000UL
+#define DEMO_STRING_ADDR  (DEMO_IMAGE_ADDR + ESP32_FB_SIZE)
+#define DEMO_STRING_MAX   30
+
+static uint8_t *DEMO_IMAGE_BUF = (uint8_t *)DEMO_IMAGE_ADDR;
+#define DEMO_STRING_BUF   ((volatile char*)DEMO_STRING_ADDR)
+
+volatile int esp32_frame_ready = 0;
+
+#define CAPTURE_FLAG     0x4
+
+/* ESP32 framebuffer format:
+ * 208 x 208, RGB444 packed 12 bits per pixel.
+ * Byte layout per 2 pixels (P0, P1):
+ *   B0: [R0 G0]   R0 high nibble, G0 low nibble
+ *   B1: [B0 R1]
+ *   B2: [G1 B1]
+ */
+#define ESP32_FB_WIDTH        208
+#define ESP32_FB_HEIGHT       208
+#define ESP32_FB_BPP          12
+#define ESP32_FB_SIZE         (ESP32_FB_WIDTH * ESP32_FB_HEIGHT * 3 / 2)   /* 64896 */
+
+/* Text buffer: fixed-length, null-padded. Non-zero on the frame where a
+ * sentence completes; all zeros otherwise.
+ */
+#define ESP32_TEXT_BUF_LEN    30
+
+/* Full SPI payload size (must match ESP32 side) */
+#define ESP32_PAYLOAD_SIZE    (ESP32_FB_SIZE + ESP32_TEXT_BUF_LEN)         /* 64926 */
 
 // CPU usages
 #define CPU_USAGE_CORE1_OFFSET  0x100
@@ -40,12 +79,97 @@ static inline alt_u32 get_us(void) {
     return IORD_ALTERA_AVALON_PIO_DATA(COUNTER_BASE);
 }
 
+/* Write-only transaction: send data to ESP32 */
+int esp32_spi_write(const alt_u8 *tx_data, alt_u32 length) {
+	int rc;
+
+	if (tx_data == 0 || length == 0) {
+		return -1;
+	}
+
+	rc = alt_avalon_spi_command(
+	ESP32_SPI_BASE,
+	ESP32_SPI_SLAVE, length, tx_data, 0, 0, 0);
+
+	if (rc != 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
+/* Read-only transaction: receive data from ESP32 */
+int esp32_spi_read(alt_u8 *rx_data, alt_u32 length) {
+	int rc;
+
+	if (rx_data == 0 || length == 0) {
+		return -1;
+	}
+
+	rc = alt_avalon_spi_command(
+	ESP32_SPI_BASE,
+	ESP32_SPI_SLAVE, 0, 0, length, rx_data, 0);
+
+	if (rc != length) {
+		return -1;
+	}
+
+	return 0;
+}
+
+/* Full exchange: write then read (two transactions) */
+int esp32_spi_exchange(const alt_u8 *tx_data, alt_u32 tx_len, alt_u8 *rx_data,
+		alt_u32 rx_len) {
+	if (esp32_spi_write(tx_data, tx_len) != 0) {
+		return -1;
+	}
+
+	if (esp32_spi_read(rx_data, rx_len) != 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
+int esp32_spi_read_framebuffer(alt_u8 *rx_data) {
+	return esp32_spi_read(rx_data, ESP32_FB_SIZE);
+}
+
+int esp32_spi_read_payload(alt_u8 *rx_data) {
+    return esp32_spi_read(rx_data, ESP32_PAYLOAD_SIZE);
+}
+
+static void esp32_ready_isr(void *context, alt_u32 id) {
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(SPI_READY_BASE, 0);
+
+	esp32_frame_ready = 1;
+}
+
+void init_esp32_ready_irq() {
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(SPI_READY_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(SPI_READY_BASE, 0x1);
+    alt_irq_register(PIO_SPI_READY_IRQ, NULL, esp32_ready_isr);
+    alt_irq_enable_all(1);
+}
+
 //  RTOS task
 void spi_task(void* pdata) {
 	int cpu_timer = 0;
 
     alt_u32 start = 0;
     alt_u32 end = 0;
+
+    /* Local copy of the most recent received text. +1 for guaranteed null term. */
+	static char latest_text[ESP32_TEXT_BUF_LEN + 1];
+
+	printf("[ESP32 SPI] Framebuffer RX task started\n");
+	printf("[ESP32 SPI] Shared FB base:   0x%08X\n", (unsigned int) DEMO_IMAGE_ADDR);
+	printf("[ESP32 SPI] Shared text base: 0x%08X\n", (unsigned int) DEMO_STRING_ADDR);
+	printf("[ESP32 SPI] Frame size:       %d bytes\n", ESP32_FB_SIZE);
+	printf("[ESP32 SPI] Text size:        %d bytes\n", ESP32_TEXT_BUF_LEN);
+	printf("[ESP32 SPI] Payload size:     %d bytes\n", ESP32_PAYLOAD_SIZE);
+
+	frame_mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
 
     while (1) {
     	if (emergency_flag) {
@@ -56,6 +180,52 @@ void spi_task(void* pdata) {
 			key_flags = 0;
 			printf("[SPI] EMERGENCY CLEARED - CONTINUING OPERATION\n\n");
     	}
+
+    	// determine live feed or string
+    	IOWR_ALTERA_AVALON_PIO_DATA(LIVE_BASE, live_flag);
+
+    	if (esp32_frame_ready) {
+			esp32_frame_ready = 0;
+
+			if (frame_mutex != NULL) {
+				altera_avalon_mutex_lock(frame_mutex, 3);
+			}
+
+			/* Single SPI read into the shared region. Framebuffer lands at
+			 * shared_fb; text lands at shared_text (= shared_fb + FB_SIZE).
+			 */
+			int rc = esp32_spi_read_payload((alt_u8 *) DEMO_IMAGE_BUF);
+
+			if (rc == 0) {
+				int i;
+				for (i = 0; i < ESP32_TEXT_BUF_LEN; i++) {
+					latest_text[i] = (char) DEMO_STRING_BUF[i];
+				}
+				latest_text[ESP32_TEXT_BUF_LEN] = '\0';
+			}
+
+			if (rc == 0) {
+				if (latest_text[0] != '\0') {
+					printf("[ESP32 SPI] Sentence: \"%s\"\n", latest_text);
+					int ci;
+					for (ci = 0; ci < DEMO_STRING_MAX && latest_text[ci] != '\0'; ci++)
+						DEMO_STRING_BUF[ci] = latest_text[ci];
+					DEMO_STRING_BUF[ci] = '\0';
+
+					tx_pulse(TX_3_2_BASE, CAPTURE_FLAG);
+					tx_pulse(TX_3_1_BASE, CAPTURE_FLAG);
+				}
+			}
+
+			if (frame_mutex != NULL) {
+				altera_avalon_mutex_unlock(frame_mutex);
+			}
+
+			if (rc == 0 && live_flag == 1) {
+				tx_pulse(TX_3_2_BASE, 0x4);
+			}
+		}
+
 		if (key_flags & (1 << 0)) {
 			key_flags &= ~(1 << 0);
 			// notify core 1 key0 pressed
