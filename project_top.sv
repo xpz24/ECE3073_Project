@@ -2,11 +2,11 @@
 module project_top (
     input MAX10_CLK1_50,
     input [1:0] KEY,
-    input [3:0] SW,
+    input [4:0] SW,
     inout GSENSOR_SDI,
     inout GSENSOR_SDO,
     inout [15:0] DRAM_DQ,
-    inout [5:0] GPIO,
+    inout [6:0] GPIO,
     output DRAM_CLK,
     output DRAM_UDQM,
     output DRAM_LDQM,
@@ -24,7 +24,7 @@ module project_top (
     output VGA_HS,
     output GSENSOR_SCLK,
     output GSENSOR_CS_N,
-    output [2:0] LEDR,
+    output [4:0] LEDR,
     output [7:0] HEX0,
     HEX1,
     HEX2,
@@ -115,7 +115,8 @@ module project_top (
       .pixel_wren_export (writeEnable),             // pixel_wren.export
       .spi_ready_export  (GPIO[5]),                 //  spi_ready.export
       .frame_ready_export(frame_ready),             // frame_ready.export
-      .swap_done_export  (swap_done_sys)            //   swap_done.export
+      .swap_done_export  (swap_done_sys),           //   swap_done.export
+      .live_flag_export  (GPIO[6])                  //   live_flag.export
   );
 
   PLL_DRAM pll_DRAM_inst (

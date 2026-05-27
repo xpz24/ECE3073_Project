@@ -63,12 +63,12 @@ void task1(void* pdata) {
 
 	init_frame_mutex();
 	init_esp32_ready_irq();
-
-	OSTaskCreateExt(task2, &accl_ctx, (void *) &task2_stk[TASK_STACKSIZE - 1],
-	TASK2_PRIORITY,
-	TASK2_PRIORITY, task2_stk,
-	TASK_STACKSIZE,
-	NULL, 0);
+//
+//	OSTaskCreateExt(task2, &accl_ctx, (void *) &task2_stk[TASK_STACKSIZE - 1],
+//	TASK2_PRIORITY,
+//	TASK2_PRIORITY, task2_stk,
+//	TASK_STACKSIZE,
+//	NULL, 0);
 
 	OSTaskCreateExt(task3,
 	NULL, (void *) &task3_stk[TASK_STACKSIZE - 1],
@@ -91,7 +91,7 @@ void task1(void* pdata) {
 //	TASK_STACKSIZE,
 //	NULL, 0);
 	while (1) {
-		printf("Hello from task1, every 3 seconds\n");
+//		printf("Hello from task1, every 3 seconds\n");
 		OSTimeDlyHMSM(0, 0, 3, 0);
 	}
 }
@@ -140,8 +140,11 @@ void task3(void *pdata) {
 	int cpuFlag = 0;
 
 	while (1) {
-		int sw = IORD_ALTERA_AVALON_PIO_DATA(PIO_SWITCH_BASE) & 0xF;
-		IOWR_ALTERA_AVALON_PIO_DATA(PIO_LED_BASE, sw & 0x7);
+		int sw = IORD_ALTERA_AVALON_PIO_DATA(PIO_SWITCH_BASE) & 0x1F;
+		int liveMode = (sw >> 4) & 0x1;
+		IOWR_ALTERA_AVALON_PIO_DATA(PIO_LIVE_FLAG_BASE, liveMode);
+
+		IOWR_ALTERA_AVALON_PIO_DATA(PIO_LED_BASE, sw & 0x1F);
 
 		if (sw & 0x1) {
 
@@ -205,56 +208,63 @@ void task3(void *pdata) {
 }
 
 void task4(void *pdata) {
-	volatile alt_u8 *shared_fb = (volatile alt_u8 *) SHARED_FB_BASE_ADDR;
+    volatile alt_u8 *shared_fb   = (volatile alt_u8 *) SHARED_FB_BASE_ADDR;
+    volatile alt_u8 *shared_text = (volatile alt_u8 *) SHARED_TEXT_BASE_ADDR;
 
-	printf("[ESP32 SPI] Framebuffer RX task started\n");
-	printf("[ESP32 SPI] Shared FB base: 0x%08X\n", (unsigned int) shared_fb);
-	printf("[ESP32 SPI] Frame size: %d bytes\n", ESP32_FB_SIZE);
-	// Start with flag cleared
-	IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 0);
+    /* Local copy of the most recent received text. +1 for guaranteed null term. */
+    static char latest_text[ESP32_TEXT_BUF_LEN + 1];
 
-	while (1) {
-//    	int ready = IORD_ALTERA_AVALON_PIO_DATA(PIO_SPI_READY_BASE) & 0x1;
-//
-//    	if (!ready) {
-//    	    printf("[ESP32 SPI] READY polled high\n");
-//    	    esp32_frame_ready = 1;
-//    	}
-//    	else {
-//    		esp32_frame_ready = 0;
-//    		printf("LOWLOWLOW\n");
-//    	}
-//    	static alt_u8 test_rx_buf[ESP32_FB_SIZE];
+    printf("[ESP32 SPI] Framebuffer RX task started\n");
+    printf("[ESP32 SPI] Shared FB base:   0x%08X\n", (unsigned int) shared_fb);
+    printf("[ESP32 SPI] Shared text base: 0x%08X\n", (unsigned int) shared_text);
+    printf("[ESP32 SPI] Frame size:       %d bytes\n", ESP32_FB_SIZE);
+    printf("[ESP32 SPI] Text size:        %d bytes\n", ESP32_TEXT_BUF_LEN);
+    printf("[ESP32 SPI] Payload size:     %d bytes\n", ESP32_PAYLOAD_SIZE);
 
-		if (esp32_frame_ready) {
-			printf("[ESP32 SPI] ESP32 ready, reading framebuffer...\n");
+    IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 0);
 
-			esp32_frame_ready = 0;
+    while (1) {
+        if (esp32_frame_ready) {
+            esp32_frame_ready = 0;
 
-			if (frame_mutex != NULL) {
-				altera_avalon_mutex_lock(frame_mutex, FRAME_SPI_OWNER_ID);
-			}
+            if (frame_mutex != NULL) {
+                altera_avalon_mutex_lock(frame_mutex, FRAME_SPI_OWNER_ID);
+            }
 
-			int rc = esp32_spi_read_framebuffer((alt_u8 *) shared_fb);
-//             int rc = esp32_spi_read_framebuffer(test_rx_buf);
+            /* Single SPI read into the shared region. Framebuffer lands at
+             * shared_fb; text lands at shared_text (= shared_fb + FB_SIZE).
+             */
+            int rc = esp32_spi_read_payload((alt_u8 *) shared_fb);
 
-			if (frame_mutex != NULL) {
-				altera_avalon_mutex_unlock(frame_mutex);
-			}
+            /* Snapshot the text portion while we still hold the mutex. */
+            if (rc == 0) {
+                int i;
+                for (i = 0; i < ESP32_TEXT_BUF_LEN; i++) {
+                    latest_text[i] = (char) shared_text[i];
+                }
+                latest_text[ESP32_TEXT_BUF_LEN] = '\0';
+            }
 
-			if (rc == 0) {
-				printf("[ESP32 SPI] Framebuffer copied to SDRAM\n");
-				IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 1);
+            if (frame_mutex != NULL) {
+                altera_avalon_mutex_unlock(frame_mutex);
+            }
 
-			} else {
-				printf("[ESP32 SPI] Framebuffer read FAILED\n");
-				IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 0);
+            if (rc == 0) {
+                IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 1);
 
-			}
-		}
-
-		OSTimeDlyHMSM(0, 0, 0, 1);
-	}
+                /* Print only when a sentence actually arrived this frame.
+                 * Empty (all-zero) text means "no sentence completed this frame".
+                 */
+                if (latest_text[0] != '\0') {
+                    printf("[ESP32 SPI] Sentence: \"%s\"\n", latest_text);
+                }
+            } else {
+                printf("[ESP32 SPI] Payload read FAILED\n");
+                IOWR_ALTERA_AVALON_PIO_DATA(PIO_NEW_FRAME_FLAG_BASE, 0);
+            }
+        }
+        OSTimeDlyHMSM(0, 0, 0, 1);
+    }
 }
 
 //void task5(void *pdata) {

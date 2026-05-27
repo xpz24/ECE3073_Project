@@ -22,14 +22,15 @@
 			frame_ready_export : out   std_logic;                                        -- export
 			hexhi_export       : out   std_logic_vector(23 downto 0);                    -- export
 			hexlo_export       : out   std_logic_vector(23 downto 0);                    -- export
-			led_export         : out   std_logic_vector(2 downto 0);                     -- export
+			led_export         : out   std_logic_vector(4 downto 0);                     -- export
 			pixel_addr_export  : out   std_logic_vector(16 downto 0);                    -- export
-			pixel_data_export  : out   std_logic_vector(3 downto 0);                     -- export
+			pixel_data_export  : out   std_logic_vector(11 downto 0);                    -- export
 			pixel_wren_export  : out   std_logic;                                        -- export
 			speaker_export     : out   std_logic;                                        -- export
 			spi_ready_export   : in    std_logic                     := 'X';             -- export
 			swap_done_export   : in    std_logic_vector(7 downto 0)  := (others => 'X'); -- export
-			switch_export      : in    std_logic_vector(3 downto 0)  := (others => 'X')  -- export
+			switch_export      : in    std_logic_vector(4 downto 0)  := (others => 'X'); -- export
+			live_flag_export   : out   std_logic                                         -- export
 		);
 	end component Project;
 
@@ -64,6 +65,7 @@
 			speaker_export     => CONNECTED_TO_speaker_export,     --     speaker.export
 			spi_ready_export   => CONNECTED_TO_spi_ready_export,   --   spi_ready.export
 			swap_done_export   => CONNECTED_TO_swap_done_export,   --   swap_done.export
-			switch_export      => CONNECTED_TO_switch_export       --      switch.export
+			switch_export      => CONNECTED_TO_switch_export,      --      switch.export
+			live_flag_export   => CONNECTED_TO_live_flag_export    --   live_flag.export
 		);
 

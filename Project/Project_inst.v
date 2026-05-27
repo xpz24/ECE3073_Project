@@ -28,6 +28,7 @@
 		.speaker_export     (<connected-to-speaker_export>),     //     speaker.export
 		.spi_ready_export   (<connected-to-spi_ready_export>),   //   spi_ready.export
 		.swap_done_export   (<connected-to-swap_done_export>),   //   swap_done.export
-		.switch_export      (<connected-to-switch_export>)       //      switch.export
+		.switch_export      (<connected-to-switch_export>),      //      switch.export
+		.live_flag_export   (<connected-to-live_flag_export>)    //   live_flag.export
 	);
 

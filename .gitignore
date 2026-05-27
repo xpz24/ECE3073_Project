@@ -1,8 +1,13 @@
 # # Manual Ignores
 *.pdf
 pythonScripts/captured_frames/
-pythonScripts/Character_Detection_Swift-YOLO_192/
+pythonScripts/YOLO_Character_Scrolling_Text_192/
 pythonScripts/runs/
+pythonScripts/model_backup
+pythonScripts/captured_base64
+pythonScripts/input_zips
+pythonScripts/yolo_dataset_real
+
 
 # # PYTHON
 # Byte-compiled / optimized / DLL files

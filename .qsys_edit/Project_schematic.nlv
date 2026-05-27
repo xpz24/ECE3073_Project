@@ -2,26 +2,27 @@
 # 
 preplace inst Project.PIO_SPEAKER -pg 1 -lvl 4 -y 1600
 preplace inst Project.PIO_PIXEL_ADDR -pg 1 -lvl 4 -y 1100
-preplace inst Project.MUTEX -pg 1 -lvl 4 -y 2000
+preplace inst Project.MUTEX -pg 1 -lvl 4 -y 2100
 preplace inst Project.UART_C0 -pg 1 -lvl 4 -y 900
-preplace inst Project.ONCHIP_C0 -pg 1 -lvl 4 -y 2080
-preplace inst Project.NIOSII_C0 -pg 1 -lvl 3 -y 620
-preplace inst Project.UART_C1 -pg 1 -lvl 5 -y 160
+preplace inst Project.ONCHIP_C0 -pg 1 -lvl 4 -y 2180
+preplace inst Project.NIOSII_C0 -pg 1 -lvl 3 -y 640
+preplace inst Project.UART_C1 -pg 1 -lvl 5 -y 180
 preplace inst Project.PIO_SWITCH -pg 1 -lvl 4 -y 1700
 preplace inst Project.PIO_FRAME_READY -pg 1 -lvl 4 -y 240
-preplace inst Project.ONCHIP_C1 -pg 1 -lvl 4 -y 2160
+preplace inst Project.ONCHIP_C1 -pg 1 -lvl 4 -y 2260
 preplace inst Project.NIOSII_C1.cpu -pg 1
-preplace inst Project.NIOSII_C1 -pg 1 -lvl 4 -y 50
+preplace inst Project.NIOSII_C1 -pg 1 -lvl 4 -y 70
 preplace inst Project.PIO_LED -pg 1 -lvl 4 -y 1500
 preplace inst Project.ESP32 -pg 1 -lvl 4 -y 780
 preplace inst Project.PIO_PIXEL_DATA -pg 1 -lvl 4 -y 1200
+preplace inst Project.PIO_NEW_FRAME_FLAG -pg 1 -lvl 4 -y 2000
 preplace inst Project.NIOSII_C0.clock_bridge -pg 1
 preplace inst Project.NIOSII_C1.reset_bridge -pg 1
 preplace inst Project.PIO_BUTTON -pg 1 -lvl 4 -y 1900
 preplace inst Project.ACCELEROMETER -pg 1 -lvl 4 -y 660
 preplace inst Project.PIO_SWAP_DONE -pg 1 -lvl 4 -y 340
 preplace inst Project.PIO_HEX_LO -pg 1 -lvl 4 -y 1400
-preplace inst Project.CLK -pg 1 -lvl 2 -y 520
+preplace inst Project.CLK -pg 1 -lvl 2 -y 540
 preplace inst Project.SDRAM -pg 1 -lvl 4 -y 1800
 preplace inst Project.NIOSII_C0.reset_bridge -pg 1
 preplace inst Project -pg 1 -lvl 1 -y 40 -regy -20
@@ -31,26 +32,26 @@ preplace inst Project.SYS_TIMER -pg 1 -lvl 4 -y 560
 preplace inst Project.PIO_PIXEL_WREN -pg 1 -lvl 4 -y 1300
 preplace inst Project.PIO_HEX_HI -pg 1 -lvl 4 -y 1000
 preplace inst Project.NIOSII_C1.clock_bridge -pg 1
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_PIXEL_WREN.external_connection,(SLAVE)Project.pixel_wren) 1 0 4 NJ 1330 NJ 1330 NJ 1330 NJ
 preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.frame_ready,(SLAVE)PIO_FRAME_READY.external_connection) 1 0 4 NJ 270 NJ 270 NJ 270 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)CLK.clk_in,(SLAVE)Project.clk) 1 0 2 NJ 550 NJ
 preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_PIXEL_DATA.external_connection,(SLAVE)Project.pixel_data) 1 0 4 NJ 1230 NJ 1230 NJ 1230 NJ
+preplace netloc FAN_OUT<net_container>Project</net_container>(SLAVE)NIOSII_C0.clk,(SLAVE)UART_C0.clk,(SLAVE)PIO_PIXEL_DATA.clk,(SLAVE)PIO_SPI_READY.clk,(SLAVE)PIO_SWAP_DONE.clk,(SLAVE)SDRAM.clk,(SLAVE)UART_C1.clk,(SLAVE)PIO_BUTTON.clk,(SLAVE)PIO_PIXEL_ADDR.clk,(SLAVE)PIO_LED.clk,(SLAVE)PIO_PIXEL_WREN.clk,(SLAVE)NIOSII_C1.clk,(SLAVE)ONCHIP_C1.clk1,(SLAVE)PIO_HEX_LO.clk,(SLAVE)PIO_SPEAKER.clk,(SLAVE)SYS_TIMER.clk,(SLAVE)MUTEX.clk,(SLAVE)PIO_FRAME_READY.clk,(SLAVE)ONCHIP_C0.clk1,(SLAVE)PIO_SWITCH.clk,(SLAVE)PIO_NEW_FRAME_FLAG.clk,(MASTER)CLK.clk,(SLAVE)ESP32.clk,(SLAVE)PIO_HEX_HI.clk,(SLAVE)ACCELEROMETER.clk) 1 2 3 690 550 1190 210 N
 preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.hexhi,(SLAVE)PIO_HEX_HI.external_connection) 1 0 4 NJ 1030 NJ 1030 NJ 1030 NJ
-preplace netloc POINT_TO_POINT<net_container>Project</net_container>(SLAVE)UART_C1.irq,(MASTER)NIOSII_C1.irq) 1 4 1 1590
-preplace netloc FAN_OUT<net_container>Project</net_container>(SLAVE)UART_C0.irq,(SLAVE)SYS_TIMER.irq,(SLAVE)PIO_SPI_READY.irq,(SLAVE)ESP32.irq,(MASTER)NIOSII_C0.irq,(SLAVE)ACCELEROMETER.irq) 1 3 1 1190
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_SWAP_DONE.external_connection,(SLAVE)Project.swap_done) 1 0 4 NJ 370 NJ 370 NJ 370 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.clk,(SLAVE)CLK.clk_in) 1 0 2 NJ 530 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.led,(SLAVE)PIO_LED.external_connection) 1 0 4 NJ 1530 NJ 1530 NJ 1530 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_BUTTON.external_connection,(SLAVE)Project.button) 1 0 4 NJ 1930 NJ 1930 NJ 1930 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.esp32,(SLAVE)ESP32.external) 1 0 4 NJ 610 NJ 610 NJ 560 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)SDRAM.wire,(SLAVE)Project.dram) 1 0 4 NJ 1870 NJ 1870 NJ 1870 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_SPI_READY.external_connection,(SLAVE)Project.spi_ready) 1 0 4 NJ 470 NJ 470 NJ 470 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_HEX_LO.external_connection,(SLAVE)Project.hexlo) 1 0 4 NJ 1430 NJ 1430 NJ 1430 NJ
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.accel,(SLAVE)ACCELEROMETER.external) 1 0 4 NJ 760 NJ 760 NJ 760 NJ
-preplace netloc INTERCONNECT<net_container>Project</net_container>(SLAVE)PIO_LED.s1,(SLAVE)PIO_SPI_READY.s1,(SLAVE)ACCELEROMETER.spi_control_port,(SLAVE)PIO_SWAP_DONE.s1,(SLAVE)NIOSII_C0.debug_mem_slave,(SLAVE)PIO_PIXEL_ADDR.s1,(SLAVE)ESP32.spi_control_port,(SLAVE)PIO_SWITCH.s1,(SLAVE)UART_C0.avalon_jtag_slave,(SLAVE)PIO_HEX_HI.s1,(SLAVE)MUTEX.s1,(SLAVE)PIO_BUTTON.s1,(SLAVE)NIOSII_C1.debug_mem_slave,(SLAVE)PIO_PIXEL_WREN.s1,(SLAVE)ONCHIP_C0.s1,(MASTER)NIOSII_C1.data_master,(SLAVE)ONCHIP_C1.s1,(SLAVE)PIO_FRAME_READY.s1,(SLAVE)PIO_SPEAKER.s1,(MASTER)NIOSII_C0.data_master,(MASTER)NIOSII_C1.instruction_master,(SLAVE)SYS_TIMER.s1,(MASTER)NIOSII_C0.instruction_master,(SLAVE)UART_C1.avalon_jtag_slave,(SLAVE)SDRAM.s1,(SLAVE)PIO_PIXEL_DATA.s1,(SLAVE)PIO_HEX_LO.s1) 1 2 3 710 780 1150 210 1570
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.pixel_addr,(SLAVE)PIO_PIXEL_ADDR.external_connection) 1 0 4 NJ 1130 NJ 1130 NJ 1130 NJ
-preplace netloc FAN_OUT<net_container>Project</net_container>(SLAVE)ACCELEROMETER.clk,(SLAVE)UART_C1.clk,(SLAVE)ONCHIP_C1.clk1,(SLAVE)PIO_BUTTON.clk,(SLAVE)PIO_PIXEL_DATA.clk,(SLAVE)PIO_HEX_LO.clk,(SLAVE)PIO_PIXEL_ADDR.clk,(SLAVE)PIO_FRAME_READY.clk,(SLAVE)PIO_SWITCH.clk,(SLAVE)ONCHIP_C0.clk1,(SLAVE)ESP32.clk,(SLAVE)NIOSII_C0.clk,(SLAVE)PIO_HEX_HI.clk,(SLAVE)PIO_LED.clk,(SLAVE)PIO_PIXEL_WREN.clk,(SLAVE)SDRAM.clk,(SLAVE)MUTEX.clk,(SLAVE)PIO_SPEAKER.clk,(SLAVE)PIO_SPI_READY.clk,(SLAVE)PIO_SWAP_DONE.clk,(SLAVE)NIOSII_C1.clk,(SLAVE)SYS_TIMER.clk,(MASTER)CLK.clk,(SLAVE)UART_C0.clk) 1 2 3 670 520 1110 190 N
-preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.speaker,(SLAVE)PIO_SPEAKER.external_connection) 1 0 4 NJ 1630 NJ 1630 NJ 1630 NJ
+preplace netloc FAN_OUT<net_container>Project</net_container>(SLAVE)SYS_TIMER.irq,(SLAVE)PIO_SPI_READY.irq,(SLAVE)UART_C0.irq,(SLAVE)ACCELEROMETER.irq,(SLAVE)ESP32.irq,(MASTER)NIOSII_C0.irq) 1 3 1 1130
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_PIXEL_ADDR.external_connection,(SLAVE)Project.pixel_addr) 1 0 4 NJ 1130 NJ 1130 NJ 1130 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.swap_done,(SLAVE)PIO_SWAP_DONE.external_connection) 1 0 4 NJ 370 NJ 370 NJ 370 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_LED.external_connection,(SLAVE)Project.led) 1 0 4 NJ 1530 NJ 1530 NJ 1530 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)PIO_SPEAKER.external_connection,(SLAVE)Project.speaker) 1 0 4 NJ 1630 NJ 1630 NJ 1630 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.spi_ready,(SLAVE)PIO_SPI_READY.external_connection) 1 0 4 NJ 470 NJ 470 NJ 470 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)ESP32.external,(SLAVE)Project.esp32) 1 0 4 NJ 820 NJ 820 NJ 820 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.accel,(SLAVE)ACCELEROMETER.external) 1 0 4 NJ 780 NJ 780 NJ 780 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.pixel_wren,(SLAVE)PIO_PIXEL_WREN.external_connection) 1 0 4 NJ 1330 NJ 1330 NJ 1330 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.dram,(SLAVE)SDRAM.wire) 1 0 4 NJ 1870 NJ 1870 NJ 1870 NJ
+preplace netloc INTERCONNECT<net_container>Project</net_container>(MASTER)NIOSII_C1.instruction_master,(SLAVE)UART_C0.avalon_jtag_slave,(SLAVE)PIO_FRAME_READY.s1,(SLAVE)UART_C1.avalon_jtag_slave,(SLAVE)PIO_SPEAKER.s1,(SLAVE)PIO_HEX_HI.s1,(SLAVE)PIO_PIXEL_WREN.s1,(SLAVE)NIOSII_C1.debug_mem_slave,(SLAVE)PIO_LED.s1,(SLAVE)ONCHIP_C1.s1,(SLAVE)PIO_PIXEL_ADDR.s1,(SLAVE)PIO_PIXEL_DATA.s1,(SLAVE)ONCHIP_C0.s1,(SLAVE)PIO_SWITCH.s1,(SLAVE)PIO_SWAP_DONE.s1,(SLAVE)PIO_NEW_FRAME_FLAG.s1,(MASTER)NIOSII_C1.data_master,(SLAVE)PIO_HEX_LO.s1,(SLAVE)NIOSII_C0.debug_mem_slave,(SLAVE)SYS_TIMER.s1,(SLAVE)PIO_BUTTON.s1,(SLAVE)PIO_SPI_READY.s1,(SLAVE)MUTEX.s1,(SLAVE)ESP32.spi_control_port,(MASTER)NIOSII_C0.instruction_master,(SLAVE)ACCELEROMETER.spi_control_port,(MASTER)NIOSII_C0.data_master,(SLAVE)SDRAM.s1) 1 2 3 690 800 1090 30 1610
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.hexlo,(SLAVE)PIO_HEX_LO.external_connection) 1 0 4 NJ 1430 NJ 1430 NJ 1430 NJ
+preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.button,(SLAVE)PIO_BUTTON.external_connection) 1 0 4 NJ 1930 NJ 1930 NJ 1930 NJ
 preplace netloc EXPORT<net_container>Project</net_container>(SLAVE)Project.switch,(SLAVE)PIO_SWITCH.external_connection) 1 0 4 NJ 1730 NJ 1730 NJ 1730 NJ
-preplace netloc INTERCONNECT<net_container>Project</net_container>(SLAVE)PIO_SPI_READY.reset,(SLAVE)ONCHIP_C1.reset1,(SLAVE)PIO_SWAP_DONE.reset,(MASTER)NIOSII_C1.debug_reset_request,(SLAVE)PIO_BUTTON.reset,(SLAVE)NIOSII_C1.reset,(MASTER)NIOSII_C0.debug_reset_request,(SLAVE)PIO_LED.reset,(SLAVE)CLK.clk_in_reset,(SLAVE)PIO_SWITCH.reset,(SLAVE)ONCHIP_C0.reset1,(SLAVE)PIO_FRAME_READY.reset,(SLAVE)UART_C1.reset,(SLAVE)PIO_HEX_HI.reset,(SLAVE)SDRAM.reset,(SLAVE)UART_C0.reset,(SLAVE)PIO_PIXEL_ADDR.reset,(SLAVE)NIOSII_C0.reset,(MASTER)CLK.clk_reset,(SLAVE)PIO_HEX_LO.reset,(SLAVE)SYS_TIMER.reset,(SLAVE)PIO_PIXEL_DATA.reset,(SLAVE)ACCELEROMETER.reset,(SLAVE)PIO_SPEAKER.reset,(SLAVE)PIO_PIXEL_WREN.reset,(SLAVE)ESP32.reset,(SLAVE)MUTEX.reset) 1 1 4 130 590 690 540 1130 230 1610
+preplace netloc INTERCONNECT<net_container>Project</net_container>(SLAVE)PIO_SWITCH.reset,(MASTER)CLK.clk_reset,(SLAVE)ONCHIP_C1.reset1,(SLAVE)PIO_HEX_HI.reset,(SLAVE)PIO_BUTTON.reset,(SLAVE)PIO_FRAME_READY.reset,(SLAVE)PIO_NEW_FRAME_FLAG.reset,(MASTER)NIOSII_C0.debug_reset_request,(SLAVE)PIO_SWAP_DONE.reset,(SLAVE)CLK.clk_in_reset,(SLAVE)PIO_SPI_READY.reset,(SLAVE)PIO_HEX_LO.reset,(SLAVE)UART_C1.reset,(SLAVE)PIO_PIXEL_WREN.reset,(SLAVE)NIOSII_C0.reset,(SLAVE)PIO_LED.reset,(SLAVE)ACCELEROMETER.reset,(SLAVE)MUTEX.reset,(SLAVE)PIO_PIXEL_DATA.reset,(MASTER)NIOSII_C1.debug_reset_request,(SLAVE)PIO_PIXEL_ADDR.reset,(SLAVE)ESP32.reset,(SLAVE)SYS_TIMER.reset,(SLAVE)ONCHIP_C0.reset1,(SLAVE)UART_C0.reset,(SLAVE)PIO_SPEAKER.reset,(SLAVE)SDRAM.reset,(SLAVE)NIOSII_C1.reset) 1 1 4 130 530 670 570 1150 230 1570
+preplace netloc POINT_TO_POINT<net_container>Project</net_container>(MASTER)NIOSII_C1.irq,(SLAVE)UART_C1.irq) 1 4 1 1590
 levelinfo -pg 1 0 80 1790
 levelinfo -hier Project 90 110 500 850 1330 1640 1780

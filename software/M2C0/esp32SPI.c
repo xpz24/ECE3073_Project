@@ -80,6 +80,10 @@ int esp32_spi_read_framebuffer(alt_u8 *rx_data) {
 	return esp32_spi_read(rx_data, ESP32_FB_SIZE);
 }
 
+int esp32_spi_read_payload(alt_u8 *rx_data) {
+    return esp32_spi_read(rx_data, ESP32_PAYLOAD_SIZE);
+}
+
 static void esp32_ready_isr(void *context) {
 	// Clear edge capture
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PIO_SPI_READY_BASE, 0x1);

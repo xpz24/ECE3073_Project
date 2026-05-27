@@ -53,7 +53,7 @@
    {
       datum _sortIndex
       {
-         value = "23";
+         value = "24";
          type = "int";
       }
    }
@@ -61,7 +61,7 @@
    {
       datum baseAddress
       {
-         value = "37296";
+         value = "37360";
          type = "String";
       }
    }
@@ -85,7 +85,7 @@
    {
       datum _sortIndex
       {
-         value = "14";
+         value = "15";
          type = "int";
       }
    }
@@ -117,7 +117,7 @@
    {
       datum _sortIndex
       {
-         value = "15";
+         value = "16";
          type = "int";
       }
    }
@@ -141,7 +141,7 @@
    {
       datum baseAddress
       {
-         value = "37248";
+         value = "37312";
          type = "String";
       }
    }
@@ -149,7 +149,7 @@
    {
       datum _sortIndex
       {
-         value = "20";
+         value = "21";
          type = "int";
       }
    }
@@ -173,7 +173,7 @@
    {
       datum baseAddress
       {
-         value = "37216";
+         value = "37280";
          type = "String";
       }
    }
@@ -189,7 +189,7 @@
    {
       datum baseAddress
       {
-         value = "37232";
+         value = "37296";
          type = "String";
       }
    }
@@ -205,6 +205,22 @@
    {
       datum baseAddress
       {
+         value = "37264";
+         type = "String";
+      }
+   }
+   element PIO_LIVE_FLAG
+   {
+      datum _sortIndex
+      {
+         value = "14";
+         type = "int";
+      }
+   }
+   element PIO_LIVE_FLAG.s1
+   {
+      datum baseAddress
+      {
          value = "37200";
          type = "String";
       }
@@ -213,15 +229,23 @@
    {
       datum _sortIndex
       {
-         value = "24";
+         value = "25";
          type = "int";
+      }
+   }
+   element PIO_NEW_FRAME_FLAG.s1
+   {
+      datum baseAddress
+      {
+         value = "37216";
+         type = "String";
       }
    }
    element PIO_PIXEL_ADDR
    {
       datum _sortIndex
       {
-         value = "17";
+         value = "18";
          type = "int";
       }
    }
@@ -237,7 +261,7 @@
    {
       datum _sortIndex
       {
-         value = "18";
+         value = "19";
          type = "int";
       }
    }
@@ -253,7 +277,7 @@
    {
       datum _sortIndex
       {
-         value = "19";
+         value = "20";
          type = "int";
       }
    }
@@ -277,7 +301,7 @@
    {
       datum baseAddress
       {
-         value = "37184";
+         value = "37248";
          type = "String";
       }
    }
@@ -293,7 +317,7 @@
    {
       datum baseAddress
       {
-         value = "37168";
+         value = "37232";
          type = "String";
       }
    }
@@ -301,7 +325,7 @@
    {
       datum _sortIndex
       {
-         value = "21";
+         value = "22";
          type = "int";
       }
    }
@@ -325,7 +349,7 @@
    {
       datum baseAddress
       {
-         value = "37264";
+         value = "37328";
          type = "String";
       }
    }
@@ -333,7 +357,7 @@
    {
       datum _sortIndex
       {
-         value = "22";
+         value = "23";
          type = "int";
       }
    }
@@ -378,7 +402,7 @@
    {
       datum baseAddress
       {
-         value = "37304";
+         value = "37368";
          type = "String";
       }
    }
@@ -386,7 +410,7 @@
    {
       datum _sortIndex
       {
-         value = "16";
+         value = "17";
          type = "int";
       }
    }
@@ -450,6 +474,11 @@
  <interface
    name="led"
    internal="PIO_LED.external_connection"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="live_flag"
+   internal="PIO_LIVE_FLAG.external_connection"
    type="conduit"
    dir="end" />
  <interface
@@ -553,7 +582,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x0' end='0x10' type='altera_avalon_pio.s1' /><slave name='ONCHIP_C0.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C0.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='ESP32.spi_control_port' start='0x9060' end='0x9080' type='altera_avalon_spi.spi_control_port' /><slave name='ACCELEROMETER.spi_control_port' start='0x9080' end='0x90A0' type='altera_avalon_spi.spi_control_port' /><slave name='SYS_TIMER.s1' start='0x90A0' end='0x90C0' type='altera_avalon_timer.s1' /><slave name='PIO_SPI_READY.s1' start='0x9130' end='0x9140' type='altera_avalon_pio.s1' /><slave name='PIO_SPEAKER.s1' start='0x9140' end='0x9150' type='altera_avalon_pio.s1' /><slave name='PIO_LED.s1' start='0x9150' end='0x9160' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_HI.s1' start='0x9160' end='0x9170' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_LO.s1' start='0x9170' end='0x9180' type='altera_avalon_pio.s1' /><slave name='PIO_BUTTON.s1' start='0x9180' end='0x9190' type='altera_avalon_pio.s1' /><slave name='PIO_SWITCH.s1' start='0x9190' end='0x91A0' type='altera_avalon_pio.s1' /><slave name='MUTEX.s1' start='0x91B0' end='0x91B8' type='altera_avalon_mutex.s1' /><slave name='UART_C0.avalon_jtag_slave' start='0x91B8' end='0x91C0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='ONCHIP_C0.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C0.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='ESP32.spi_control_port' start='0x9060' end='0x9080' type='altera_avalon_spi.spi_control_port' /><slave name='ACCELEROMETER.spi_control_port' start='0x9080' end='0x90A0' type='altera_avalon_spi.spi_control_port' /><slave name='SYS_TIMER.s1' start='0x90A0' end='0x90C0' type='altera_avalon_timer.s1' /><slave name='PIO_LIVE_FLAG.s1' start='0x9150' end='0x9160' type='altera_avalon_pio.s1' /><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x9160' end='0x9170' type='altera_avalon_pio.s1' /><slave name='PIO_SPI_READY.s1' start='0x9170' end='0x9180' type='altera_avalon_pio.s1' /><slave name='PIO_SPEAKER.s1' start='0x9180' end='0x9190' type='altera_avalon_pio.s1' /><slave name='PIO_LED.s1' start='0x9190' end='0x91A0' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_HI.s1' start='0x91A0' end='0x91B0' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_LO.s1' start='0x91B0' end='0x91C0' type='altera_avalon_pio.s1' /><slave name='PIO_BUTTON.s1' start='0x91C0' end='0x91D0' type='altera_avalon_pio.s1' /><slave name='PIO_SWITCH.s1' start='0x91D0' end='0x91E0' type='altera_avalon_pio.s1' /><slave name='MUTEX.s1' start='0x91F0' end='0x91F8' type='altera_avalon_mutex.s1' /><slave name='UART_C0.avalon_jtag_slave' start='0x91F8' end='0x9200' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -592,7 +621,7 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Fast" />
   <parameter name="instAddrWidth" value="27" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x0' end='0x10' type='altera_avalon_pio.s1' /><slave name='ONCHIP_C0.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C0.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='ESP32.spi_control_port' start='0x9060' end='0x9080' type='altera_avalon_spi.spi_control_port' /><slave name='ACCELEROMETER.spi_control_port' start='0x9080' end='0x90A0' type='altera_avalon_spi.spi_control_port' /><slave name='SYS_TIMER.s1' start='0x90A0' end='0x90C0' type='altera_avalon_timer.s1' /><slave name='PIO_SPI_READY.s1' start='0x9130' end='0x9140' type='altera_avalon_pio.s1' /><slave name='PIO_SPEAKER.s1' start='0x9140' end='0x9150' type='altera_avalon_pio.s1' /><slave name='PIO_LED.s1' start='0x9150' end='0x9160' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_HI.s1' start='0x9160' end='0x9170' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_LO.s1' start='0x9170' end='0x9180' type='altera_avalon_pio.s1' /><slave name='PIO_BUTTON.s1' start='0x9180' end='0x9190' type='altera_avalon_pio.s1' /><slave name='PIO_SWITCH.s1' start='0x9190' end='0x91A0' type='altera_avalon_pio.s1' /><slave name='MUTEX.s1' start='0x91B0' end='0x91B8' type='altera_avalon_mutex.s1' /><slave name='UART_C0.avalon_jtag_slave' start='0x91B8' end='0x91C0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='ONCHIP_C0.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C0.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='ESP32.spi_control_port' start='0x9060' end='0x9080' type='altera_avalon_spi.spi_control_port' /><slave name='ACCELEROMETER.spi_control_port' start='0x9080' end='0x90A0' type='altera_avalon_spi.spi_control_port' /><slave name='SYS_TIMER.s1' start='0x90A0' end='0x90C0' type='altera_avalon_timer.s1' /><slave name='PIO_LIVE_FLAG.s1' start='0x9150' end='0x9160' type='altera_avalon_pio.s1' /><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x9160' end='0x9170' type='altera_avalon_pio.s1' /><slave name='PIO_SPI_READY.s1' start='0x9170' end='0x9180' type='altera_avalon_pio.s1' /><slave name='PIO_SPEAKER.s1' start='0x9180' end='0x9190' type='altera_avalon_pio.s1' /><slave name='PIO_LED.s1' start='0x9190' end='0x91A0' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_HI.s1' start='0x91A0' end='0x91B0' type='altera_avalon_pio.s1' /><slave name='PIO_HEX_LO.s1' start='0x91B0' end='0x91C0' type='altera_avalon_pio.s1' /><slave name='PIO_BUTTON.s1' start='0x91C0' end='0x91D0' type='altera_avalon_pio.s1' /><slave name='PIO_SWITCH.s1' start='0x91D0' end='0x91E0' type='altera_avalon_pio.s1' /><slave name='MUTEX.s1' start='0x91F0' end='0x91F8' type='altera_avalon_mutex.s1' /><slave name='UART_C0.avalon_jtag_slave' start='0x91F8' end='0x9200' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
@@ -731,7 +760,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x0' end='0x10' type='altera_avalon_pio.s1' /><slave name='ONCHIP_C1.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C1.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='PIO_SWAP_DONE.s1' start='0x9050' end='0x9060' type='altera_avalon_pio.s1' /><slave name='PIO_FRAME_READY.s1' start='0x9060' end='0x9070' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_WREN.s1' start='0x9070' end='0x9080' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_DATA.s1' start='0x9080' end='0x9090' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_ADDR.s1' start='0x9090' end='0x90A0' type='altera_avalon_pio.s1' /><slave name='UART_C1.avalon_jtag_slave' start='0x90A8' end='0x90B0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='MUTEX.s1' start='0x91B0' end='0x91B8' type='altera_avalon_mutex.s1' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='ONCHIP_C1.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C1.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='PIO_SWAP_DONE.s1' start='0x9050' end='0x9060' type='altera_avalon_pio.s1' /><slave name='PIO_FRAME_READY.s1' start='0x9060' end='0x9070' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_WREN.s1' start='0x9070' end='0x9080' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_DATA.s1' start='0x9080' end='0x9090' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_ADDR.s1' start='0x9090' end='0x90A0' type='altera_avalon_pio.s1' /><slave name='UART_C1.avalon_jtag_slave' start='0x90A8' end='0x90B0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x9160' end='0x9170' type='altera_avalon_pio.s1' /><slave name='MUTEX.s1' start='0x91F0' end='0x91F8' type='altera_avalon_mutex.s1' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -770,7 +799,7 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Fast" />
   <parameter name="instAddrWidth" value="27" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x0' end='0x10' type='altera_avalon_pio.s1' /><slave name='ONCHIP_C1.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C1.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='PIO_SWAP_DONE.s1' start='0x9050' end='0x9060' type='altera_avalon_pio.s1' /><slave name='PIO_FRAME_READY.s1' start='0x9060' end='0x9070' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_WREN.s1' start='0x9070' end='0x9080' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_DATA.s1' start='0x9080' end='0x9090' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_ADDR.s1' start='0x9090' end='0x90A0' type='altera_avalon_pio.s1' /><slave name='UART_C1.avalon_jtag_slave' start='0x90A8' end='0x90B0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='MUTEX.s1' start='0x91B0' end='0x91B8' type='altera_avalon_mutex.s1' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='ONCHIP_C1.s1' start='0x4000' end='0x8000' type='altera_avalon_onchip_memory2.s1' /><slave name='NIOSII_C1.debug_mem_slave' start='0x8800' end='0x9000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='PIO_SWAP_DONE.s1' start='0x9050' end='0x9060' type='altera_avalon_pio.s1' /><slave name='PIO_FRAME_READY.s1' start='0x9060' end='0x9070' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_WREN.s1' start='0x9070' end='0x9080' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_DATA.s1' start='0x9080' end='0x9090' type='altera_avalon_pio.s1' /><slave name='PIO_PIXEL_ADDR.s1' start='0x9090' end='0x90A0' type='altera_avalon_pio.s1' /><slave name='UART_C1.avalon_jtag_slave' start='0x90A8' end='0x90B0' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='PIO_NEW_FRAME_FLAG.s1' start='0x9160' end='0x9170' type='altera_avalon_pio.s1' /><slave name='MUTEX.s1' start='0x91F0' end='0x91F8' type='altera_avalon_mutex.s1' /><slave name='SDRAM.s1' start='0x4000000' end='0x8000000' type='altera_avalon_new_sdram_controller.s1' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
@@ -1025,7 +1054,25 @@
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
   <parameter name="simDrivenValue" value="0" />
-  <parameter name="width" value="3" />
+  <parameter name="width" value="5" />
+ </module>
+ <module
+   name="PIO_LIVE_FLAG"
+   kind="altera_avalon_pio"
+   version="23.1"
+   enabled="1">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="false" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="direction" value="Output" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="1" />
  </module>
  <module
    name="PIO_NEW_FRAME_FLAG"
@@ -1036,7 +1083,7 @@
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />
   <parameter name="clockRate" value="50000000" />
-  <parameter name="direction" value="Bidir" />
+  <parameter name="direction" value="Output" />
   <parameter name="edgeType" value="RISING" />
   <parameter name="generateIRQ" value="false" />
   <parameter name="irqType" value="LEVEL" />
@@ -1079,7 +1126,7 @@
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
   <parameter name="simDrivenValue" value="0" />
-  <parameter name="width" value="4" />
+  <parameter name="width" value="12" />
  </module>
  <module
    name="PIO_PIXEL_WREN"
@@ -1165,7 +1212,7 @@
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
   <parameter name="simDrivenValue" value="0" />
-  <parameter name="width" value="4" />
+  <parameter name="width" value="5" />
  </module>
  <module
    name="SDRAM"
@@ -1256,7 +1303,7 @@
    start="NIOSII_C0.data_master"
    end="UART_C0.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x91b8" />
+  <parameter name="baseAddress" value="0x91f8" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1301,7 +1348,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_SWITCH.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9190" />
+  <parameter name="baseAddress" value="0x91d0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1310,7 +1357,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_BUTTON.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9180" />
+  <parameter name="baseAddress" value="0x91c0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1337,7 +1384,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_HEX_LO.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9170" />
+  <parameter name="baseAddress" value="0x91b0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1346,7 +1393,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_HEX_HI.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9160" />
+  <parameter name="baseAddress" value="0x91a0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1355,7 +1402,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_LED.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9150" />
+  <parameter name="baseAddress" value="0x9190" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1364,7 +1411,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_SPEAKER.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9140" />
+  <parameter name="baseAddress" value="0x9180" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1418,7 +1465,7 @@
    start="NIOSII_C0.data_master"
    end="MUTEX.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x91b0" />
+  <parameter name="baseAddress" value="0x91f0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1427,7 +1474,7 @@
    start="NIOSII_C1.data_master"
    end="MUTEX.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x91b0" />
+  <parameter name="baseAddress" value="0x91f0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1436,7 +1483,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_SPI_READY.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9130" />
+  <parameter name="baseAddress" value="0x9170" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1463,7 +1510,7 @@
    start="NIOSII_C0.data_master"
    end="PIO_NEW_FRAME_FLAG.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="baseAddress" value="0x9160" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1472,7 +1519,16 @@
    start="NIOSII_C1.data_master"
    end="PIO_NEW_FRAME_FLAG.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="baseAddress" value="0x9160" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="23.1"
+   start="NIOSII_C0.data_master"
+   end="PIO_LIVE_FLAG.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x9150" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1499,7 +1555,7 @@
    start="NIOSII_C0.instruction_master"
    end="UART_C0.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x91b8" />
+  <parameter name="baseAddress" value="0x91f8" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1544,7 +1600,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_SWITCH.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9190" />
+  <parameter name="baseAddress" value="0x91d0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1553,7 +1609,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_BUTTON.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9180" />
+  <parameter name="baseAddress" value="0x91c0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1580,7 +1636,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_HEX_LO.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9170" />
+  <parameter name="baseAddress" value="0x91b0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1589,7 +1645,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_HEX_HI.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9160" />
+  <parameter name="baseAddress" value="0x91a0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1598,7 +1654,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_LED.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9150" />
+  <parameter name="baseAddress" value="0x9190" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1607,7 +1663,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_SPEAKER.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9140" />
+  <parameter name="baseAddress" value="0x9180" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1661,7 +1717,7 @@
    start="NIOSII_C0.instruction_master"
    end="MUTEX.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x91b0" />
+  <parameter name="baseAddress" value="0x91f0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1670,7 +1726,7 @@
    start="NIOSII_C1.instruction_master"
    end="MUTEX.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x91b0" />
+  <parameter name="baseAddress" value="0x91f0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1679,7 +1735,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_SPI_READY.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x9130" />
+  <parameter name="baseAddress" value="0x9170" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1706,7 +1762,7 @@
    start="NIOSII_C0.instruction_master"
    end="PIO_NEW_FRAME_FLAG.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="baseAddress" value="0x9160" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1715,7 +1771,16 @@
    start="NIOSII_C1.instruction_master"
    end="PIO_NEW_FRAME_FLAG.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="baseAddress" value="0x9160" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="23.1"
+   start="NIOSII_C0.instruction_master"
+   end="PIO_LIVE_FLAG.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x9150" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1762,6 +1827,7 @@
    version="23.1"
    start="CLK.clk"
    end="PIO_NEW_FRAME_FLAG.clk" />
+ <connection kind="clock" version="23.1" start="CLK.clk" end="PIO_LIVE_FLAG.clk" />
  <connection kind="clock" version="23.1" start="CLK.clk" end="ONCHIP_C0.clk1" />
  <connection kind="clock" version="23.1" start="CLK.clk" end="ONCHIP_C1.clk1" />
  <connection
@@ -1888,6 +1954,11 @@
    version="23.1"
    start="CLK.clk_reset"
    end="PIO_NEW_FRAME_FLAG.reset" />
+ <connection
+   kind="reset"
+   version="23.1"
+   start="CLK.clk_reset"
+   end="PIO_LIVE_FLAG.reset" />
  <connection
    kind="reset"
    version="23.1"
@@ -2023,6 +2094,11 @@
    version="23.1"
    start="NIOSII_C1.debug_reset_request"
    end="PIO_NEW_FRAME_FLAG.reset" />
+ <connection
+   kind="reset"
+   version="23.1"
+   start="NIOSII_C0.debug_reset_request"
+   end="PIO_LIVE_FLAG.reset" />
  <connection
    kind="reset"
    version="23.1"

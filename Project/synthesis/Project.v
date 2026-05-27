@@ -26,14 +26,15 @@ module Project (
 		output wire        frame_ready_export, // frame_ready.export
 		output wire [23:0] hexhi_export,       //       hexhi.export
 		output wire [23:0] hexlo_export,       //       hexlo.export
-		output wire [2:0]  led_export,         //         led.export
+		output wire [4:0]  led_export,         //         led.export
+		output wire        live_flag_export,   //   live_flag.export
 		output wire [16:0] pixel_addr_export,  //  pixel_addr.export
-		output wire [3:0]  pixel_data_export,  //  pixel_data.export
+		output wire [11:0] pixel_data_export,  //  pixel_data.export
 		output wire        pixel_wren_export,  //  pixel_wren.export
 		output wire        speaker_export,     //     speaker.export
 		input  wire        spi_ready_export,   //   spi_ready.export
 		input  wire [7:0]  swap_done_export,   //   swap_done.export
-		input  wire [3:0]  switch_export       //      switch.export
+		input  wire [4:0]  switch_export       //      switch.export
 	);
 
 	wire         niosii_c0_debug_reset_request_reset;                         // NIOSII_C0:debug_reset_request -> [rst_controller:reset_in0, rst_controller:reset_in1, rst_controller_001:reset_in0, rst_controller_001:reset_in2, rst_controller_002:reset_in0, rst_controller_003:reset_in0]
@@ -141,6 +142,11 @@ module Project (
 	wire   [1:0] mm_interconnect_0_pio_new_frame_flag_s1_address;             // mm_interconnect_0:PIO_NEW_FRAME_FLAG_s1_address -> PIO_NEW_FRAME_FLAG:address
 	wire         mm_interconnect_0_pio_new_frame_flag_s1_write;               // mm_interconnect_0:PIO_NEW_FRAME_FLAG_s1_write -> PIO_NEW_FRAME_FLAG:write_n
 	wire  [31:0] mm_interconnect_0_pio_new_frame_flag_s1_writedata;           // mm_interconnect_0:PIO_NEW_FRAME_FLAG_s1_writedata -> PIO_NEW_FRAME_FLAG:writedata
+	wire         mm_interconnect_0_pio_live_flag_s1_chipselect;               // mm_interconnect_0:PIO_LIVE_FLAG_s1_chipselect -> PIO_LIVE_FLAG:chipselect
+	wire  [31:0] mm_interconnect_0_pio_live_flag_s1_readdata;                 // PIO_LIVE_FLAG:readdata -> mm_interconnect_0:PIO_LIVE_FLAG_s1_readdata
+	wire   [1:0] mm_interconnect_0_pio_live_flag_s1_address;                  // mm_interconnect_0:PIO_LIVE_FLAG_s1_address -> PIO_LIVE_FLAG:address
+	wire         mm_interconnect_0_pio_live_flag_s1_write;                    // mm_interconnect_0:PIO_LIVE_FLAG_s1_write -> PIO_LIVE_FLAG:write_n
+	wire  [31:0] mm_interconnect_0_pio_live_flag_s1_writedata;                // mm_interconnect_0:PIO_LIVE_FLAG_s1_writedata -> PIO_LIVE_FLAG:writedata
 	wire         mm_interconnect_0_accelerometer_spi_control_port_chipselect; // mm_interconnect_0:ACCELEROMETER_spi_control_port_chipselect -> ACCELEROMETER:spi_select
 	wire  [15:0] mm_interconnect_0_accelerometer_spi_control_port_readdata;   // ACCELEROMETER:data_to_cpu -> mm_interconnect_0:ACCELEROMETER_spi_control_port_readdata
 	wire   [2:0] mm_interconnect_0_accelerometer_spi_control_port_address;    // mm_interconnect_0:ACCELEROMETER_spi_control_port_address -> ACCELEROMETER:mem_addr
@@ -205,7 +211,7 @@ module Project (
 	wire  [31:0] niosii_c0_irq_irq;                                           // irq_mapper:sender_irq -> NIOSII_C0:irq
 	wire         irq_mapper_001_receiver0_irq;                                // UART_C1:av_irq -> irq_mapper_001:receiver0_irq
 	wire  [31:0] niosii_c1_irq_irq;                                           // irq_mapper_001:sender_irq -> NIOSII_C1:irq
-	wire         rst_controller_reset_out_reset;                              // rst_controller:reset_out -> [ACCELEROMETER:reset_n, ESP32:reset_n, NIOSII_C0:reset_n, ONCHIP_C0:reset, PIO_BUTTON:reset_n, PIO_HEX_HI:reset_n, PIO_HEX_LO:reset_n, PIO_LED:reset_n, PIO_SPEAKER:reset_n, PIO_SPI_READY:reset_n, PIO_SWITCH:reset_n, SYS_TIMER:reset_n, UART_C0:rst_n, irq_mapper:reset, mm_interconnect_0:NIOSII_C0_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
+	wire         rst_controller_reset_out_reset;                              // rst_controller:reset_out -> [ACCELEROMETER:reset_n, ESP32:reset_n, NIOSII_C0:reset_n, ONCHIP_C0:reset, PIO_BUTTON:reset_n, PIO_HEX_HI:reset_n, PIO_HEX_LO:reset_n, PIO_LED:reset_n, PIO_LIVE_FLAG:reset_n, PIO_SPEAKER:reset_n, PIO_SPI_READY:reset_n, PIO_SWITCH:reset_n, SYS_TIMER:reset_n, UART_C0:rst_n, irq_mapper:reset, mm_interconnect_0:NIOSII_C0_reset_reset_bridge_in_reset_reset, rst_translator:in_reset]
 	wire         rst_controller_reset_out_reset_req;                          // rst_controller:reset_req -> [NIOSII_C0:reset_req, ONCHIP_C0:reset_req, rst_translator:reset_req_in]
 	wire         rst_controller_001_reset_out_reset;                          // rst_controller_001:reset_out -> [MUTEX:reset_n, PIO_NEW_FRAME_FLAG:reset_n, SDRAM:reset_n, mm_interconnect_0:SDRAM_reset_reset_bridge_in_reset_reset]
 	wire         niosii_c1_debug_reset_request_reset;                         // NIOSII_C1:debug_reset_request -> [rst_controller_001:reset_in1, rst_controller_003:reset_in1]
@@ -399,7 +405,18 @@ module Project (
 		.out_port   (led_export)                               // external_connection.export
 	);
 
-	Project_PIO_NEW_FRAME_FLAG pio_new_frame_flag (
+	Project_PIO_FRAME_READY pio_live_flag (
+		.clk        (clk_clk),                                       //                 clk.clk
+		.reset_n    (~rst_controller_reset_out_reset),               //               reset.reset_n
+		.address    (mm_interconnect_0_pio_live_flag_s1_address),    //                  s1.address
+		.write_n    (~mm_interconnect_0_pio_live_flag_s1_write),     //                    .write_n
+		.writedata  (mm_interconnect_0_pio_live_flag_s1_writedata),  //                    .writedata
+		.chipselect (mm_interconnect_0_pio_live_flag_s1_chipselect), //                    .chipselect
+		.readdata   (mm_interconnect_0_pio_live_flag_s1_readdata),   //                    .readdata
+		.out_port   (live_flag_export)                               // external_connection.export
+	);
+
+	Project_PIO_FRAME_READY pio_new_frame_flag (
 		.clk        (clk_clk),                                            //                 clk.clk
 		.reset_n    (~rst_controller_001_reset_out_reset),                //               reset.reset_n
 		.address    (mm_interconnect_0_pio_new_frame_flag_s1_address),    //                  s1.address
@@ -407,7 +424,7 @@ module Project (
 		.writedata  (mm_interconnect_0_pio_new_frame_flag_s1_writedata),  //                    .writedata
 		.chipselect (mm_interconnect_0_pio_new_frame_flag_s1_chipselect), //                    .chipselect
 		.readdata   (mm_interconnect_0_pio_new_frame_flag_s1_readdata),   //                    .readdata
-		.bidir_port ()                                                    // external_connection.export
+		.out_port   ()                                                    // external_connection.export
 	);
 
 	Project_PIO_PIXEL_ADDR pio_pixel_addr (
@@ -646,6 +663,11 @@ module Project (
 		.PIO_LED_s1_readdata                         (mm_interconnect_0_pio_led_s1_readdata),                       //                                      .readdata
 		.PIO_LED_s1_writedata                        (mm_interconnect_0_pio_led_s1_writedata),                      //                                      .writedata
 		.PIO_LED_s1_chipselect                       (mm_interconnect_0_pio_led_s1_chipselect),                     //                                      .chipselect
+		.PIO_LIVE_FLAG_s1_address                    (mm_interconnect_0_pio_live_flag_s1_address),                  //                      PIO_LIVE_FLAG_s1.address
+		.PIO_LIVE_FLAG_s1_write                      (mm_interconnect_0_pio_live_flag_s1_write),                    //                                      .write
+		.PIO_LIVE_FLAG_s1_readdata                   (mm_interconnect_0_pio_live_flag_s1_readdata),                 //                                      .readdata
+		.PIO_LIVE_FLAG_s1_writedata                  (mm_interconnect_0_pio_live_flag_s1_writedata),                //                                      .writedata
+		.PIO_LIVE_FLAG_s1_chipselect                 (mm_interconnect_0_pio_live_flag_s1_chipselect),               //                                      .chipselect
 		.PIO_NEW_FRAME_FLAG_s1_address               (mm_interconnect_0_pio_new_frame_flag_s1_address),             //                 PIO_NEW_FRAME_FLAG_s1.address
 		.PIO_NEW_FRAME_FLAG_s1_write                 (mm_interconnect_0_pio_new_frame_flag_s1_write),               //                                      .write
 		.PIO_NEW_FRAME_FLAG_s1_readdata              (mm_interconnect_0_pio_new_frame_flag_s1_readdata),            //                                      .readdata

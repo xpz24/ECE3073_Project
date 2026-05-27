@@ -1,7 +1,7 @@
 import tkinter as tk
 from collections import deque
 
-FONT = ("Consolas", 72, "bold")
+FONT = ("OCR A Extended", 128)
 FRAME_DELAY_MS = 16
 
 
@@ -84,7 +84,7 @@ def start_next_text():
         canvas.winfo_width(),
         canvas.winfo_height() // 2,
         text=text,
-        fill="white",
+        fill="grey",
         font=FONT,
         anchor="w",
     )
