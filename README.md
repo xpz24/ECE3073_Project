@@ -61,3 +61,40 @@ git clone https://github.com/Kavinaya10/ECE3073.git
     * Add each of your Nios II Hardware configurations to this group.
     * Set the **Post-launch action** for each to "None" or "Wait until terminated" as appropriate to ensure they all initialize.
 4.  Select the **RunAll** launch group and click **Run**.
+
+## Project Overview & Functional Architecture
+
+This project implements an automated, high-precision semiconductor wafer processing system utilizing an Intel FPGA hardware design and a NIOS soft-core processor. The system integrates real-time hardware control, parallel coprocessing, cloud connectivity, computer vision, and safety-critical monitoring managed by a Real-Time Operating System (RTOS).
+
+### System Functions by Milestone
+
+The project's development, features, and hardware/software integrations are structured across three distinct milestones. Below is the functional mapping of the system's capabilities relative to each project milestone.
+
+#### Milestone 1: Core Hardware Foundations & State Machine
+The focus of this milestone is establishing the foundational FPGA hardware layout and implementing the core automated processing sequence.
+
+* **Automated Wafer Processing State Machine:** Controls the core sequence of the wafer fabrication process, advancing cleanly through **Steps 1 to 8 and an Idle state** based on precise timing intervals without logical errors.
+* **Stepper Motor Controller:** Interfaced with the NIOS processor via an appropriate Peripheral I/O (PIO) configuration, allowing the motor to rotate dynamically via software commands and interrupt signals.
+* **Base Communications Framework:** Integrates **SPI** and **UART** modules into the hardware design, fully compiled and error-free on the FPGA, establishing the hardware baseline for Phase 2 communication.
+* **Stable Hardware Compilation:** Full hardware compilation in Quartus with zero errors, enabling a seamless download to the physical FPGA board.
+
+#### Milestone 2: Advanced Peripherals, Cloud & Coprocessing
+This milestone expands the project's capabilities into multi-processor environments, internet connectivity, and hardware-level performance monitoring.
+
+* **Hardware Interrupt Architecture:** Implements a justified interrupt structure leveraging **at least two hardware interrupts** (excluding basic UART) to process time-critical events efficiently.
+* **Parallel Coprocessing Baseline:** Integration of a hardware **Co-processor** alongside the main NIOS processor to execute dedicated tasks in parallel.
+* **IoT Cloud Integration (Firebase):** Configures an **ESP8266** Wi-Fi module via UART to bridge the NIOS processor to a Google Firebase realtime database, ensuring live process tracking data is pushed to the cloud.
+* **Embedded Computer Vision (ESP-CAM):** Integrates an **ESP-CAM** module to execute image recognition. The resulting processed image data is transmitted directly into the NIOS processor using UART/SPI interfaces.
+* **Visual Status Monitoring (VGA):** Utilizes a **VGA driver** to output real-time process statuses, state machine phases, or debugging telemetry directly to an external display.
+* **Safety-Critical Fail-Safe:** Interfaces an **Accelerometer** to detect structural anomalies or sudden movements, triggering an instantaneous **Emergency Stop** to halt the wafer state machine safely.
+* **Oscilloscope Latency Benchmarking:** Captures physical latency values using an oscilloscope to monitor the exact delay when transitioning between steps or responding to new input commands.
+
+#### Milestone 3: Optimization, RTOS & System Innovation
+The final milestone optimizes resource management, introduces sophisticated software architectures, and demonstrates robust repository workflows.
+
+* **Real-Time Operating System (RTOS) Implementation:** Migrates the software runtime to an **RTOS** framework, featuring highly structured management of shared resources (using Mutexes/Semaphores) to eliminate race conditions.
+* **Interprocess Communication (IPC):** Leverages advanced IPC protocols between the core processor and Co-processor to handle **at least two steps of the wafer fabrication process**, backed up by mathematical processing calculations.
+* **Advanced Latency Reduction:** Implements optimized routines to explicitly **decrease system latency** during wafer handling, fully validated by comparative calculations and measurement data.
+* **Enhanced VGA Monitoring:** Applies the VGA display dynamically to provide an intuitive, live graphical interface showcasing current wafer processing status and system health.
+* **Robust Git Version Control Workflow:** Demonstrates an enterprise-level Git strategy. The repository features clear feature tracking and documented evidence of **resolving complex Git merge conflicts** (at least 2) to showcase teamwork and repository management.
+* **Student-Led Innovations:** Introduces unique enhancements across the software design, specialized hardware setups, and/or custom telemetry interfaces to elevate the project beyond the standard requirements.
