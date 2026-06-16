@@ -23,14 +23,14 @@
 			hexhi_export       : out   std_logic_vector(23 downto 0);                    -- export
 			hexlo_export       : out   std_logic_vector(23 downto 0);                    -- export
 			led_export         : out   std_logic_vector(4 downto 0);                     -- export
+			live_flag_export   : out   std_logic;                                        -- export
 			pixel_addr_export  : out   std_logic_vector(16 downto 0);                    -- export
 			pixel_data_export  : out   std_logic_vector(11 downto 0);                    -- export
 			pixel_wren_export  : out   std_logic;                                        -- export
 			speaker_export     : out   std_logic;                                        -- export
 			spi_ready_export   : in    std_logic                     := 'X';             -- export
 			swap_done_export   : in    std_logic_vector(7 downto 0)  := (others => 'X'); -- export
-			switch_export      : in    std_logic_vector(4 downto 0)  := (others => 'X'); -- export
-			live_flag_export   : out   std_logic                                         -- export
+			switch_export      : in    std_logic_vector(4 downto 0)  := (others => 'X')  -- export
 		);
 	end component Project;
 
@@ -59,13 +59,13 @@
 			hexhi_export       => CONNECTED_TO_hexhi_export,       --       hexhi.export
 			hexlo_export       => CONNECTED_TO_hexlo_export,       --       hexlo.export
 			led_export         => CONNECTED_TO_led_export,         --         led.export
+			live_flag_export   => CONNECTED_TO_live_flag_export,   --   live_flag.export
 			pixel_addr_export  => CONNECTED_TO_pixel_addr_export,  --  pixel_addr.export
 			pixel_data_export  => CONNECTED_TO_pixel_data_export,  --  pixel_data.export
 			pixel_wren_export  => CONNECTED_TO_pixel_wren_export,  --  pixel_wren.export
 			speaker_export     => CONNECTED_TO_speaker_export,     --     speaker.export
 			spi_ready_export   => CONNECTED_TO_spi_ready_export,   --   spi_ready.export
 			swap_done_export   => CONNECTED_TO_swap_done_export,   --   swap_done.export
-			switch_export      => CONNECTED_TO_switch_export,      --      switch.export
-			live_flag_export   => CONNECTED_TO_live_flag_export    --   live_flag.export
+			switch_export      => CONNECTED_TO_switch_export       --      switch.export
 		);
 

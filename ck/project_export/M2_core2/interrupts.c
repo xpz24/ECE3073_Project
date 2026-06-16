@@ -1,0 +1,69 @@
+// libraries
+#include <stdio.h>
+#include "../M2_core2_bsp/system.h"
+#include "../M2_core2_bsp/drivers/inc/altera_avalon_pio_regs.h"
+#include "../M2_core2_bsp/HAL/inc/sys/alt_irq.h"
+#include "../M2_core2_bsp/HAL/inc/includes.h"
+#include "interrupts.h"
+
+// base addresses
+#define RX_2_3_BASE   CORE_2_3_RX_BASE
+#define RX_2_1_BASE   CORE_2_1_RX_BASE
+
+// flags
+volatile int key_flags = 0;
+volatile int emergency_flag = 0;
+volatile int tilt_flag = 0;
+volatile int capture_flag = 0;
+
+// RX flag values
+#define RX_KEY0          0x1
+#define RX_KEY1          0x2
+
+#define EMERGENCY_START  0x1
+#define EMERGENCY_CLEAR  0x2
+
+#define CAPTURE_FLAG  0x4
+
+// rx_3_2_irq_handler
+static void rx_3_2_irq_handler(void *context, alt_u32 id)
+{
+    int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_3_BASE) & 0x7;
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_3_BASE, 0);
+
+    // decode incoming RX pulse into key_flags bits
+    if (val & RX_KEY0) key_flags |= (1 << 0);
+    if (val & RX_KEY1) key_flags |= (1 << 1);
+    // capture flag
+	if (val & CAPTURE_FLAG) capture_flag = 1;
+}
+
+void init_rx_3_2_irq(void)
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_3_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_3_BASE, 0x7);
+    alt_irq_register(CORE_2_3_RX_IRQ, NULL, rx_3_2_irq_handler);
+}
+
+// rx_1_2_irq_handler
+static void rx_1_2_irq_handler(void *context, alt_u32 id)
+{
+	int val = IORD_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE) & 0xFF;
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
+	// emergency flags
+	if (val & EMERGENCY_START) emergency_flag = 1;
+	if (val & EMERGENCY_CLEAR) emergency_flag = 0;
+	// tilt flags
+	if      (val == TILT_NORMAL)   tilt_flag = TILT_NORMAL;
+	else if (val == TILT_LEFT)     tilt_flag = TILT_LEFT;
+	else if (val == TILT_RIGHT)    tilt_flag = TILT_RIGHT;
+	else if (val == TILT_FORWARD)  tilt_flag = TILT_FORWARD;
+	else if (val == TILT_BACKWARD) tilt_flag = TILT_BACKWARD;
+}
+
+void init_rx_1_2_irq(void)
+{
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(RX_2_1_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(RX_2_1_BASE, 0xFF);
+    alt_irq_register(CORE_2_1_RX_IRQ, NULL, rx_1_2_irq_handler);
+}

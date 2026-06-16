@@ -555,7 +555,7 @@
   <parameter name="masterSPI" value="true" />
   <parameter name="numberOfSlaves" value="1" />
   <parameter name="syncRegDepth" value="2" />
-  <parameter name="targetClockRate" value="25000000" />
+  <parameter name="targetClockRate" value="600000000" />
   <parameter name="targetSlaveSelectToSClkDelay" value="0.0" />
  </module>
  <module name="MUTEX" kind="altera_avalon_mutex" version="23.1" enabled="1">

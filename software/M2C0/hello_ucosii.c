@@ -141,6 +141,7 @@ void task3(void *pdata) {
 
 	while (1) {
 		int sw = IORD_ALTERA_AVALON_PIO_DATA(PIO_SWITCH_BASE) & 0x1F;
+
 		int liveMode = (sw >> 4) & 0x1;
 		IOWR_ALTERA_AVALON_PIO_DATA(PIO_LIVE_FLAG_BASE, liveMode);
 

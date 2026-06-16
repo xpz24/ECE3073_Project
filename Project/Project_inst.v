@@ -22,13 +22,13 @@
 		.hexhi_export       (<connected-to-hexhi_export>),       //       hexhi.export
 		.hexlo_export       (<connected-to-hexlo_export>),       //       hexlo.export
 		.led_export         (<connected-to-led_export>),         //         led.export
+		.live_flag_export   (<connected-to-live_flag_export>),   //   live_flag.export
 		.pixel_addr_export  (<connected-to-pixel_addr_export>),  //  pixel_addr.export
 		.pixel_data_export  (<connected-to-pixel_data_export>),  //  pixel_data.export
 		.pixel_wren_export  (<connected-to-pixel_wren_export>),  //  pixel_wren.export
 		.speaker_export     (<connected-to-speaker_export>),     //     speaker.export
 		.spi_ready_export   (<connected-to-spi_ready_export>),   //   spi_ready.export
 		.swap_done_export   (<connected-to-swap_done_export>),   //   swap_done.export
-		.switch_export      (<connected-to-switch_export>),      //      switch.export
-		.live_flag_export   (<connected-to-live_flag_export>)    //   live_flag.export
+		.switch_export      (<connected-to-switch_export>)       //      switch.export
 	);
 

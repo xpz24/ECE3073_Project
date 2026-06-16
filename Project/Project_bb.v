@@ -23,14 +23,14 @@ module Project (
 	hexhi_export,
 	hexlo_export,
 	led_export,
+	live_flag_export,
 	pixel_addr_export,
 	pixel_data_export,
 	pixel_wren_export,
 	speaker_export,
 	spi_ready_export,
 	swap_done_export,
-	switch_export,
-	live_flag_export);	
+	switch_export);	
 
 	input		accel_MISO;
 	output		accel_MOSI;
@@ -55,6 +55,7 @@ module Project (
 	output	[23:0]	hexhi_export;
 	output	[23:0]	hexlo_export;
 	output	[4:0]	led_export;
+	output		live_flag_export;
 	output	[16:0]	pixel_addr_export;
 	output	[11:0]	pixel_data_export;
 	output		pixel_wren_export;
@@ -62,5 +63,4 @@ module Project (
 	input		spi_ready_export;
 	input	[7:0]	swap_done_export;
 	input	[4:0]	switch_export;
-	output		live_flag_export;
 endmodule

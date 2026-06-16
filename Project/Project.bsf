@@ -290,7 +290,7 @@ https://fpgasoftware.intel.com/eula.
 		(text "export" (rect 133 891 302 1792)(font "Arial" (color 0 0 0)))
 		(text "switch" (rect 92 907 220 1827)(font "Arial" (color 128 0 0)(font_size 9)))
 		(text "export" (rect 133 931 302 1872)(font "Arial" (color 0 0 0)))
-		(text " Project " (rect 271 952 596 1914)(font "Arial" ))
+		(text " system " (rect 269 952 586 1914)(font "Arial" ))
 		(line (pt 128 32)(pt 176 32)(line_width 1))
 		(line (pt 176 32)(pt 176 952)(line_width 1))
 		(line (pt 128 952)(pt 176 952)(line_width 1))

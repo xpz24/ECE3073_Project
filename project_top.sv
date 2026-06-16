@@ -33,57 +33,57 @@ module project_top (
     HEX5
 );
   logic        vgaClock;
-  logic [ 3:0] pixelData;
+  logic [11:0] pixelData;
   logic [16:0] writeAddress;
   logic [16:0] readAddress;
   logic        writeEnable;
-  logic [ 3:0] vgaData;
+  logic [11:0] vgaData;
 
-  logic        front_buffer;  // 0 = RAM0 shown, 1 = RAM1 shown
-  logic        frame_ready;
+//   logic        front_buffer;  // 0 = RAM0 shown, 1 = RAM1 shown
+//   logic        frame_ready;
 
-  logic [ 3:0] vgaData0;
-  logic [ 3:0] vgaData1;
+//   logic [11:0] vgaData0;
+//   logic [11:0] vgaData1;
 
-  logic        wren0;
-  logic        wren1;
+//   logic        wren0;
+//   logic        wren1;
 
-  logic        front_buffer_meta;
-  logic        front_buffer_sys;
+//   logic        front_buffer_meta;
+//   logic        front_buffer_sys;
 
-  always_ff @(posedge MAX10_CLK1_50) begin
-    front_buffer_meta <= front_buffer;
-    front_buffer_sys  <= front_buffer_meta;
-  end
+//   always_ff @(posedge MAX10_CLK1_50) begin
+//     front_buffer_meta <= front_buffer;
+//     front_buffer_sys  <= front_buffer_meta;
+//   end
 
-  logic back_buffer_sys;
+//   logic back_buffer_sys;
 
 
-  assign back_buffer_sys = ~front_buffer_sys;
+//   assign back_buffer_sys = ~front_buffer_sys;
 
-  logic writeEnable_d;
-  logic write_pulse;
+//   logic writeEnable_d;
+//   logic write_pulse;
 
-  always_ff @(posedge MAX10_CLK1_50) begin
-    writeEnable_d <= writeEnable;
-  end
+//   always_ff @(posedge MAX10_CLK1_50) begin
+//     writeEnable_d <= writeEnable;
+//   end
 
-  assign write_pulse = writeEnable & ~writeEnable_d;
+//   assign write_pulse = writeEnable & ~writeEnable_d;
 
-  assign wren0 = write_pulse && (back_buffer_sys == 1'b0);
-  assign wren1 = write_pulse && (back_buffer_sys == 1'b1);
+//   assign wren0 = write_pulse && (back_buffer_sys == 1'b0);
+//   assign wren1 = write_pulse && (back_buffer_sys == 1'b1);
 
-  //   VGA reads from front buffer only
-  assign vgaData = (front_buffer == 1'b0) ? vgaData0 : vgaData1;
+//   //   VGA reads from front buffer only
+//   assign vgaData = (font_buffer == 1'b0) ? vgaData0 : vgaData1;
 
-  logic swap_done_vga;
-  logic swap_done_meta;
-  logic swap_done_sys;
+//   logic swap_done_vga;
+//   logic swap_done_meta;
+//   logic swap_done_sys;
 
-  always_ff @(posedge MAX10_CLK1_50) begin
-    swap_done_meta <= swap_done_vga;
-    swap_done_sys  <= swap_done_meta;
-  end
+//   always_ff @(posedge MAX10_CLK1_50) begin
+//     swap_done_meta <= swap_done_vga;
+//     swap_done_sys  <= swap_done_meta;
+//   end
 
   Project nios_inst (
       .clk_clk           (MAX10_CLK1_50),           //  clk.clk
@@ -129,26 +129,36 @@ module project_top (
       .c0(vgaClock)
   );
 
-  RAM_VGA RAM_VGA_inst0 (
-      .wrclock(MAX10_CLK1_50),
-      .rdclock(vgaClock),
-      .wren(wren0),
-      .wraddress(writeAddress),
-      .rdaddress(readAddress),
-      .data(pixelData),
-      .q(vgaData0)
-  );
+ RAM_VGA RAM_VGA_inst0 (
+    .wrclock(MAX10_CLK1_50),
+    .rdclock(vgaClock),
+    .wren(write_pulse),
+    .wraddress(writeAddress),
+    .rdaddress(readAddress),
+    .data(pixelData),
+    .q(vgaData)
+); 
+
+//   RAM_VGA RAM_VGA_inst0 (
+//       .wrclock(MAX10_CLK1_50),
+//       .rdclock(vgaClock),
+//       .wren(wren0),
+//       .wraddress(writeAddress),
+//       .rdaddress(readAddress),
+//       .data(pixelData),
+//       .q(vgaData0)
+//   );
 
 
-  RAM_VGA RAM_VGA_inst1 (
-      .wrclock(MAX10_CLK1_50),
-      .rdclock(vgaClock),
-      .wren(wren1),
-      .wraddress(writeAddress),
-      .rdaddress(readAddress),
-      .data(pixelData),
-      .q(vgaData1)
-  );
+//   RAM_VGA RAM_VGA_inst1 (
+//       .wrclock(MAX10_CLK1_50),
+//       .rdclock(vgaClock),
+//       .wren(wren1),
+//       .wraddress(writeAddress),
+//       .rdaddress(readAddress),
+//       .data(pixelData),
+//       .q(vgaData1)
+//   );
 
   vga_controller VGA_C_inst (
       .VGA_CLK(vgaClock),
